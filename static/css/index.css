@@ -3,11 +3,14 @@ body {
   background: url("../images/icons/background.png") no-repeat center center
     fixed;
   background-size: 30% 60%;
+  height: 100%;
+  margin: 0;
 }
 
 .logo {
   width: 15%;
-  height: 10%;
+  height: auto;
+  cursor: pointer; /* Indica que a logo é clicável */
 }
 
 header {
@@ -15,10 +18,15 @@ header {
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding: 20px 0;
+  text-align: center;
 }
 
 footer {
   background-color: #045cac;
+  color: white;
+  text-align: center;
+  padding: 10px 0;
   width: 100%;
   position: relative;
   bottom: 0;
@@ -33,9 +41,97 @@ form {
   padding: 20px;
   border-radius: 5px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 600px; /* Definindo uma largura máxima para o formulário */
+  margin: 20px auto;
 }
 
 html,
 body {
   height: 100%;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex-grow: 1;
+  padding: 20px;
+}
+
+.form-control {
+  font-size: 1.2rem; /* Ajusta o tamanho da fonte */
+  width: 100%; /* O campo de entrada ocupa toda a largura disponível */
+  max-width: 100%; /* Garante que não ultrapasse a largura máxima definida */
+  height: 50px; /* Altura fixa do campo */
+  padding: 10px; /* Espaçamento interno */
+  margin-bottom: 10px; /* Espaçamento inferior */
+}
+
+.btn-primary,
+.btn-danger,
+.btn-secondary {
+  padding: 20px;
+  font-size: 20px;
+  width: 100%; /* Os botões ocupam toda a largura disponível */
+  max-width: 100%; /* Garante que não ultrapasse a largura máxima definida */
+  height: 70px; /* Altura fixa */
+  text-align: center; /* Centralizar texto */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 10px 0;
+}
+
+.btn-primary:hover,
+.btn-danger:hover,
+.btn-secondary:hover {
+  background-color: #0069d9;
+  border-color: #0062cc;
+}
+
+.btn-primary:focus,
+.btn-primary.focus,
+.btn-danger:focus,
+.btn-danger.focus,
+.btn-secondary:focus,
+.btn-secondary.focus {
+  box-shadow: 0 0 0 0.2rem rgba(38, 143, 255, 0.5);
+}
+
+.card {
+  margin-bottom: 20px;
+  width: 100%;
+  max-width: 300px;
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+@media (max-width: 767px) {
+  .btn-primary,
+  .btn-danger,
+  .btn-secondary {
+    padding: 15px;
+    font-size: 18px;
+    width: 100%;
+    height: auto;
+  }
+
+  .card {
+    max-width: 100%;
+    height: auto;
+  }
+
+  header h1 {
+    font-size: 24px; /* Ajusta o tamanho do texto no header para telas menores */
+  }
 }

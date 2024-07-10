@@ -13,23 +13,29 @@
     <body>
         <div class="d-flex flex-column min-vh-100">
             <header class="text-white text-center py-3">
-                <img src="./static/images/icons/senai.png" alt="Logo SENAI"
-                    class="logo">
+                <a href="index.html">
+                    <img src="./static/images/icons/senai.png" alt="Logo SENAI"
+                        class="logo">
+                </a>
                 <h1 class="mt-2">Boas vindas à Interface Web para Arduino</h1>
             </header>
 
             <main class="container mt-5 flex-grow-1">
                 <div class="row justify-content-center">
-                    <div class="col-md-6">
-                        <form onsubmit="return validarArduinoID()">
+                    <div class="col-12 col-md-10 col-lg-8">
+                        <form onsubmit="return validarArduinoID()"
+                            class="text-center">
                             <div class="form-group">
-                                <label for="arduinoId">ID do Arduino</label>
-                                <input type="text" class="form-control"
+                                <label for="arduinoId"
+                                    class="font-weight-bold">ID do
+                                    Arduino</label>
+                                <input type="text"
+                                    class="form-control form-control-lg"
                                     id="arduinoId"
                                     placeholder="Digite o ID do Arduino">
                             </div>
                             <button type="submit"
-                                class="btn btn-primary btn-block">Acessar</button>
+                                class="btn btn-primary btn-block btn-lg">Acessar</button>
                         </form>
                     </div>
                 </div>

@@ -17,7 +17,8 @@ header {
 
 .logo {
   width: 15%;
-  height: 10%;
+  height: auto;
+  cursor: pointer; /* Adicione um cursor de ponteiro para indicar que a logo é clicável */
 }
 
 footer {
@@ -25,8 +26,6 @@ footer {
   color: white;
   text-align: center;
   padding: 10px 0;
-  position: absolute;
-  bottom: 0;
   width: 100%;
 }
 
@@ -35,15 +34,23 @@ footer p {
 }
 
 .container {
-  height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  align-items: center;
+  flex-grow: 1;
 }
 
-.btn-primary {
-  background-color: #007bff;
-  border-color: #007bff;
+.btn-primary,
+.btn-danger {
+  padding: 15px;
+  font-size: 18px;
+  width: 250px; /* Largura fixa */
+  height: 60px; /* Altura fixa */
+  text-align: center; /* Centralizar texto */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-primary:hover {
@@ -54,4 +61,28 @@ footer p {
 .btn-primary:focus,
 .btn-primary.focus {
   box-shadow: 0 0 0 0.2rem rgba(38, 143, 255, 0.5);
+}
+
+.card {
+  margin-bottom: 20px;
+  width: 100%;
+  max-width: 300px;
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.btn-secondary {
+  padding: 15px;
+  font-size: 18px;
+  width: 250px;
+  height: 60px;
 }

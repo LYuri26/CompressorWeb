@@ -13,16 +13,54 @@
     <body>
         <div class="d-flex flex-column min-vh-100">
             <header class="text-white text-center py-3">
-                <img src="../static/images/icons/senai.png" alt="Logo SENAI"
-                    class="logo">
+                <a href="../index.html">
+                    <img src="../static/images/icons/senai.png" alt="Logo SENAI"
+                        class="logo">
+                </a>
                 <h1 class="mt-2">Menu Compressor</h1>
             </header>
 
-            <main class="container mt-5 flex-grow-1">
+            <main class="container mt-5">
                 <div class="row justify-content-center">
-                    <div class="col-md-6 text-center">
-                        <button id="toggleBtn"
-                            class="btn btn-primary">Ligar</button>
+                    <div class="col-md-3 col-sm-6 text-center">
+                        <div class="card">
+                            <div class="card-body">
+                                <button id="toggleBtn"
+                                    class="btn btn-primary">Ligar</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6 text-center">
+                        <div class="card">
+                            <div class="card-body">
+                                <button class="btn btn-primary"
+                                    onclick="location.href='#'">Verificar
+                                    Humidade</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6 text-center">
+                        <div class="card">
+                            <div class="card-body">
+                                <button class="btn btn-primary"
+                                    onclick="location.href='#'">Verificar Nível
+                                    de Óleo</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6 text-center">
+                        <div class="card">
+                            <div class="card-body">
+                                <button class="btn btn-primary"
+                                    onclick="location.href='#'">Verificar
+                                    Voltagem</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 text-center mt-3">
+                        <button class="btn btn-secondary"
+                            onclick="location.href='../index.html'">Voltar ao Menu
+                            Inicial</button>
                     </div>
                 </div>
             </main>
