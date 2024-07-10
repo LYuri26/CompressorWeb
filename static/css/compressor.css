@@ -15,6 +15,11 @@ header {
   padding: 20px 0;
 }
 
+.logo {
+  width: 15%;
+  height: 10%;
+}
+
 footer {
   background-color: #045cac;
   color: white;
