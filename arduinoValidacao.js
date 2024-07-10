@@ -9,7 +9,7 @@ function validarArduinoID() {
     // Verifica se o ID está presente no vetor de IDs
     if (arduinoIDs.includes(arduinoId)) {
         // Redireciona para outra página
-        window.location.href = "../../pages/compressor.html"; // Substitua com o caminho correto para a página desejada
+        window.location.href = "./pages/compressor.html"; // Substitua com o caminho correto para a página desejada
     } else {
         // Permanece na mesma página
         alert("ID do Arduino inválido. Tente novamente.");
