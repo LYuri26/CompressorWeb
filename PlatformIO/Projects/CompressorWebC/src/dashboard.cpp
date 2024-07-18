@@ -1,7 +1,7 @@
-#include "dashboard.h"
+#include "dashboard.h"  // Inclui o cabeçalho para a configuração da página do dashboard
 
 // Variável global para controlar o estado do compressor
-extern bool compressorLigado;
+extern bool compressorLigado;  // Declaração da variável global definida em outro arquivo
 
 void setupDashboardPage(ESP8266WebServer& server) {
     // HTML para a página do dashboard
@@ -126,24 +126,24 @@ void setupDashboardPage(ESP8266WebServer& server) {
 
     // Configuração da rota "/dashboard" para responder com o HTML criado
     server.on("/dashboard", HTTP_GET, [html, &server]() mutable {
-        server.send(200, "text/html", html);
+        server.send(200, "text/html", html);  // Envia a resposta HTTP com o HTML do dashboard
     });
 }
 
 void handleToggleAction(ESP8266WebServer& server) {
     // Rota para lidar com a ação de ligar/desligar o compressor
     server.on("/toggle", HTTP_GET, [&server]() {
-        String action = server.arg("action");
+        String action = server.arg("action");  // Obtém o valor do parâmetro "action" da URL
         if (action == "ligar") {
             // Lógica para ligar o compressor (simulação)
             compressorLigado = true;
-            server.send(200, "text/plain", "Compressor ligado!");
+            server.send(200, "text/plain", "Compressor ligado!");  // Responde com "Compressor ligado!" em texto simples
         } else if (action == "desligar") {
             // Lógica para desligar o compressor (simulação)
             compressorLigado = false;
-            server.send(200, "text/plain", "Compressor desligado!");
+            server.send(200, "text/plain", "Compressor desligado!");  // Responde com "Compressor desligado!" em texto simples
         } else {
-            server.send(400, "text/plain", "Ação inválida!");
+            server.send(400, "text/plain", "Ação inválida!");  // Responde com "Ação inválida!" se a ação não for reconhecida
         }
     });
 }

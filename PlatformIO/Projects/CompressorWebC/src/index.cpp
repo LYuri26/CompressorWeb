@@ -1,7 +1,7 @@
-#include "index.h"
+#include "index.h"  // Inclui o cabeçalho para a configuração da página inicial
 
 void setupIndexPage(ESP8266WebServer& server) {
-    // Variável local para o HTML da página inicial
+    // Variável local para armazenar o HTML da página inicial
     String html = R"(
         <!DOCTYPE html>
         <html lang="pt-br">
@@ -121,6 +121,6 @@ void setupIndexPage(ESP8266WebServer& server) {
 
     // Configuração da rota "/" para responder com o HTML criado
     server.on("/", HTTP_GET, [html, &server]() {
-        server.send(200, "text/html", html);
+        server.send(200, "text/html", html);  // Envia a resposta HTTP com o HTML da página inicial
     });
 }
