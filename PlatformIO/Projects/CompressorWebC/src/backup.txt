@@ -1,0 +1,346 @@
+#include <ESP8266WiFi.h>
+#include <ESP8266WebServer.h>
+#include <LittleFS.h>
+
+const char* ssid = "LenonClaro_2.4G";
+const char* password = "13539406670";
+
+ESP8266WebServer server(80);
+
+bool compressorLigado = false; // Variável para controlar o estado do compressor
+
+void setup() {
+  Serial.begin(115200);
+  WiFi.begin(ssid, password);
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(1000);
+    Serial.println("Connecting to WiFi...");
+  }
+  Serial.println("Connected to WiFi");
+  Serial.print("IP Address: ");
+  Serial.println(WiFi.localIP());
+
+  if (!LittleFS.begin()) {
+    Serial.println("An Error has occurred while mounting LittleFS");
+    return;
+  }
+
+  server.on("/", HTTP_GET, []() {
+    String html = R"(
+      <!DOCTYPE html>
+      <html lang="pt-br">
+      <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Login</title>
+          <style>
+              body {
+                  font-family: Arial, sans-serif;
+                  background-color: #f8f9fa;
+                  height: 100vh;
+                  display: flex;
+                  justify-content: center;
+                  align-items: center;
+              }
+
+              .login-container {
+                  background-color: #ffffff;
+                  padding: 20px;
+                  border-radius: 5px;
+                  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                  width: 100%;
+                  max-width: 400px;
+                  text-align: center;
+              }
+
+              .login-title {
+                  font-size: 24px;
+                  margin-bottom: 20px;
+              }
+
+              .input-group {
+                  margin-bottom: 10px;
+              }
+
+              .input-group input {
+                  width: 100%;
+                  padding: 10px;
+                  border: 1px solid #ccc;
+                  border-radius: 4px;
+                  box-sizing: border-box;
+              }
+
+              .btn-login {
+                  background-color: #007bff;
+                  color: white;
+                  border: none;
+                  padding: 10px 20px;
+                  text-align: center;
+                  text-decoration: none;
+                  display: inline-block;
+                  font-size: 16px;
+                  border-radius: 4px;
+                  cursor: pointer;
+              }
+
+              .btn-login:hover {
+                  background-color: #0056b3;
+              }
+          </style>
+      </head>
+      <body>
+          <div class="login-container">
+              <h2 class="login-title">Faça o Login</h2>
+              <form action="/login" method="post">
+                  <div class="input-group">
+                      <input type="text" name="username" placeholder="Usuário" required>
+                  </div>
+                  <div class="input-group">
+                      <input type="password" name="password" placeholder="Senha" required>
+                  </div>
+                  <button type="submit" class="btn-login">Entrar</button>
+              </form>
+          </div>
+      </body>
+      </html>
+    )";
+
+    server.send(200, "text/html", html);
+  });
+
+  server.on("/login", HTTP_POST, []() {
+    String username = server.arg("username");
+    String password = server.arg("password");
+
+    if (username == "teste" && password == "teste") {
+      server.sendHeader("Location", "/dashboard", true);
+      server.send(302, "text/plain", "");
+    } else {
+      String html = R"(
+        <!DOCTYPE html>
+        <html lang="pt-br">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Login</title>
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                    background-color: #f8f9fa;
+                    height: 100vh;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                }
+
+                .login-container {
+                    background-color: #ffffff;
+                    padding: 20px;
+                    border-radius: 5px;
+                    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                    width: 100%;
+                    max-width: 400px;
+                    text-align: center;
+                }
+
+                .login-title {
+                    font-size: 24px;
+                    margin-bottom: 20px;
+                }
+
+                .input-group {
+                    margin-bottom: 10px;
+                }
+
+                .input-group input {
+                    width: 100%;
+                    padding: 10px;
+                    border: 1px solid #ccc;
+                    border-radius: 4px;
+                    box-sizing: border-box;
+                }
+
+                .btn-login {
+                    background-color: #007bff;
+                    color: white;
+                    border: none;
+                    padding: 10px 20px;
+                    text-align: center;
+                    text-decoration: none;
+                    display: inline-block;
+                    font-size: 16px;
+                    border-radius: 4px;
+                    cursor: pointer;
+                }
+
+                .btn-login:hover {
+                    background-color: #0056b3;
+                }
+
+                .error-message {
+                    color: red;
+                    font-size: 14px;
+                    margin-top: 10px;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="login-container">
+                <h2 class="login-title">Falha no Login</h2>
+                <form action="/login" method="post">
+                    <div class="input-group">
+                        <input type="text" name="username" placeholder="Usuário" required>
+                    </div>
+                    <div class="input-group">
+                        <input type="password" name="password" placeholder="Senha" required>
+                    </div>
+                    <button type="submit" class="btn-login">Entrar</button>
+                    <p class="error-message">Usuário ou senha inválidos!</p>
+                </form>
+            </div>
+        </body>
+        </html>
+      )";
+
+      server.send(200, "text/html", html);
+    }
+  });
+
+  server.on("/dashboard", HTTP_GET, []() {
+    String html = R"(
+      <!DOCTYPE html>
+      <html lang="pt-br">
+      <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Dashboard</title>
+          <style>
+              body {
+                  font-family: Arial, sans-serif;
+                  background-color: #f8f9fa;
+                  height: 100%;
+                  margin: 0;
+                  display: flex;
+                  justify-content: center;
+                  align-items: center;
+              }
+
+              .dashboard-container {
+                  background-color: #ffffff;
+                  padding: 20px;
+                  border-radius: 5px;
+                  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                  width: 100%;
+                  max-width: 800px;
+                  text-align: center;
+              }
+
+              .dashboard-title {
+                  font-size: 24px;
+                  margin-bottom: 20px;
+              }
+
+              .btn-logout {
+                  background-color: #dc3545;
+                  color: white;
+                  border: none;
+                  padding: 10px 20px;
+                  text-align: center;
+                  text-decoration: none;
+                  display: inline-block;
+                  font-size: 16px;
+                  border-radius: 4px;
+                  cursor: pointer;
+              }
+
+              .btn-logout:hover {
+                  background-color: #c82333;
+              }
+
+              .btn-action {
+                  background-color: #007bff;
+                  color: white;
+                  border: none;
+                  padding: 10px 20px;
+                  text-align: center;
+                  text-decoration: none;
+                  display: inline-block;
+                  font-size: 16px;
+                  border-radius: 4px;
+                  cursor: pointer;
+                  margin: 10px;
+              }
+
+              .btn-action:hover {
+                  background-color: #0056b3;
+              }
+
+              .footer {
+                  position: absolute;
+                  bottom: 0;
+                  width: 100%;
+                  background-color: #045cac;
+                  color: white;
+                  text-align: center;
+                  padding: 10px 0;
+              }
+          </style>
+      </head>
+      <body>
+          <div class="dashboard-container">
+              <h2 class="dashboard-title">Bem-vindo ao Dashboard</h2>
+              <a href="/toggle" class="btn-action" id="toggleButton">Ligar</a>
+              <a href="/humidity" class="btn-action">Umidade</a>
+              <a href="/oil-level" class="btn-action">Nível de Óleo</a>
+              <a href="/" class="btn-logout">Logout</a>
+          </div>
+
+          <div class="footer">
+              <p>Aplicação desenvolvida pela Turma de Informática Para Internet Trilhas de Futuro 2024</p>
+              <p>Instrutor: Lenon Yuri</p>
+          </div>
+
+          <script>
+              var toggleButton = document.getElementById('toggleButton');
+              toggleButton.addEventListener('click', function(event) {
+                  event.preventDefault();
+                  var action = toggleButton.innerHTML === 'Ligar' ? 'ligar' : 'desligar';
+                  fetch('/toggle?action=' + action)
+                      .then(response => response.text())
+                      .then(data => {
+                          console.log('Resposta do servidor:', data);
+                          toggleButton.innerHTML = action === 'ligar' ? 'Desligar' : 'Ligar';
+                      })
+                      .catch(error => console.error('Erro ao enviar requisição:', error));
+              });
+          </script>
+      </body>
+      </html>
+    )";
+
+    server.send(200, "text/html", html);
+  });
+
+  server.on("/toggle", HTTP_GET, []() {
+    String action = server.arg("action");
+    if (action == "ligar") {
+      // Lógica para ligar o compressor (simulação)
+      compressorLigado = true;
+      server.send(200, "text/plain", "Compressor ligado!");
+    } else if (action == "desligar") {
+      // Lógica para desligar o compressor (simulação)
+      compressorLigado = false;
+      server.send(200, "text/plain", "Compressor desligado!");
+    } else {
+      server.send(400, "text/plain", "Ação inválida!");
+    }
+  });
+
+  server.begin();
+  Serial.println("HTTP server started");
+}
+
+void loop() {
+  server.handleClient();
+}
