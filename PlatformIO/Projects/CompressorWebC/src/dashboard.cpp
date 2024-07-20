@@ -12,6 +12,7 @@ void setupDashboardPage(ESP8266WebServer& server) {
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>Dashboard</title>
+            <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
             <style>
                 body {
                     font-family: Arial, sans-serif;
@@ -41,43 +42,14 @@ void setupDashboardPage(ESP8266WebServer& server) {
                     color: #007bff;
                 }
 
-                .btn-logout {
-                    background-color: #dc3545;
+                .btn-ligar {
+                    background-color: #28a745; /* Verde */
                     color: white;
-                    border: none;
-                    padding: 10px 20px;
-                    text-align: center;
-                    text-decoration: none;
-                    display: inline-block;
-                    font-size: 16px;
-                    border-radius: 4px;
-                    cursor: pointer;
-                    transition: background-color 0.3s ease;
-                    margin-top: 20px;
                 }
 
-                .btn-logout:hover {
-                    background-color: #c82333;
-                }
-
-                .btn-action {
-                    background-color: #007bff;
+                .btn-desligar {
+                    background-color: #dc3545; /* Vermelho */
                     color: white;
-                    border: none;
-                    padding: 12px 24px;
-                    text-align: center;
-                    text-decoration: none;
-                    display: inline-block;
-                    font-size: 16px;
-                    border-radius: 4px;
-                    cursor: pointer;
-                    margin: 10px;
-                    transition: background-color 0.3s ease;
-                    width: 150px;
-                }
-
-                .btn-action:hover {
-                    background-color: #0056b3;
                 }
 
                 .footer {
@@ -95,10 +67,10 @@ void setupDashboardPage(ESP8266WebServer& server) {
         <body>
             <div class="dashboard-container">
                 <h2 class="dashboard-title">Bem-vindo ao Dashboard</h2>
-                <a href="/toggle" class="btn-action" id="toggleButton">Ligar</a>
-                <a href="/humidity" class="btn-action">Umidade</a>
-                <a href="/oil-level" class="btn-action">Nível de Óleo</a>
-                <a href="/" class="btn-logout">Logout</a>
+                <a href="/toggle" class="btn btn-block mb-2 btn-ligar" id="toggleButton">Ligar</a>
+                <a href="/humidity" class="btn btn-secondary btn-block mb-2">Umidade</a>
+                <a href="/oil-level" class="btn btn-secondary btn-block mb-2">Nível de Óleo</a>
+                <a href="/" class="btn btn-danger btn-block mt-3">Logout</a>
             </div>
 
             <div class="footer">
@@ -106,6 +78,8 @@ void setupDashboardPage(ESP8266WebServer& server) {
                 <p>Instrutor: Lenon Yuri</p>
             </div>
 
+            <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+            <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
             <script>
                 var toggleButton = document.getElementById('toggleButton');
                 toggleButton.addEventListener('click', function(event) {
@@ -115,7 +89,15 @@ void setupDashboardPage(ESP8266WebServer& server) {
                         .then(response => response.text())
                         .then(data => {
                             console.log('Resposta do servidor:', data);
-                            toggleButton.innerHTML = action === 'ligar' ? 'Desligar' : 'Ligar';
+                            if (action === 'ligar') {
+                                toggleButton.innerHTML = 'Desligar';
+                                toggleButton.classList.remove('btn-ligar');
+                                toggleButton.classList.add('btn-desligar');
+                            } else {
+                                toggleButton.innerHTML = 'Ligar';
+                                toggleButton.classList.remove('btn-desligar');
+                                toggleButton.classList.add('btn-ligar');
+                            }
                         })
                         .catch(error => console.error('Erro ao enviar requisição:', error));
                 });

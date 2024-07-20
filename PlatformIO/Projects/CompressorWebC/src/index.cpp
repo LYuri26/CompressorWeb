@@ -9,6 +9,7 @@ void setupIndexPage(ESP8266WebServer& server) {
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>Login</title>
+            <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
             <style>
                 body {
                     font-family: Arial, sans-serif;
@@ -37,43 +38,6 @@ void setupIndexPage(ESP8266WebServer& server) {
                     color: #007bff;
                 }
 
-                .input-group {
-                    margin-bottom: 15px;
-                }
-
-                .input-group input {
-                    width: 100%;
-                    padding: 10px;
-                    border: 1px solid #ccc;
-                    border-radius: 4px;
-                    box-sizing: border-box;
-                    font-size: 16px;
-                }
-
-                .btn-login {
-                    background-color: #007bff;
-                    color: white;
-                    border: none;
-                    padding: 10px 20px;
-                    text-align: center;
-                    text-decoration: none;
-                    display: inline-block;
-                    font-size: 16px;
-                    border-radius: 4px;
-                    cursor: pointer;
-                    transition: background-color 0.3s ease;
-                }
-
-                .btn-login:hover {
-                    background-color: #0056b3;
-                }
-
-                .error-message {
-                    color: red;
-                    font-size: 14px;
-                    margin-top: 10px;
-                }
-
                 .footer {
                     position: fixed;
                     bottom: 0;
@@ -90,21 +54,24 @@ void setupIndexPage(ESP8266WebServer& server) {
             <div class="login-container">
                 <h2 class="login-title">Faça o Login</h2>
                 <form action="/login" method="post">
-                    <div class="input-group">
-                        <input type="text" name="username" placeholder="Usuário" required>
+                    <div class="form-group">
+                        <input type="text" name="username" class="form-control" placeholder="Usuário" required>
                     </div>
-                    <div class="input-group">
-                        <input type="password" name="password" placeholder="Senha" required>
+                    <div class="form-group">
+                        <input type="password" name="password" class="form-control" placeholder="Senha" required>
                     </div>
-                    <button type="submit" class="btn-login">Entrar</button>
-                    <div class="error-message" id="error-message"></div>
+                    <button type="submit" class="btn btn-primary btn-block">Entrar</button>
+                    <div class="text-danger mt-2" id="error-message"></div>
                 </form>
+                <button onclick="window.location.href='/credits'" class="btn btn-secondary btn-block mt-3">Créditos</button>
             </div>
             <div class="footer">
                 <p>Aplicação desenvolvida pela Turma de Informática Para Internet Trilhas de Futuro 2024</p>
                 <p>Instrutor: Lenon Yuri</p>
             </div>
 
+            <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+            <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
             <script>
                 // Script JavaScript para exibir mensagem de erro (opcional)
                 const errorMessage = document.getElementById('error-message');
