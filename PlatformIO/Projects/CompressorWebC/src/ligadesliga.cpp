@@ -22,8 +22,24 @@ bool isAfterClosingTime() {
     Serial.print(":");
     Serial.println(minute);
 
-    // Verifica se é após 19:30
+    // Verifica se é após 22:30
     return (hour > 22) || (hour == 22 && minute >= 30);
+}
+
+// Função que verifica se é antes do horário de abertura
+bool isBeforeOpeningTime() {
+    timeClient.update(); // Atualiza a hora
+    int hour = timeClient.getHours();
+    int minute = timeClient.getMinutes();
+
+    // Debug: Exibe a hora atual no Serial Monitor
+    Serial.print("Hora atual: ");
+    Serial.print(hour);
+    Serial.print(":");
+    Serial.println(minute);
+
+    // Verifica se é antes de 07:30
+    return (hour < 7) || (hour == 7 && minute < 30);
 }
 
 // Função que imprime o estado do compressor no Serial Monitor
@@ -45,8 +61,8 @@ void setupLigaDesliga(ESP8266WebServer& server) {
         Serial.print(":");
         Serial.println(minute);
 
-        // Verifica se é após às 19:30
-        if (isAfterClosingTime()) {
+        // Verifica se é após 22:30 ou antes de 07:30
+        if (isAfterClosingTime() || isBeforeOpeningTime()) {
             if (compressorLigado) {
                 // Desliga o compressor se estiver ligado
                 compressorLigado = false;
