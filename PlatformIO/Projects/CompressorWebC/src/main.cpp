@@ -34,24 +34,36 @@ void connectToWiFi() {
     Serial.println("Tentando conectar ao WiFi...");  // Mensagem de tentativa de conexão
     Serial.print("Conectando à rede WiFi: ");  // Mensagem de conexão ao WiFi
     Serial.println(ssid);  // Imprime o SSID da rede WiFi
+
+    unsigned long startAttemptTime = millis();  // Armazena o tempo de início da tentativa de conexão
     WiFi.begin(ssid, password);  // Inicia a conexão WiFi com o SSID e senha fornecidos
 
     int attempts = 0;  // Inicializa o contador de tentativas
-    while (WiFi.status() != WL_CONNECTED && attempts < 20) {  // Enquanto não conectar e tiver menos de 3 tentativas
+    while (WiFi.status() != WL_CONNECTED && attempts < 20) {  // Enquanto não conectar e tiver menos de 20 tentativas
         delay(1000);  // Aguarda 1 segundo
         Serial.print(".");  // Imprime um ponto para indicar tentativa de conexão
         attempts++;  // Incrementa o contador de tentativas
     }
 
+    unsigned long endAttemptTime = millis();  // Armazena o tempo de término da tentativa de conexão
+    unsigned long connectionTime = (endAttemptTime - startAttemptTime) / 1000;  // Calcula o tempo total de conexão em segundos
+
     if (WiFi.status() == WL_CONNECTED) {  // Se a conexão for bem-sucedida
         Serial.println();  // Imprime uma linha em branco no monitor serial
         Serial.print("Conectado com sucesso! Endereço IP: ");  // Imprime a mensagem de sucesso
         Serial.println(WiFi.localIP());  // Imprime o endereço IP do ESP8266
+        Serial.print("Tentativas de conexão: ");  // Imprime o número de tentativas
+        Serial.println(attempts);  // Imprime o número de tentativas
+        Serial.print("Tempo total de conexão: ");  // Imprime o tempo total de conexão
+        Serial.print(connectionTime);  // Imprime o tempo total de conexão
+        Serial.println(" segundos");  // Unidade do tempo
     } else {  // Se a conexão falhar
         Serial.println();  // Imprime uma linha em branco no monitor serial
         Serial.println("Falha ao conectar-se ao WiFi");  // Imprime a mensagem de falha de conexão
         Serial.print("Status: ");  // Imprime o status da conexão
         Serial.println(WiFi.status());  // Imprime o status da conexão WiFi
+        Serial.print("Tentativas de conexão: ");  // Imprime o número de tentativas
+        Serial.println(attempts);  // Imprime o número de tentativas
     }
 }
 
