@@ -1,9 +1,10 @@
-#include "dashboard.h"  // Inclui o cabeçalho para a configuração da página do dashboard
+#include "dashboard.h" // Inclui o cabeçalho para a configuração da página do dashboard
 
 // Variável global para controlar o estado do compressor
-extern bool compressorLigado;  // Declaração da variável global definida em outro arquivo
+extern bool compressorLigado; // Declaração da variável global definida em outro arquivo
 
-void setupDashboardPage(ESP8266WebServer& server) {
+void setupDashboardPage(ESP8266WebServer &server)
+{
     // HTML para a página do dashboard
     String html = R"(
         <!DOCTYPE html>
@@ -67,7 +68,7 @@ void setupDashboardPage(ESP8266WebServer& server) {
         <body>
             <div class="dashboard-container">
                 <h2 class="dashboard-title">Bem-vindo ao Dashboard</h2>
-                <a href="/toggle" class="btn btn-block mb-2 btn-ligar" id="toggleButton">Ligar</a>
+                <a href="/toggle" class="btn btn-block mb-2" id="toggleButton">Desligar</a>
                 <a href="/humidity" class="btn btn-secondary btn-block mb-2">Umidade</a>
                 <a href="/oil-level" class="btn btn-secondary btn-block mb-2">Nível de Óleo</a>
                 <a href="/" class="btn btn-danger btn-block mt-3">Logout</a>
@@ -81,25 +82,43 @@ void setupDashboardPage(ESP8266WebServer& server) {
             <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
             <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
             <script>
-                var toggleButton = document.getElementById('toggleButton');
-                toggleButton.addEventListener('click', function(event) {
-                    event.preventDefault();
-                    var action = toggleButton.innerHTML === 'Ligar' ? 'ligar' : 'desligar';
-                    fetch('/toggle?action=' + action)
-                        .then(response => response.text())
+                document.addEventListener('DOMContentLoaded', function() {
+                    var toggleButton = document.getElementById('toggleButton');
+                    
+                    // Fetch initial compressor state from the server
+                    fetch('/compressor-state')
+                        .then(response => response.json())
                         .then(data => {
-                            console.log('Resposta do servidor:', data);
-                            if (action === 'ligar') {
+                            var compressorLigado = data.compressorLigado;
+                            if (compressorLigado) {
                                 toggleButton.innerHTML = 'Desligar';
-                                toggleButton.classList.remove('btn-ligar');
                                 toggleButton.classList.add('btn-desligar');
                             } else {
                                 toggleButton.innerHTML = 'Ligar';
-                                toggleButton.classList.remove('btn-desligar');
                                 toggleButton.classList.add('btn-ligar');
                             }
                         })
-                        .catch(error => console.error('Erro ao enviar requisição:', error));
+                        .catch(error => console.error('Erro ao obter estado inicial do compressor:', error));
+
+                    toggleButton.addEventListener('click', function(event) {
+                        event.preventDefault();
+                        var action = toggleButton.innerHTML === 'Desligar' ? 'desligar' : 'ligar';
+                        fetch('/toggle?action=' + action)
+                            .then(response => response.text())
+                            .then(data => {
+                                console.log('Resposta do servidor:', data);
+                                if (action === 'desligar') {
+                                    toggleButton.innerHTML = 'Ligar';
+                                    toggleButton.classList.remove('btn-desligar');
+                                    toggleButton.classList.add('btn-ligar');
+                                } else {
+                                    toggleButton.innerHTML = 'Desligar';
+                                    toggleButton.classList.remove('btn-ligar');
+                                    toggleButton.classList.add('btn-desligar');
+                                }
+                            })
+                            .catch(error => console.error('Erro ao enviar requisição:', error));
+                    });
                 });
             </script>
         </body>
@@ -107,14 +126,23 @@ void setupDashboardPage(ESP8266WebServer& server) {
     )";
 
     // Configuração da rota "/dashboard" para responder com o HTML criado
-    server.on("/dashboard", HTTP_GET, [html, &server]() mutable {
-        server.send(200, "text/html", html);  // Envia a resposta HTTP com o HTML do dashboard
-    });
+    server.on("/dashboard", HTTP_GET, [html, &server]() mutable
+              {
+                  server.send(200, "text/html", html); // Envia a resposta HTTP com o HTML do dashboard
+              });
+
+    // Rota para fornecer o estado inicial do compressor
+    server.on("/compressor-state", HTTP_GET, [&server]()
+              {
+        String stateJson = "{\"compressorLigado\":" + String(compressorLigado) + "}";
+        server.send(200, "application/json", stateJson); });
 }
 
-void handleToggleAction(ESP8266WebServer& server) {
+void handleToggleAction(ESP8266WebServer &server)
+{
     // Rota para lidar com a ação de ligar/desligar o compressor
-    server.on("/toggle", HTTP_GET, [&server]() {
+    server.on("/toggle", HTTP_GET, [&server]()
+              {
         String action = server.arg("action");  // Obtém o valor do parâmetro "action" da URL
         if (action == "ligar") {
             // Lógica para ligar o compressor (simulação)
@@ -126,6 +154,5 @@ void handleToggleAction(ESP8266WebServer& server) {
             server.send(200, "text/plain", "Compressor desligado!");  // Responde com "Compressor desligado!" em texto simples
         } else {
             server.send(400, "text/plain", "Ação inválida!");  // Responde com "Ação inválida!" se a ação não for reconhecida
-        }
-    });
+        } });
 }
