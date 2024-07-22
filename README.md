@@ -1,7 +1,3 @@
-Claro! Vamos criar um `README.md` bonito e organizado para o seu projeto no GitHub. Aqui está uma sugestão:
-
----
-
 # Compressor Web Control
 
 ## Equipe
