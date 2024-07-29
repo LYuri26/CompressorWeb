@@ -77,7 +77,7 @@ void setupCreditsPage(ESP8266WebServer& server) {
                 <h2 class="credits-title">Créditos</h2>
                 <div class="credits-content">
                     <h3>Alunos</h3>
-                    <a href="#" class="btn-link" target="_blank">Davi</a>
+                    <a href="#" class="btn-link" target="_blank">Ali</a>
                     <a href="#" class="btn-link" target="_blank">Felipe</a>
                     <a href="#" class="btn-link" target="_blank">Paulo</a>
                     <a href="#" class="btn-link" target="_blank">Pietro</a>
