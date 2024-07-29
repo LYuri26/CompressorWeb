@@ -2,7 +2,7 @@
 
 ## Equipe
 
-- **Davi**
+- **Ali**
 - **Felipe**
 - **Paulo**
 - **Pietro**
