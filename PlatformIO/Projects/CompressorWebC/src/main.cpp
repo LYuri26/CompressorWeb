@@ -111,7 +111,7 @@ void setupServer()
 
     // Configura as páginas e funcionalidades do servidor
     setupIndexPage(server);     // Configura a página index
-    setupCreditsPage(server);   // Configura a página de créditos
+    setupCreditosPage(server);   // Configura a página de créditos
     setupDashboardPage(server); // Configura a página dashboard
     setupLigaDesliga(server);   // Configura a funcionalidade de ligar/desligar
 

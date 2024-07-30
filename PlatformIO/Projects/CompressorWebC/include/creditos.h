@@ -6,6 +6,6 @@
 // Declara a função setupCreditsPage
 // Esta função é responsável por configurar a página de créditos no servidor web
 // Recebe uma referência ao objeto WebServer como parâmetro, que é usado para definir rotas e handlers
-void setupCreditsPage(WebServer& server);
+void setupCreditosPage(WebServer& server);
 
 #endif // CREDITOS_H  // Marca o fim da diretiva de pré-processador #ifndef/#define

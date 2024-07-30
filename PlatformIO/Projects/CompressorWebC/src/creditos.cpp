@@ -1,7 +1,7 @@
 #include "creditos.h"  // Inclui o cabeçalho para a configuração da página de créditos
 
 // Função para configurar a página de créditos
-void setupCreditsPage(WebServer& server) {
+void setupCreditosPage(WebServer& server) {
     // Variável local para armazenar o HTML da página de créditos
     String creditsHtml = R"(
         <!DOCTYPE html>
@@ -94,7 +94,7 @@ void setupCreditsPage(WebServer& server) {
     )";
 
     // Configuração da rota "/credits" para responder com o HTML criado
-    server.on("/credits", HTTP_GET, [creditsHtml, &server]() {
+    server.on("/creditos", HTTP_GET, [creditsHtml, &server]() {
         server.send(200, "text/html", creditsHtml);  // Envia a resposta HTTP com o HTML da página de créditos
     });
 }
