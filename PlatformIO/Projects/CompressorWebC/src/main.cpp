@@ -7,13 +7,13 @@
 #include "creditos.h"       // Inclui o cabeçalho para a página de créditos
 
 // Definições das credenciais das redes WiFi
-const char *ssid1 = "LenonClaro_2.4G";
-const char *password1 = "13539406670";
-const char *ssid2 = "LenonClaro_2.4G";
-const char *password2 = "13539406670";
+const char *ssid1 = "LenonClaro_2.4G"; // Nome da primeira rede WiFi
+const char *password1 = "13539406670"; // Senha da primeira rede WiFi
+const char *ssid2 = "LenonClaro_2.4G"; // Nome da segunda rede WiFi (backup)
+const char *password2 = "13539406670"; // Senha da segunda rede WiFi (backup)
 
 // Cria um objeto servidor web na porta 80
-WebServer server(80);
+WebServer server(80); // Instancia um objeto do servidor web que escuta na porta 80
 
 // Declarações das funções
 void connectToWiFi(); // Função para conectar ao WiFi
@@ -24,7 +24,7 @@ void handleLogin();   // Função para lidar com o login
 void setup()
 {
     Serial.begin(115200);                   // Inicia a comunicação serial a 115200 bps
-    Serial.println("Iniciando o setup..."); // Mensagem de início do setup
+    Serial.println("Iniciando o setup..."); // Mensagem indicando o início do setup
 
     connectToWiFi(); // Chama a função para conectar ao WiFi
     setupServer();   // Chama a função para configurar o servidor
@@ -32,13 +32,13 @@ void setup()
 
 void loop()
 {
-    server.handleClient();    // Lida com requisições dos clientes
-    updateCompressorStatus(); // Chama a função de atualização de estado no loop principal
+    server.handleClient();    // Lida com requisições dos clientes conectados ao servidor
+    updateCompressorStatus(); // Atualiza o status do compressor a cada loop
 }
 
 void connectToWiFi()
 {
-    Serial.println("Tentando conectar ao WiFi..."); // Mensagem de tentativa de conexão
+    Serial.println("Tentando conectar ao WiFi..."); // Mensagem indicando que a tentativa de conexão está começando
 
     // Tenta se conectar à primeira rede WiFi
     bool connected = tryConnectToWiFi(ssid1, password1);
@@ -50,16 +50,16 @@ void connectToWiFi()
     }
 
     if (connected) {
-        Serial.println("Conectado com sucesso!");
+        Serial.println("Conectado com sucesso!"); // Mensagem de sucesso na conexão
     } else {
-        Serial.println("Falha ao conectar-se ao WiFi.");
+        Serial.println("Falha ao conectar-se ao WiFi."); // Mensagem de falha na conexão
     }
 }
 
 bool tryConnectToWiFi(const char* ssid, const char* password)
 {
     Serial.print("Conectando à rede WiFi: ");
-    Serial.println(ssid);
+    Serial.println(ssid); // Imprime o nome da rede WiFi à qual está tentando se conectar
 
     unsigned long startAttemptTime = millis(); // Armazena o tempo de início da tentativa de conexão
     WiFi.begin(ssid, password);                // Inicia a conexão WiFi com o SSID e senha fornecidos
@@ -78,22 +78,22 @@ bool tryConnectToWiFi(const char* ssid, const char* password)
     if (WiFi.status() == WL_CONNECTED)
     {                                                         // Se a conexão for bem-sucedida
         Serial.println();                                     // Imprime uma linha em branco no monitor serial
-        Serial.print("Conectado com sucesso! Endereço IP: "); // Imprime a mensagem de sucesso
+        Serial.print("Conectado com sucesso! Endereço IP: "); // Mensagem de sucesso na conexão
         Serial.println(WiFi.localIP());                       // Imprime o endereço IP do ESP32
-        Serial.print("Tentativas de conexão: ");              // Imprime o número de tentativas
+        Serial.print("Tentativas de conexão: ");              // Mensagem com o número de tentativas
         Serial.println(attempts);                             // Imprime o número de tentativas
-        Serial.print("Tempo total de conexão: ");             // Imprime o tempo total de conexão
-        Serial.print(connectionTime);                         // Imprime o tempo total de conexão
+        Serial.print("Tempo total de conexão: ");             // Mensagem com o tempo total de conexão
+        Serial.print(connectionTime);                         // Imprime o tempo total de conexão em segundos
         Serial.println(" segundos");                          // Unidade do tempo
         return true;                                          // Retorna verdadeiro para indicar sucesso na conexão
     }
     else
     {                                                   // Se a conexão falhar
         Serial.println();                               // Imprime uma linha em branco no monitor serial
-        Serial.println("Falha ao conectar-se ao WiFi"); // Imprime a mensagem de falha de conexão
-        Serial.print("Status: ");                       // Imprime o status da conexão
+        Serial.println("Falha ao conectar-se ao WiFi"); // Mensagem de falha na conexão
+        Serial.print("Status: ");                       // Mensagem com o status da conexão
         Serial.println(WiFi.status());                  // Imprime o status da conexão WiFi
-        Serial.print("Tentativas de conexão: ");        // Imprime o número de tentativas
+        Serial.print("Tentativas de conexão: ");        // Mensagem com o número de tentativas
         Serial.println(attempts);                       // Imprime o número de tentativas
         return false;                                   // Retorna falso para indicar falha na conexão
     }
@@ -101,14 +101,15 @@ bool tryConnectToWiFi(const char* ssid, const char* password)
 
 void setupServer()
 {
-    Serial.println("Configurando o servidor..."); // Mensagem de configuração do servidor
+    Serial.println("Configurando o servidor..."); // Mensagem indicando que o servidor está sendo configurado
 
     if (!SPIFFS.begin(true))
     {                                                                      // Se o sistema de arquivos SPIFFS não iniciar
-        Serial.println("Falha ao iniciar o sistema de arquivos SPIFFS"); // Mensagem de erro
+        Serial.println("Falha ao iniciar o sistema de arquivos SPIFFS"); // Mensagem de erro ao iniciar o SPIFFS
         return;                                                            // Sai da função
     }
 
+    // Configura as páginas e funcionalidades do servidor
     setupIndexPage(server);     // Configura a página index
     setupCreditsPage(server);   // Configura a página de créditos
     setupDashboardPage(server); // Configura a página dashboard
@@ -119,22 +120,23 @@ void setupServer()
     });
 
     server.begin();                      // Inicia o servidor
-    Serial.println("Servidor iniciado"); // Mensagem de sucesso
+    Serial.println("Servidor iniciado"); // Mensagem indicando que o servidor foi iniciado com sucesso
 }
 
 void handleLogin()
 {
-    String username = server.arg("username"); // Obtém o valor do campo username do formulário
-    String password = server.arg("password"); // Obtém o valor do campo password do formulário
+    // Obtém os valores dos campos 'username' e 'password' do formulário de login
+    String username = server.arg("username"); // Obtém o valor do campo username
+    String password = server.arg("password"); // Obtém o valor do campo password
 
     if (username == "admin" && password == "admin123")
     {                                                // Se as credenciais forem válidas
         server.sendHeader("Location", "/dashboard"); // Redireciona para a página dashboard
-        server.send(302, "text/plain", "");          // Envia a resposta de redirecionamento
+        server.send(302, "text/plain", "");          // Envia a resposta de redirecionamento HTTP 302
     }
     else
     {                                                                                            // Se as credenciais forem inválidas
         String html = "<html><body><h1>Login falhou. Credenciais inválidas.</h1></body></html>"; // Cria uma resposta HTML com a mensagem de erro
-        server.send(401, "text/html", html);                                                     // Envia a resposta de erro
+        server.send(401, "text/html", html);                                                     // Envia a resposta de erro HTTP 401
     }
 }

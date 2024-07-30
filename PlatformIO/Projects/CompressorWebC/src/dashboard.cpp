@@ -1,10 +1,12 @@
 #include "dashboard.h"
 #include <WebServer.h>
 
-extern bool compressorLigado;
+extern bool compressorLigado; // Declara uma variável externa para verificar o estado do compressor
 
+// Função para configurar a página do dashboard
 void setupDashboardPage(WebServer& server)
 {
+    // HTML da página do dashboard
     String html = R"(
         <!DOCTYPE html>
         <html lang="pt-br">
@@ -81,40 +83,46 @@ void setupDashboardPage(WebServer& server)
             <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
             <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
             <script>
+                // Código JavaScript para manipular o estado do botão e comunicação com o servidor
                 document.addEventListener('DOMContentLoaded', function() {
-                    var toggleButton = document.getElementById('toggleButton');
+                    var toggleButton = document.getElementById('toggleButton'); // Seleciona o botão de alternância
                     
                     function updateButtonState() {
+                        // Faz uma requisição para obter o estado do compressor
                         fetch('/compressor-state')
-                            .then(response => response.json())
+                            .then(response => response.json()) // Converte a resposta para JSON
                             .then(data => {
                                 var compressorLigado = data.compressorLigado;
                                 if (compressorLigado) {
+                                    // Atualiza o botão para mostrar "Desligar" se o compressor estiver ligado
                                     toggleButton.innerHTML = 'Desligar';
                                     toggleButton.classList.add('btn-desligar');
                                     toggleButton.classList.remove('btn-ligar');
                                 } else {
+                                    // Atualiza o botão para mostrar "Ligar" se o compressor estiver desligado
                                     toggleButton.innerHTML = 'Ligar';
                                     toggleButton.classList.add('btn-ligar');
                                     toggleButton.classList.remove('btn-desligar');
                                 }
                             })
-                            .catch(error => console.error('Erro ao obter estado inicial do compressor:', error));
+                            .catch(error => console.error('Erro ao obter estado inicial do compressor:', error)); // Tratamento de erros
                     }
 
                     updateButtonState(); // Atualiza o estado do botão na carga da página
 
+                    // Adiciona um listener para o clique no botão
                     toggleButton.addEventListener('click', function(event) {
-                        event.preventDefault();
-                        var action = toggleButton.innerHTML === 'Desligar' ? 'desligar' : 'ligar';
+                        event.preventDefault(); // Previne o comportamento padrão do link
+                        var action = toggleButton.innerHTML === 'Desligar' ? 'desligar' : 'ligar'; // Define a ação com base no texto do botão
 
+                        // Faz uma requisição para alternar o estado do compressor
                         fetch('/toggle?action=' + action)
-                            .then(response => response.text())
+                            .then(response => response.text()) // Converte a resposta para texto
                             .then(data => {
                                 console.log('Resposta do servidor:', data);
-                                updateButtonState();
+                                updateButtonState(); // Atualiza o estado do botão após a ação
                             })
-                            .catch(error => console.error('Erro ao enviar requisição:', error));
+                            .catch(error => console.error('Erro ao enviar requisição:', error)); // Tratamento de erros
                     });
 
                     // Verifica o estado do compressor a cada 5 segundos
@@ -125,28 +133,32 @@ void setupDashboardPage(WebServer& server)
         </html>
     )";
 
+    // Configura o servidor para responder à requisição da página do dashboard
     server.on("/dashboard", HTTP_GET, [html, &server]() mutable {
-        server.send(200, "text/html", html);
+        server.send(200, "text/html", html); // Envia a página HTML como resposta
     });
 
+    // Configura o servidor para responder à requisição do estado do compressor
     server.on("/compressor-state", HTTP_GET, [&server]() {
         String stateJson = "{\"compressorLigado\":" + String(compressorLigado) + "}";
-        server.send(200, "application/json", stateJson);
+        server.send(200, "application/json", stateJson); // Envia o estado do compressor em formato JSON
     });
 }
 
+// Função para configurar a manipulação das ações de ligar/desligar o compressor
 void handleToggleAction(WebServer& server)
 {
+    // Configura o servidor para responder à requisição de alternar o estado do compressor
     server.on("/toggle", HTTP_GET, [&server]() {
-        String action = server.arg("action");
+        String action = server.arg("action"); // Obtém a ação da requisição
         if (action == "ligar") {
-            compressorLigado = true;
-            server.send(200, "text/plain", "Compressor ligado!");
+            compressorLigado = true; // Liga o compressor
+            server.send(200, "text/plain", "Compressor ligado!"); // Responde com mensagem de sucesso
         } else if (action == "desligar") {
-            compressorLigado = false;
-            server.send(200, "text/plain", "Compressor desligado!");
+            compressorLigado = false; // Desliga o compressor
+            server.send(200, "text/plain", "Compressor desligado!"); // Responde com mensagem de sucesso
         } else {
-            server.send(400, "text/plain", "Ação inválida!");
+            server.send(400, "text/plain", "Ação inválida!"); // Responde com erro se a ação for inválida
         }
     });
 }

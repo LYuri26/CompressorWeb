@@ -1,10 +1,11 @@
-#ifndef DASHBOARD_H  // Se não definido DASHBOARD_H
-#define DASHBOARD_H  // Define DASHBOARD_H
+#ifndef DASHBOARD_H  // Se o identificador DASHBOARD_H não está definido, o compilador inclui o código a seguir
+#define DASHBOARD_H  // Define o identificador DASHBOARD_H para evitar inclusão múltipla deste bloco de código
 
-#include <WebServer.h>  // Inclui a biblioteca ESP8266WebServer para manipulação de servidor web
+#include <WebServer.h>  // Inclui a biblioteca WebServer que fornece funcionalidades para criar e gerenciar um servidor web no ESP32
 
-// Declara a função setupDashboardPage, que configura a página do dashboard
-// A função recebe uma referência a um objeto ESP8266WebServer como parâmetro
+// Declaração da função setupDashboardPage
+// Esta função é responsável por configurar a página do dashboard no servidor web
+// Recebe uma referência ao objeto WebServer como parâmetro, que é usado para definir rotas e handlers
 void setupDashboardPage(WebServer& server);
 
-#endif  // Finaliza a diretiva de pré-processador #ifndef/#define
+#endif  // Marca o fim da diretiva de pré-processador #ifndef/#define
