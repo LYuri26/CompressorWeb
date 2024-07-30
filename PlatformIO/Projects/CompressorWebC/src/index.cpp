@@ -1,6 +1,7 @@
 #include "index.h"  // Inclui o cabeçalho para a configuração da página inicial
+#include <WebServer.h>  // Inclui a biblioteca para criar um servidor web no ESP32
 
-void setupIndexPage(ESP8266WebServer& server) {
+void setupIndexPage(WebServer& server) {
     // Variável local para armazenar o HTML da página inicial
     String html = R"(
         <!DOCTYPE html>

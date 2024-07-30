@@ -103,7 +103,7 @@ void updateCompressorStatus()
     }
 }
 
-void setupLigaDesliga(ESP8266WebServer &server)
+void setupLigaDesliga(WebServer &server)
 {
     // Define a rota "/toggle" para a requisição HTTP GET
     server.on("/toggle", HTTP_GET, [&server]()

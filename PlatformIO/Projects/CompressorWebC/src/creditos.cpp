@@ -1,6 +1,6 @@
 #include "creditos.h"  // Inclui o cabeçalho para a configuração da página de créditos
 
-void setupCreditsPage(ESP8266WebServer& server) {
+void setupCreditsPage(WebServer& server) {
     // Variável local para armazenar o HTML da página de créditos
     String creditsHtml = R"(
         <!DOCTYPE html>

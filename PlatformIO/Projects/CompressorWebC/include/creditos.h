@@ -1,8 +1,8 @@
 #ifndef CREDITOS_H
 #define CREDITOS_H
 
-#include <ESP8266WebServer.h>
+#include <WebServer.h>
 
-void setupCreditsPage(ESP8266WebServer& server);
+void setupCreditsPage(WebServer& server);
 
 #endif // CREDITOS_H

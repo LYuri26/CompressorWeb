@@ -1,17 +1,17 @@
-#include <ESP8266WiFi.h>      // Inclui a biblioteca para WiFi no ESP8266
-#include <ESP8266WebServer.h> // Inclui a biblioteca para criar um servidor web no ESP8266
-#include <LittleFS.h>         // Inclui a biblioteca para o sistema de arquivos LittleFS
-#include "index.h"            // Inclui o cabeçalho para a página index
-#include "dashboard.h"        // Inclui o cabeçalho para a página dashboard
-#include "ligadesliga.h"      // Inclui o cabeçalho para a funcionalidade de ligar/desligar
-#include "creditos.h"         // Inclui o cabeçalho para a página de créditos
+#include <WiFi.h>           // Inclui a biblioteca para WiFi no ESP32
+#include <WebServer.h>      // Inclui a biblioteca para criar um servidor web no ESP32
+#include <SPIFFS.h>         // Inclui a biblioteca para o sistema de arquivos SPIFFS
+#include "index.h"          // Inclui o cabeçalho para a página index
+#include "dashboard.h"      // Inclui o cabeçalho para a página dashboard
+#include "ligadesliga.h"    // Inclui o cabeçalho para a funcionalidade de ligar/desligar
+#include "creditos.h"       // Inclui o cabeçalho para a página de créditos
 
 // Definições das credenciais da rede WiFi
 const char *ssid = "LenonClaro_2.4G";
 const char *password = "13539406670";
 
 // Cria um objeto servidor web na porta 80
-ESP8266WebServer server(80);
+WebServer server(80);
 
 // Declarações antecipadas das funções
 void connectToWiFi(); // Função para conectar ao WiFi
@@ -57,7 +57,7 @@ void connectToWiFi()
     {                                                         // Se a conexão for bem-sucedida
         Serial.println();                                     // Imprime uma linha em branco no monitor serial
         Serial.print("Conectado com sucesso! Endereço IP: "); // Imprime a mensagem de sucesso
-        Serial.println(WiFi.localIP());                       // Imprime o endereço IP do ESP8266
+        Serial.println(WiFi.localIP());                       // Imprime o endereço IP do ESP32
         Serial.print("Tentativas de conexão: ");              // Imprime o número de tentativas
         Serial.println(attempts);                             // Imprime o número de tentativas
         Serial.print("Tempo total de conexão: ");             // Imprime o tempo total de conexão
@@ -79,9 +79,9 @@ void setupServer()
 {
     Serial.println("Configurando o servidor..."); // Mensagem de configuração do servidor
 
-    if (!LittleFS.begin())
-    {                                                                      // Se o sistema de arquivos LittleFS não iniciar
-        Serial.println("Falha ao iniciar o sistema de arquivos LittleFS"); // Mensagem de erro
+    if (!SPIFFS.begin(true))
+    {                                                                      // Se o sistema de arquivos SPIFFS não iniciar
+        Serial.println("Falha ao iniciar o sistema de arquivos SPIFFS"); // Mensagem de erro
         return;                                                            // Sai da função
     }
 
