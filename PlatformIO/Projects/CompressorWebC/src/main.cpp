@@ -7,8 +7,8 @@
 #include "creditos.h"       // Inclui o cabeçalho para a página de créditos
 
 // Definições das credenciais das redes WiFi
-const char *ssid1 = "LenonClaro_2.4G"; // Nome da primeira rede WiFi
-const char *password1 = "13539406670"; // Senha da primeira rede WiFi
+const char *ssid1 = "CFPFR_WIFI"; // Nome da primeira rede WiFi 
+const char *password1 = "#CFP-Ur@107!"; // Senha da primeira rede WiFi 
 const char *ssid2 = "LenonClaro_2.4G"; // Nome da segunda rede WiFi (backup)
 const char *password2 = "13539406670"; // Senha da segunda rede WiFi (backup)
 

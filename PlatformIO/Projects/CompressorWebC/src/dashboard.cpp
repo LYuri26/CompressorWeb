@@ -1,5 +1,7 @@
-#include "dashboard.h"
-#include <WebServer.h>
+#include "dashboard.h" // Inclui o cabeçalho para a configuração do dashboard
+#include <WebServer.h> // Biblioteca para criar um servidor web
+#include <FS.h>       // Biblioteca para manipulação do sistema de arquivos
+#include <SPIFFS.h>   // Biblioteca para usar o sistema de arquivos SPIFFS
 
 extern bool compressorLigado; // Declara uma variável externa para verificar o estado do compressor
 
@@ -17,74 +19,74 @@ void setupDashboardPage(WebServer& server)
             <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
             <style>
                 body {
-                    font-family: Arial, sans-serif;
-                    background-color: #f8f9fa;
-                    height: 100%;
-                    margin: 0;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    flex-direction: column;
+                    font-family: Arial, sans-serif; /* Define a fonte do texto */
+                    background-color: #f8f9fa; /* Define a cor de fundo da página */
+                    height: 100%; /* Define a altura da página como 100% da tela */
+                    margin: 0; /* Remove a margem padrão do corpo */
+                    display: flex; /* Define a exibição do corpo como flexível */
+                    justify-content: center; /* Centraliza o conteúdo horizontalmente */
+                    align-items: center; /* Centraliza o conteúdo verticalmente */
+                    flex-direction: column; /* Organiza o conteúdo na vertical */
                 }
 
                 .dashboard-container {
-                    background-color: #ffffff;
-                    padding: 20px;
-                    border-radius: 5px;
-                    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-                    width: 100%;
-                    max-width: 600px;
-                    text-align: center;
-                    margin-top: 20px;
+                    background-color: #ffffff; /* Define a cor de fundo da caixa do dashboard */
+                    padding: 20px; /* Adiciona preenchimento interno de 20 pixels */
+                    border-radius: 5px; /* Adiciona bordas arredondadas */
+                    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Adiciona sombra ao redor da caixa */
+                    width: 100%; /* Define a largura da caixa como 100% do seu contêiner pai */
+                    max-width: 600px; /* Define a largura máxima da caixa como 600 pixels */
+                    text-align: center; /* Alinha o texto ao centro */
+                    margin-top: 20px; /* Adiciona uma margem superior de 20 pixels */
                 }
 
                 .dashboard-title {
-                    font-size: 28px;
-                    margin-bottom: 20px;
-                    color: #007bff;
+                    font-size: 28px; /* Define o tamanho da fonte do título */
+                    margin-bottom: 20px; /* Adiciona uma margem inferior de 20 pixels */
+                    color: #007bff; /* Define a cor do texto do título */
                 }
 
                 .btn-ligar {
-                    background-color: #28a745;
-                    color: white;
+                    background-color: #28a745; /* Define a cor de fundo do botão de ligar */
+                    color: white; /* Define a cor do texto do botão */
                 }
 
                 .btn-desligar {
-                    background-color: #dc3545;
-                    color: white;
+                    background-color: #dc3545; /* Define a cor de fundo do botão de desligar */
+                    color: white; /* Define a cor do texto do botão */
                 }
 
                 .footer {
-                    width: 100%;
-                    background-color: #007bff;
-                    color: white;
-                    text-align: center;
-                    padding: 10px 0;
-                    position: fixed;
-                    bottom: 0;
-                    font-size: 14px;
+                    width: 100%; /* Define a largura do rodapé como 100% do contêiner pai */
+                    background-color: #007bff; /* Define a cor de fundo do rodapé */
+                    color: white; /* Define a cor do texto do rodapé */
+                    text-align: center; /* Alinha o texto ao centro */
+                    padding: 10px 0; /* Adiciona preenchimento vertical de 10 pixels */
+                    position: fixed; /* Define a posição do rodapé como fixa */
+                    bottom: 0; /* Posiciona o rodapé na parte inferior da página */
+                    font-size: 14px; /* Define o tamanho da fonte do texto do rodapé */
                 }
             </style>
         </head>
         <body>
             <div class="dashboard-container">
-                <h2 class="dashboard-title">Bem-vindo ao Dashboard</h2>
-                <a href="#" class="btn btn-block mb-2" id="toggleButton">Desligar</a>
-                <a href="/humidity" class="btn btn-secondary btn-block mb-2">Umidade</a>
-                <a href="/oil-level" class="btn btn-secondary btn-block mb-2">Nível de Óleo</a>
-                <a href="/" class="btn btn-danger btn-block mt-3">Logout</a>
+                <h2 class="dashboard-title">Bem-vindo ao Dashboard</h2> <!-- Título da página -->
+                <a href="#" class="btn btn-block mb-2" id="toggleButton">Desligar</a> <!-- Botão para ligar/desligar o compressor -->
+                <a href="/humidity" class="btn btn-secondary btn-block mb-2">Umidade</a> <!-- Botão para visualizar a umidade -->
+                <a href="/oil-level" class="btn btn-secondary btn-block mb-2">Nível de Óleo</a> <!-- Botão para visualizar o nível de óleo -->
+                <a href="/" class="btn btn-danger btn-block mt-3">Logout</a> <!-- Botão para logout -->
             </div>
 
             <div class="footer">
-                <p>Aplicação desenvolvida pela Turma de Informática Para Internet Trilhas de Futuro 2024</p>
-                <p>Instrutor: Lenon Yuri</p>
+                <p>Aplicação desenvolvida pela Turma de Informática Para Internet Trilhas de Futuro 2024</p> <!-- Texto informativo no rodapé -->
+                <p>Instrutor: Lenon Yuri</p> <!-- Nome do instrutor no rodapé -->
             </div>
 
-            <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-            <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+            <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script> <!-- Inclui a biblioteca jQuery -->
+            <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script> <!-- Inclui o JavaScript do Bootstrap -->
             <script>
                 // Código JavaScript para manipular o estado do botão e comunicação com o servidor
-                document.addEventListener('DOMContentLoaded', function() {
+                document.addEventListener('DOMContentLoaded', function() { // Evento que ocorre quando o DOM é totalmente carregado
                     var toggleButton = document.getElementById('toggleButton'); // Seleciona o botão de alternância
                     
                     function updateButtonState() {
@@ -92,17 +94,17 @@ void setupDashboardPage(WebServer& server)
                         fetch('/compressor-state')
                             .then(response => response.json()) // Converte a resposta para JSON
                             .then(data => {
-                                var compressorLigado = data.compressorLigado;
+                                var compressorLigado = data.compressorLigado; // Obtém o estado do compressor a partir dos dados JSON
                                 if (compressorLigado) {
                                     // Atualiza o botão para mostrar "Desligar" se o compressor estiver ligado
                                     toggleButton.innerHTML = 'Desligar';
-                                    toggleButton.classList.add('btn-desligar');
-                                    toggleButton.classList.remove('btn-ligar');
+                                    toggleButton.classList.add('btn-desligar'); // Adiciona a classe de botão de desligar
+                                    toggleButton.classList.remove('btn-ligar'); // Remove a classe de botão de ligar
                                 } else {
                                     // Atualiza o botão para mostrar "Ligar" se o compressor estiver desligado
                                     toggleButton.innerHTML = 'Ligar';
-                                    toggleButton.classList.add('btn-ligar');
-                                    toggleButton.classList.remove('btn-desligar');
+                                    toggleButton.classList.add('btn-ligar'); // Adiciona a classe de botão de ligar
+                                    toggleButton.classList.remove('btn-desligar'); // Remove a classe de botão de desligar
                                 }
                             })
                             .catch(error => console.error('Erro ao obter estado inicial do compressor:', error)); // Tratamento de erros
@@ -119,14 +121,14 @@ void setupDashboardPage(WebServer& server)
                         fetch('/toggle?action=' + action)
                             .then(response => response.text()) // Converte a resposta para texto
                             .then(data => {
-                                console.log('Resposta do servidor:', data);
+                                console.log('Resposta do servidor:', data); // Exibe a resposta do servidor no console
                                 updateButtonState(); // Atualiza o estado do botão após a ação
                             })
                             .catch(error => console.error('Erro ao enviar requisição:', error)); // Tratamento de erros
                     });
 
                     // Verifica o estado do compressor a cada 5 segundos
-                    setInterval(updateButtonState, 5000);
+                    setInterval(updateButtonState, 5000); // Chama a função updateButtonState a cada 5 segundos
                 });
             </script>
         </body>
@@ -140,7 +142,7 @@ void setupDashboardPage(WebServer& server)
 
     // Configura o servidor para responder à requisição do estado do compressor
     server.on("/compressor-state", HTTP_GET, [&server]() {
-        String stateJson = "{\"compressorLigado\":" + String(compressorLigado) + "}";
+        String stateJson = "{\"compressorLigado\":" + String(compressorLigado) + "}"; // Cria um JSON com o estado do compressor
         server.send(200, "application/json", stateJson); // Envia o estado do compressor em formato JSON
     });
 }
