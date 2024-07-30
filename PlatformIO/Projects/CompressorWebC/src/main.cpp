@@ -6,15 +6,18 @@
 #include "ligadesliga.h"    // Inclui o cabeçalho para a funcionalidade de ligar/desligar
 #include "creditos.h"       // Inclui o cabeçalho para a página de créditos
 
-// Definições das credenciais da rede WiFi
-const char *ssid = "LenonClaro_2.4G";
-const char *password = "13539406670";
+// Definições das credenciais das redes WiFi
+const char *ssid1 = "LenonClaro_2.4G";
+const char *password1 = "13539406670";
+const char *ssid2 = "LenonClaro_2.4G";
+const char *password2 = "13539406670";
 
 // Cria um objeto servidor web na porta 80
 WebServer server(80);
 
-// Declarações antecipadas das funções
+// Declarações das funções
 void connectToWiFi(); // Função para conectar ao WiFi
+bool tryConnectToWiFi(const char* ssid, const char* password); // Declaração da função de tentativa de conexão
 void setupServer();   // Função para configurar o servidor
 void handleLogin();   // Função para lidar com o login
 
@@ -36,8 +39,27 @@ void loop()
 void connectToWiFi()
 {
     Serial.println("Tentando conectar ao WiFi..."); // Mensagem de tentativa de conexão
-    Serial.print("Conectando à rede WiFi: ");       // Mensagem de conexão ao WiFi
-    Serial.println(ssid);                           // Imprime o SSID da rede WiFi
+
+    // Tenta se conectar à primeira rede WiFi
+    bool connected = tryConnectToWiFi(ssid1, password1);
+    
+    if (!connected) {
+        // Se a conexão à primeira rede falhar, tenta se conectar à segunda rede WiFi
+        Serial.println("Tentando conectar à rede WiFi de backup...");
+        connected = tryConnectToWiFi(ssid2, password2);
+    }
+
+    if (connected) {
+        Serial.println("Conectado com sucesso!");
+    } else {
+        Serial.println("Falha ao conectar-se ao WiFi.");
+    }
+}
+
+bool tryConnectToWiFi(const char* ssid, const char* password)
+{
+    Serial.print("Conectando à rede WiFi: ");
+    Serial.println(ssid);
 
     unsigned long startAttemptTime = millis(); // Armazena o tempo de início da tentativa de conexão
     WiFi.begin(ssid, password);                // Inicia a conexão WiFi com o SSID e senha fornecidos
@@ -63,6 +85,7 @@ void connectToWiFi()
         Serial.print("Tempo total de conexão: ");             // Imprime o tempo total de conexão
         Serial.print(connectionTime);                         // Imprime o tempo total de conexão
         Serial.println(" segundos");                          // Unidade do tempo
+        return true;                                          // Retorna verdadeiro para indicar sucesso na conexão
     }
     else
     {                                                   // Se a conexão falhar
@@ -72,6 +95,7 @@ void connectToWiFi()
         Serial.println(WiFi.status());                  // Imprime o status da conexão WiFi
         Serial.print("Tentativas de conexão: ");        // Imprime o número de tentativas
         Serial.println(attempts);                       // Imprime o número de tentativas
+        return false;                                   // Retorna falso para indicar falha na conexão
     }
 }
 
