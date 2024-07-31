@@ -14,14 +14,23 @@ const char *password1 = "#CFP-Ur@107!"; // Senha da primeira rede WiFi
 const char *ssid2 = "LenonClaro_2.4G";  // Nome da segunda rede WiFi (backup)
 const char *password2 = "13539406670";  // Senha da segunda rede WiFi (backup)
 
+// Definições do IP fixo
+IPAddress local_IP(10, 107, 0, 47);
+IPAddress gateway(10, 107, 0, 1);
+IPAddress subnet(255, 255, 255, 0);
+
 // Cria um objeto servidor web na porta 80
 WebServer server(80); // Instancia um objeto do servidor web que escuta na porta 80
 
+// Variável global para rastrear o estado de login
+bool isLoggedIn = false;
+
 // Declarações das funções
 void connectToWiFi();                                          // Função para conectar ao WiFi
-bool tryConnectToWiFi(const char *ssid, const char *password); // Declaração da função de tentativa de conexão
+bool tryConnectToWiFi(const char *ssid, const char *password, bool useFixedIP = false); // Declaração da função de tentativa de conexão
 void setupServer();                                            // Função para configurar o servidor
 void handleLogin();                                            // Função para lidar com o login
+void handleDashboard();                                        // Função para lidar com o dashboard
 
 void setup()
 {
@@ -42,8 +51,15 @@ void connectToWiFi()
 {
     Serial.println("Tentando conectar ao WiFi..."); // Mensagem indicando que a tentativa de conexão está começando
 
-    // Tenta se conectar à primeira rede WiFi
-    bool connected = tryConnectToWiFi(ssid1, password1);
+    // Tenta se conectar à primeira rede WiFi com IP fixo
+    bool connected = tryConnectToWiFi(ssid1, password1, true);
+
+    if (!connected)
+    {
+        // Se a conexão à primeira rede com IP fixo falhar, tenta se conectar à primeira rede sem IP fixo
+        Serial.println("Tentando conectar à rede WiFi sem IP fixo...");
+        connected = tryConnectToWiFi(ssid1, password1);
+    }
 
     if (!connected)
     {
@@ -62,10 +78,20 @@ void connectToWiFi()
     }
 }
 
-bool tryConnectToWiFi(const char *ssid, const char *password)
+bool tryConnectToWiFi(const char *ssid, const char *password, bool useFixedIP)
 {
     Serial.print("Conectando à rede WiFi: ");
     Serial.println(ssid); // Imprime o nome da rede WiFi à qual está tentando se conectar
+
+    if (useFixedIP)
+    {
+        // Configura o IP fixo
+        if (!WiFi.config(local_IP, gateway, subnet))
+        {
+            Serial.println("Falha ao configurar IP fixo.");
+            return false;
+        }
+    }
 
     unsigned long startAttemptTime = millis(); // Armazena o tempo de início da tentativa de conexão
     WiFi.begin(ssid, password);                // Inicia a conexão WiFi com o SSID e senha fornecidos
@@ -128,6 +154,10 @@ void setupServer()
         handleLogin();                    // Chama a função para lidar com o login
     });
 
+    server.on("/dashboard", HTTP_GET, []() { // Define a rota para a requisição GET do dashboard
+        handleDashboard();                  // Chama a função para lidar com o dashboard
+    });
+
     server.begin();                      // Inicia o servidor
     Serial.println("Servidor iniciado"); // Mensagem indicando que o servidor foi iniciado com sucesso
 }
@@ -139,13 +169,36 @@ void handleLogin()
     String password = server.arg("password"); // Obtém o valor do campo password
 
     if (username == "admin" && password == "admin123")
-    {                                                // Se as credenciais forem válidas
-        server.sendHeader("Location", "/dashboard"); // Redireciona para a página dashboard
-        server.send(302, "text/plain", "");          // Envia a resposta de redirecionamento HTTP 302
+    { // Se as credenciais forem válidas
+        if (!isLoggedIn)
+        {                                                // Se ninguém estiver logado
+            isLoggedIn = true;                           // Marca como logado
+            server.sendHeader("Location", "/dashboard"); // Redireciona para a página dashboard
+            server.send(302, "text/plain", "");          // Envia a resposta de redirecionamento HTTP 302
+        }
+        else
+        { // Se alguém já estiver logado
+            String html = "<html><body><h1>Já existe um usuário logado.</h1></body></html>"; // Cria uma resposta HTML com a mensagem de erro
+            server.send(401, "text/html", html);                                             // Envia a resposta de erro HTTP 401
+        }
     }
     else
     {                                                                                            // Se as credenciais forem inválidas
         String html = "<html><body><h1>Login falhou. Credenciais inválidas.</h1></body></html>"; // Cria uma resposta HTML com a mensagem de erro
         server.send(401, "text/html", html);                                                     // Envia a resposta de erro HTTP 401
+    }
+}
+
+void handleDashboard()
+{
+    if (isLoggedIn)
+    { // Se o usuário estiver logado
+        // Envia o conteúdo do dashboard
+        server.send(200, "text/html", "<html><body><h1>Bem-vindo ao Dashboard</h1></body></html>");
+    }
+    else
+    { // Se o usuário não estiver logado
+        server.sendHeader("Location", "/"); // Redireciona para a página inicial
+        server.send(302, "text/plain", ""); // Envia a resposta de redirecionamento HTTP 302
     }
 }
