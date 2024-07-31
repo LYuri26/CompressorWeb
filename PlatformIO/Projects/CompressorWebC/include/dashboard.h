@@ -8,5 +8,6 @@
 // Recebe uma referência ao objeto WebServer como parâmetro, que é usado para definir rotas e handlers
 void setupDashboardPage(WebServer& server);
 void handleToggleAction(WebServer& server);
+String getDashboardPage();
 
 #endif  // Marca o fim da diretiva de pré-processador #ifndef/#define

@@ -7,7 +7,7 @@
 #include "creditos.h"
 #include "umidade.h"
 #include "oleo.h"
-#include "logado.h" // Inclua o cabeçalho correspondente
+#include "logado.h"
 
 // Definições das credenciais das redes WiFi
 const char *ssid1 = "CFPFR_WIFI";
@@ -21,7 +21,7 @@ IPAddress gateway(10, 107, 0, 1);
 IPAddress subnet(255, 255, 255, 0);
 
 // Cria um objeto servidor web na porta 80
-WebServer server(80); // Instancia um objeto do servidor web que escuta na porta 80
+WebServer server(80); 
 
 // Variável global para rastrear o estado de login
 bool isLoggedIn = false;
@@ -30,11 +30,12 @@ bool isLoggedIn = false;
 void connectToWiFi();
 bool tryConnectToWiFi(const char *ssid, const char *password, bool useFixedIP = false);
 void setupServer();
-void handleLogin(); // Declaração da função de login
+void handleLogin();         
+void checkAuthentication(); 
 
 // Declaração das funções externas
-void handleInvalidCredentials();  // Função externa para credenciais inválidas
-void handleUserAlreadyLoggedIn(); // Função externa para usuário já logado
+void handleInvalidCredentials();  
+void handleUserAlreadyLoggedIn(); 
 
 void setup()
 {
@@ -48,7 +49,7 @@ void setup()
 void loop()
 {
     server.handleClient();
-    updateCompressorStatus(); // Atualiza o status do compressor a cada loop
+    updateCompressorStatus(); 
 }
 
 void connectToWiFi()
@@ -153,13 +154,10 @@ void setupServer()
     server.on("/login", HTTP_POST, []()
               { handleLogin(); });
 
-    server.on("/login", HTTP_POST, []()
-              { handleLogin(); });
-
     // Adiciona a rota para logout
     server.on("/logout", HTTP_GET, []()
               {
-        isLoggedIn = false; // Limpa a variável de login
+        isLoggedIn = false; 
         server.sendHeader("Location", "/");
         server.send(302, "text/plain", ""); });
 
@@ -182,11 +180,20 @@ void handleLogin()
         }
         else
         {
-            handleUserAlreadyLoggedIn(); // Chama a função para a página de usuário já logado
+            handleUserAlreadyLoggedIn(); 
         }
     }
     else
     {
-        handleInvalidCredentials(); // Chama a função para a página de credenciais inválidas
+        handleInvalidCredentials(); 
+    }
+}
+
+void checkAuthentication()
+{
+    if (!isLoggedIn)
+    {
+        server.sendHeader("Location", "/");
+        server.send(302, "text/plain", ""); 
     }
 }
