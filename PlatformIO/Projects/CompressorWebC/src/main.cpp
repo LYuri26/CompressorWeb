@@ -1,25 +1,27 @@
-#include <WiFi.h>           // Inclui a biblioteca para WiFi no ESP32
-#include <WebServer.h>      // Inclui a biblioteca para criar um servidor web no ESP32
-#include <SPIFFS.h>         // Inclui a biblioteca para o sistema de arquivos SPIFFS
-#include "index.h"          // Inclui o cabeçalho para a página index
-#include "dashboard.h"      // Inclui o cabeçalho para a página dashboard
-#include "ligadesliga.h"    // Inclui o cabeçalho para a funcionalidade de ligar/desligar
-#include "creditos.h"       // Inclui o cabeçalho para a página de créditos
+#include <WiFi.h>        // Inclui a biblioteca para WiFi no ESP32
+#include <WebServer.h>   // Inclui a biblioteca para criar um servidor web no ESP32
+#include <SPIFFS.h>      // Inclui a biblioteca para o sistema de arquivos SPIFFS
+#include "index.h"       // Inclui o cabeçalho para a página index
+#include "dashboard.h"   // Inclui o cabeçalho para a página dashboard
+#include "ligadesliga.h" // Inclui o cabeçalho para a funcionalidade de ligar/desligar
+#include "creditos.h"    // Inclui o cabeçalho para a página de créditos
+#include "umidade.h"
+#include "oleo.h"
 
 // Definições das credenciais das redes WiFi
-const char *ssid1 = "CFPFR_WIFI"; // Nome da primeira rede WiFi 
-const char *password1 = "#CFP-Ur@107!"; // Senha da primeira rede WiFi 
-const char *ssid2 = "LenonClaro_2.4G"; // Nome da segunda rede WiFi (backup)
-const char *password2 = "13539406670"; // Senha da segunda rede WiFi (backup)
+const char *ssid1 = "CFPFR_WIFI";       // Nome da primeira rede WiFi
+const char *password1 = "#CFP-Ur@107!"; // Senha da primeira rede WiFi
+const char *ssid2 = "LenonClaro_2.4G";  // Nome da segunda rede WiFi (backup)
+const char *password2 = "13539406670";  // Senha da segunda rede WiFi (backup)
 
 // Cria um objeto servidor web na porta 80
 WebServer server(80); // Instancia um objeto do servidor web que escuta na porta 80
 
 // Declarações das funções
-void connectToWiFi(); // Função para conectar ao WiFi
-bool tryConnectToWiFi(const char* ssid, const char* password); // Declaração da função de tentativa de conexão
-void setupServer();   // Função para configurar o servidor
-void handleLogin();   // Função para lidar com o login
+void connectToWiFi();                                          // Função para conectar ao WiFi
+bool tryConnectToWiFi(const char *ssid, const char *password); // Declaração da função de tentativa de conexão
+void setupServer();                                            // Função para configurar o servidor
+void handleLogin();                                            // Função para lidar com o login
 
 void setup()
 {
@@ -42,21 +44,25 @@ void connectToWiFi()
 
     // Tenta se conectar à primeira rede WiFi
     bool connected = tryConnectToWiFi(ssid1, password1);
-    
-    if (!connected) {
+
+    if (!connected)
+    {
         // Se a conexão à primeira rede falhar, tenta se conectar à segunda rede WiFi
         Serial.println("Tentando conectar à rede WiFi de backup...");
         connected = tryConnectToWiFi(ssid2, password2);
     }
 
-    if (connected) {
+    if (connected)
+    {
         Serial.println("Conectado com sucesso!"); // Mensagem de sucesso na conexão
-    } else {
+    }
+    else
+    {
         Serial.println("Falha ao conectar-se ao WiFi."); // Mensagem de falha na conexão
     }
 }
 
-bool tryConnectToWiFi(const char* ssid, const char* password)
+bool tryConnectToWiFi(const char *ssid, const char *password)
 {
     Serial.print("Conectando à rede WiFi: ");
     Serial.println(ssid); // Imprime o nome da rede WiFi à qual está tentando se conectar
@@ -104,16 +110,19 @@ void setupServer()
     Serial.println("Configurando o servidor..."); // Mensagem indicando que o servidor está sendo configurado
 
     if (!SPIFFS.begin(true))
-    {                                                                      // Se o sistema de arquivos SPIFFS não iniciar
+    {                                                                    // Se o sistema de arquivos SPIFFS não iniciar
         Serial.println("Falha ao iniciar o sistema de arquivos SPIFFS"); // Mensagem de erro ao iniciar o SPIFFS
-        return;                                                            // Sai da função
+        return;                                                          // Sai da função
     }
 
     // Configura as páginas e funcionalidades do servidor
     setupIndexPage(server);     // Configura a página index
-    setupCreditosPage(server);   // Configura a página de créditos
+    setupCreditosPage(server);  // Configura a página de créditos
     setupDashboardPage(server); // Configura a página dashboard
     setupLigaDesliga(server);   // Configura a funcionalidade de ligar/desligar
+    setupUmidadePage(server);   // Configura a página de umidade
+    setupOleoPage(server);      // Configura a página de nível de óleo
+    handleToggleAction(server); // Configura a manipulação de ações de ligar/desligar o compressor
 
     server.on("/login", HTTP_POST, []() { // Define a rota para a requisição POST de login
         handleLogin();                    // Chama a função para lidar com o login

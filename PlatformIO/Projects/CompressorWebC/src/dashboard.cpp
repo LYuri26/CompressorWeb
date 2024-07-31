@@ -72,8 +72,8 @@ void setupDashboardPage(WebServer& server)
             <div class="dashboard-container">
                 <h2 class="dashboard-title">Bem-vindo ao Dashboard</h2> <!-- Título da página -->
                 <a href="#" class="btn btn-block mb-2" id="toggleButton">Desligar</a> <!-- Botão para ligar/desligar o compressor -->
-                <a href="/humidity" class="btn btn-secondary btn-block mb-2">Umidade</a> <!-- Botão para visualizar a umidade -->
-                <a href="/oil-level" class="btn btn-secondary btn-block mb-2">Nível de Óleo</a> <!-- Botão para visualizar o nível de óleo -->
+                <a href="/umidade" class="btn btn-secondary btn-block mb-2">Umidade</a> <!-- Botão para visualizar a umidade -->
+                <a href="/oleo" class="btn btn-secondary btn-block mb-2">Nível de Óleo</a> <!-- Botão para visualizar o nível de óleo -->
                 <a href="/" class="btn btn-danger btn-block mt-3">Logout</a> <!-- Botão para logout -->
             </div>
 
