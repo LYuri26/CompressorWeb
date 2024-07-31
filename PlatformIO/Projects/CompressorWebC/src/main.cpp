@@ -1,18 +1,19 @@
-#include <WiFi.h>        // Inclui a biblioteca para WiFi no ESP32
-#include <WebServer.h>   // Inclui a biblioteca para criar um servidor web no ESP32
-#include <SPIFFS.h>      // Inclui a biblioteca para o sistema de arquivos SPIFFS
-#include "index.h"       // Inclui o cabeçalho para a página index
-#include "dashboard.h"   // Inclui o cabeçalho para a página dashboard
-#include "ligadesliga.h" // Inclui o cabeçalho para a funcionalidade de ligar/desligar
-#include "creditos.h"    // Inclui o cabeçalho para a página de créditos
+#include <WiFi.h>
+#include <WebServer.h>
+#include <SPIFFS.h>
+#include "index.h"
+#include "dashboard.h"
+#include "ligadesliga.h"
+#include "creditos.h"
 #include "umidade.h"
 #include "oleo.h"
+#include "logado.h" // Inclua o cabeçalho correspondente
 
 // Definições das credenciais das redes WiFi
-const char *ssid1 = "CFPFR_WIFI";       // Nome da primeira rede WiFi
-const char *password1 = "#CFP-Ur@107!"; // Senha da primeira rede WiFi
-const char *ssid2 = "LenonClaro_2.4G";  // Nome da segunda rede WiFi (backup)
-const char *password2 = "13539406670";  // Senha da segunda rede WiFi (backup)
+const char *ssid1 = "CFPFR_WIFI";
+const char *password1 = "#CFP-Ur@107!";
+const char *ssid2 = "LenonClaro_2.4G";
+const char *password2 = "13539406670";
 
 // Definições do IP fixo
 IPAddress local_IP(10, 107, 0, 47);
@@ -26,66 +27,65 @@ WebServer server(80); // Instancia um objeto do servidor web que escuta na porta
 bool isLoggedIn = false;
 
 // Declarações das funções
-void connectToWiFi();                                          // Função para conectar ao WiFi
-bool tryConnectToWiFi(const char *ssid, const char *password, bool useFixedIP = false); // Declaração da função de tentativa de conexão
-void setupServer();                                            // Função para configurar o servidor
-void handleLogin();                                            // Função para lidar com o login
-void handleDashboard();                                        // Função para lidar com o dashboard
+void connectToWiFi();
+bool tryConnectToWiFi(const char *ssid, const char *password, bool useFixedIP = false);
+void setupServer();
+void handleLogin(); // Declaração da função de login
+
+// Declaração das funções externas
+void handleInvalidCredentials(); // Função externa para credenciais inválidas
+void handleUserAlreadyLoggedIn(); // Função externa para usuário já logado
 
 void setup()
 {
-    Serial.begin(115200);                   // Inicia a comunicação serial a 115200 bps
-    Serial.println("Iniciando o setup..."); // Mensagem indicando o início do setup
+    Serial.begin(115200);
+    Serial.println("Iniciando o setup...");
 
-    connectToWiFi(); // Chama a função para conectar ao WiFi
-    setupServer();   // Chama a função para configurar o servidor
+    connectToWiFi();
+    setupServer();
 }
 
 void loop()
 {
-    server.handleClient();    // Lida com requisições dos clientes conectados ao servidor
+    server.handleClient();
     updateCompressorStatus(); // Atualiza o status do compressor a cada loop
 }
 
 void connectToWiFi()
 {
-    Serial.println("Tentando conectar ao WiFi..."); // Mensagem indicando que a tentativa de conexão está começando
+    Serial.println("Tentando conectar ao WiFi...");
 
-    // Tenta se conectar à primeira rede WiFi com IP fixo
     bool connected = tryConnectToWiFi(ssid1, password1, true);
 
     if (!connected)
     {
-        // Se a conexão à primeira rede com IP fixo falhar, tenta se conectar à primeira rede sem IP fixo
         Serial.println("Tentando conectar à rede WiFi sem IP fixo...");
         connected = tryConnectToWiFi(ssid1, password1);
     }
 
     if (!connected)
     {
-        // Se a conexão à primeira rede falhar, tenta se conectar à segunda rede WiFi
         Serial.println("Tentando conectar à rede WiFi de backup...");
         connected = tryConnectToWiFi(ssid2, password2);
     }
 
     if (connected)
     {
-        Serial.println("Conectado com sucesso!"); // Mensagem de sucesso na conexão
+        Serial.println("Conectado com sucesso!");
     }
     else
     {
-        Serial.println("Falha ao conectar-se ao WiFi."); // Mensagem de falha na conexão
+        Serial.println("Falha ao conectar-se ao WiFi.");
     }
 }
 
 bool tryConnectToWiFi(const char *ssid, const char *password, bool useFixedIP)
 {
     Serial.print("Conectando à rede WiFi: ");
-    Serial.println(ssid); // Imprime o nome da rede WiFi à qual está tentando se conectar
+    Serial.println(ssid);
 
     if (useFixedIP)
     {
-        // Configura o IP fixo
         if (!WiFi.config(local_IP, gateway, subnet))
         {
             Serial.println("Falha ao configurar IP fixo.");
@@ -93,112 +93,91 @@ bool tryConnectToWiFi(const char *ssid, const char *password, bool useFixedIP)
         }
     }
 
-    unsigned long startAttemptTime = millis(); // Armazena o tempo de início da tentativa de conexão
-    WiFi.begin(ssid, password);                // Inicia a conexão WiFi com o SSID e senha fornecidos
+    unsigned long startAttemptTime = millis();
+    WiFi.begin(ssid, password);
 
-    int attempts = 0; // Inicializa o contador de tentativas
+    int attempts = 0;
     while (WiFi.status() != WL_CONNECTED && attempts < 20)
-    {                      // Enquanto não conectar e tiver menos de 20 tentativas
-        delay(1000);       // Aguarda 1 segundo
-        Serial.print("."); // Imprime um ponto para indicar tentativa de conexão
-        attempts++;        // Incrementa o contador de tentativas
+    {
+        delay(1000);
+        Serial.print(".");
+        attempts++;
     }
 
-    unsigned long endAttemptTime = millis();                                   // Armazena o tempo de término da tentativa de conexão
-    unsigned long connectionTime = (endAttemptTime - startAttemptTime) / 1000; // Calcula o tempo total de conexão em segundos
+    unsigned long endAttemptTime = millis();
+    unsigned long connectionTime = (endAttemptTime - startAttemptTime) / 1000;
 
     if (WiFi.status() == WL_CONNECTED)
-    {                                                         // Se a conexão for bem-sucedida
-        Serial.println();                                     // Imprime uma linha em branco no monitor serial
-        Serial.print("Conectado com sucesso! Endereço IP: "); // Mensagem de sucesso na conexão
-        Serial.println(WiFi.localIP());                       // Imprime o endereço IP do ESP32
-        Serial.print("Tentativas de conexão: ");              // Mensagem com o número de tentativas
-        Serial.println(attempts);                             // Imprime o número de tentativas
-        Serial.print("Tempo total de conexão: ");             // Mensagem com o tempo total de conexão
-        Serial.print(connectionTime);                         // Imprime o tempo total de conexão em segundos
-        Serial.println(" segundos");                          // Unidade do tempo
-        return true;                                          // Retorna verdadeiro para indicar sucesso na conexão
+    {
+        Serial.println();
+        Serial.print("Conectado com sucesso! Endereço IP: ");
+        Serial.println(WiFi.localIP());
+        Serial.print("Tentativas de conexão: ");
+        Serial.println(attempts);
+        Serial.print("Tempo total de conexão: ");
+        Serial.print(connectionTime);
+        Serial.println(" segundos");
+        return true;
     }
     else
-    {                                                   // Se a conexão falhar
-        Serial.println();                               // Imprime uma linha em branco no monitor serial
-        Serial.println("Falha ao conectar-se ao WiFi"); // Mensagem de falha na conexão
-        Serial.print("Status: ");                       // Mensagem com o status da conexão
-        Serial.println(WiFi.status());                  // Imprime o status da conexão WiFi
-        Serial.print("Tentativas de conexão: ");        // Mensagem com o número de tentativas
-        Serial.println(attempts);                       // Imprime o número de tentativas
-        return false;                                   // Retorna falso para indicar falha na conexão
+    {
+        Serial.println();
+        Serial.println("Falha ao conectar-se ao WiFi");
+        Serial.print("Status: ");
+        Serial.println(WiFi.status());
+        Serial.print("Tentativas de conexão: ");
+        Serial.println(attempts);
+        return false;
     }
 }
 
 void setupServer()
 {
-    Serial.println("Configurando o servidor..."); // Mensagem indicando que o servidor está sendo configurado
+    Serial.println("Configurando o servidor...");
 
     if (!SPIFFS.begin(true))
-    {                                                                    // Se o sistema de arquivos SPIFFS não iniciar
-        Serial.println("Falha ao iniciar o sistema de arquivos SPIFFS"); // Mensagem de erro ao iniciar o SPIFFS
-        return;                                                          // Sai da função
+    {
+        Serial.println("Falha ao iniciar o sistema de arquivos SPIFFS");
+        return;
     }
 
     // Configura as páginas e funcionalidades do servidor
-    setupIndexPage(server);     // Configura a página index
-    setupCreditosPage(server);  // Configura a página de créditos
-    setupDashboardPage(server); // Configura a página dashboard
-    setupLigaDesliga(server);   // Configura a funcionalidade de ligar/desligar
-    setupUmidadePage(server);   // Configura a página de umidade
-    setupOleoPage(server);      // Configura a página de nível de óleo
-    handleToggleAction(server); // Configura a manipulação de ações de ligar/desligar o compressor
+    setupIndexPage(server);
+    setupCreditosPage(server);
+    setupDashboardPage(server);
+    setupLigaDesliga(server);
+    setupUmidadePage(server);
+    setupOleoPage(server);
+    handleToggleAction(server);
 
-    server.on("/login", HTTP_POST, []() { // Define a rota para a requisição POST de login
-        handleLogin();                    // Chama a função para lidar com o login
+    server.on("/login", HTTP_POST, []() {
+        handleLogin();
     });
 
-    server.on("/dashboard", HTTP_GET, []() { // Define a rota para a requisição GET do dashboard
-        handleDashboard();                  // Chama a função para lidar com o dashboard
-    });
-
-    server.begin();                      // Inicia o servidor
-    Serial.println("Servidor iniciado"); // Mensagem indicando que o servidor foi iniciado com sucesso
+    server.begin();
+    Serial.println("Servidor iniciado");
 }
 
 void handleLogin()
 {
-    // Obtém os valores dos campos 'username' e 'password' do formulário de login
-    String username = server.arg("username"); // Obtém o valor do campo username
-    String password = server.arg("password"); // Obtém o valor do campo password
+    String username = server.arg("username");
+    String password = server.arg("password");
 
     if (username == "admin" && password == "admin123")
-    { // Se as credenciais forem válidas
+    {
         if (!isLoggedIn)
-        {                                                // Se ninguém estiver logado
-            isLoggedIn = true;                           // Marca como logado
-            server.sendHeader("Location", "/dashboard"); // Redireciona para a página dashboard
-            server.send(302, "text/plain", "");          // Envia a resposta de redirecionamento HTTP 302
+        {
+            isLoggedIn = true;
+            server.sendHeader("Location", "/dashboard");
+            server.send(302, "text/plain", "");
         }
         else
-        { // Se alguém já estiver logado
-            String html = "<html><body><h1>Já existe um usuário logado.</h1></body></html>"; // Cria uma resposta HTML com a mensagem de erro
-            server.send(401, "text/html", html);                                             // Envia a resposta de erro HTTP 401
+        {
+            handleUserAlreadyLoggedIn(); // Chama a função para a página de usuário já logado
         }
     }
     else
-    {                                                                                            // Se as credenciais forem inválidas
-        String html = "<html><body><h1>Login falhou. Credenciais inválidas.</h1></body></html>"; // Cria uma resposta HTML com a mensagem de erro
-        server.send(401, "text/html", html);                                                     // Envia a resposta de erro HTTP 401
-    }
-}
-
-void handleDashboard()
-{
-    if (isLoggedIn)
-    { // Se o usuário estiver logado
-        // Envia o conteúdo do dashboard
-        server.send(200, "text/html", "<html><body><h1>Bem-vindo ao Dashboard</h1></body></html>");
-    }
-    else
-    { // Se o usuário não estiver logado
-        server.sendHeader("Location", "/"); // Redireciona para a página inicial
-        server.send(302, "text/plain", ""); // Envia a resposta de redirecionamento HTTP 302
+    {
+        handleInvalidCredentials(); // Chama a função para a página de credenciais inválidas
     }
 }
