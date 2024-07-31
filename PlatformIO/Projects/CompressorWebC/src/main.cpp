@@ -33,7 +33,7 @@ void setupServer();
 void handleLogin(); // Declaração da função de login
 
 // Declaração das funções externas
-void handleInvalidCredentials(); // Função externa para credenciais inválidas
+void handleInvalidCredentials();  // Função externa para credenciais inválidas
 void handleUserAlreadyLoggedIn(); // Função externa para usuário já logado
 
 void setup()
@@ -150,9 +150,18 @@ void setupServer()
     setupOleoPage(server);
     handleToggleAction(server);
 
-    server.on("/login", HTTP_POST, []() {
-        handleLogin();
-    });
+    server.on("/login", HTTP_POST, []()
+              { handleLogin(); });
+
+    server.on("/login", HTTP_POST, []()
+              { handleLogin(); });
+
+    // Adiciona a rota para logout
+    server.on("/logout", HTTP_GET, []()
+              {
+        isLoggedIn = false; // Limpa a variável de login
+        server.sendHeader("Location", "/");
+        server.send(302, "text/plain", ""); });
 
     server.begin();
     Serial.println("Servidor iniciado");
