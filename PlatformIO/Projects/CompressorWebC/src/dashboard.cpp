@@ -9,12 +9,11 @@ extern bool compressorLigado; // Declara uma variável externa para verificar o 
 extern bool userLoggedIn; // Declara a variável externa para verificar se o usuário está logado
 
 // Função para configurar a página do dashboard
-// Função para configurar a página do dashboard
 void setupDashboardPage(WebServer& server)
 {
     server.on("/dashboard", HTTP_GET, [&server]() {
         if (!userLoggedIn) {
-            server.sendHeader("Location", "/");
+            server.sendHeader("Location", "/acesso-invalido");
             server.send(302, "text/plain", "");
             return;
         }
@@ -141,7 +140,7 @@ void setupDashboardPage(WebServer& server)
 
         server.send(200, "text/html", html);
     });
-
+    
     server.on("/compressor-state", HTTP_GET, [&server]() {
         String stateJson = "{\"compressorLigado\":" + String(compressorLigado) + "}";
         server.send(200, "application/json", stateJson);
