@@ -1,5 +1,5 @@
-#ifndef WIFI_H
-#define WIFI_H
+#ifndef WIFICONEXAO_H
+#define WIFICONEXAO_H
 
 // Inclui a biblioteca WiFi.h, que fornece funções e classes para conectar e gerenciar conexões WiFi
 #include <WiFi.h>

@@ -7,7 +7,7 @@
 #include "creditos.h" // Inclui o cabeçalho que contém a configuração da página de créditos
 #include "umidade.h" // Inclui o cabeçalho que contém a configuração da página de umidade
 #include "oleo.h" // Inclui o cabeçalho que contém a configuração da página de nível de óleo
-#include "wifi.h" // Inclui o cabeçalho que contém a configuração e conexão WiFi
+#include "wificonexao.h" // Inclui o cabeçalho que contém a configuração e conexão WiFi
 #include "autenticador.h" // Inclui o cabeçalho que contém funções de autenticação
 
 // Cria um objeto servidor web na porta 80
