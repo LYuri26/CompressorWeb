@@ -1,4 +1,4 @@
-#include "ligadesliga.h" // Biblioteca para ligar e desligar
+#include "ligadesliga.h" // Biblioteca para funções de ligar e desligar o compressor
 #include <NTPClient.h>   // Biblioteca para obter o tempo da Internet usando o protocolo NTP
 #include <WiFiUdp.h>     // Biblioteca para comunicação UDP necessária para NTPClient
 #include <FS.h>          // Biblioteca para manipulação do sistema de arquivos
@@ -20,7 +20,7 @@ void initSPIFFS()
     if (!SPIFFS.begin(true))
     {                                                                                          // Inicia o SPIFFS, o parâmetro 'true' força a formatação se falhar
         Serial.println("Erro ao iniciar SPIFFS. O sistema de arquivos não pôde ser montado."); // Mensagem de erro se a inicialização falhar
-        return;
+        return;                                                                                // Retorna para encerrar a função em caso de erro
     }
     Serial.println("SPIFFS inicializado com sucesso."); // Mensagem de sucesso se a inicialização for bem-sucedida
 }
@@ -41,7 +41,7 @@ bool readCompressorState()
 
     bool estado = state.toInt() == 1;                                               // Retorna verdadeiro se o estado for 1 (ligado), caso contrário, falso
     Serial.printf("Estado lido do arquivo: %s\n", estado ? "Ligado" : "Desligado"); // Mensagem com o estado lido
-    return estado;
+    return estado;                                                                  // Retorna o estado do compressor
 }
 
 // Função para salvar o estado do compressor no arquivo
@@ -52,7 +52,7 @@ void saveCompressorState(bool state)
     if (!file)
     {
         Serial.println("Erro ao abrir o arquivo para escrita."); // Mensagem de erro se o arquivo não puder ser aberto para escrita
-        return;
+        return;                                                  // Retorna para encerrar a função em caso de erro
     }
 
     file.println(state ? "1" : "0");                           // Escreve 1 se o compressor estiver ligado, 0 se estiver desligado
@@ -67,7 +67,7 @@ bool isAfterClosingTime()
     int hour = timeClient.getHours();                                                                                             // Obtém a hora atual
     bool resultado = hour >= 22;                                                                                                  // Verifica se a hora é 22 ou mais
     Serial.printf("Verificação de horário: %s\n", resultado ? "Após o horário de fechamento" : "Antes do horário de fechamento"); // Mensagem com o resultado da verificação
-    return resultado;
+    return resultado;                                                                                                             // Retorna o resultado da verificação
 }
 
 // Função para verificar se a hora atual está antes do horário de abertura
@@ -77,7 +77,7 @@ bool isBeforeOpeningTime()
     int hour = timeClient.getHours();                                                                                         // Obtém a hora atual
     bool resultado = hour < 7;                                                                                                // Verifica se a hora é antes das 7
     Serial.printf("Verificação de horário: %s\n", resultado ? "Antes do horário de abertura" : "Após o horário de abertura"); // Mensagem com o resultado da verificação
-    return resultado;
+    return resultado;                                                                                                         // Retorna o resultado da verificação
 }
 
 // Função para configurar o servidor Web para lidar com as solicitações de ligar/desligar o compressor

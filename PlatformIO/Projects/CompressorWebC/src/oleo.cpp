@@ -1,11 +1,13 @@
 #include "oleo.h" // Inclui o cabeçalho para a configuração da página de nível de óleo
-#include <Arduino.h>
-#include <WebServer.h>
+#include <Arduino.h> // Inclui a biblioteca Arduino.h que fornece funções e definições básicas para a plataforma Arduino
+#include <WebServer.h> // Inclui a biblioteca WebServer.h que permite a criação de um servidor web
 
 // Função para configurar a página de nível de óleo
+// Esta função configura uma rota no servidor web para exibir uma página HTML quando acessada
 void setupOleoPage(WebServer& server)
 {
     // HTML da página de nível de óleo
+    // Define a string contendo o código HTML da página de nível de óleo usando a sintaxe de string literal (R"()")
     String html = R"(
         <!DOCTYPE html>
         <html lang="pt-br">
@@ -54,9 +56,12 @@ void setupOleoPage(WebServer& server)
         </body>
         </html>
     )";
+    // O HTML define a estrutura da página, incluindo o cabeçalho, o corpo e o estilo da página
 
     // Configura o servidor para responder à requisição da página de nível de óleo
+    // Configura uma rota "/oleo" no servidor web. Quando um cliente faz uma requisição GET para esta rota, a função lambda é executada
     server.on("/oleo", HTTP_GET, [html, &server]() mutable {
         server.send(200, "text/html", html);
+        // Envia uma resposta HTTP 200 (OK) com o tipo de conteúdo "text/html" e o conteúdo da página HTML definida acima
     });
 }
