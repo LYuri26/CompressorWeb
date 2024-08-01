@@ -4,13 +4,16 @@
 #include <FS.h>          // Biblioteca para manipulação do sistema de arquivos
 #include <SPIFFS.h>      // Biblioteca para usar o sistema de arquivos SPIFFS
 
+// Definição do pino para controle do compressor
+const int COMPRESSOR_PIN = 15; // Pino digital que controla o compressor
+
 // Variáveis globais
 bool compressorLigado = false;                                  // Flag global que indica se o compressor está ligado ou desligado
 WiFiUDP ntpUDP;                                                 // Objeto para gerenciar pacotes UDP necessários para o cliente NTP
-NTPClient timeClient(ntpUDP, "pool.ntp.org", -3 * 3600, 60000); // Cria um cliente NTP para obter o tempo, ajuste o fuso horário para GMT-3 e atualiza a cada 60 segundos
+NTPClient timeClient(ntpUDP, "pool.ntp.org", -3 * 3600, 60000); // Cria um cliente NTP para obter o tempo, ajuste o fuso horário para GMT-3 e atualiza a cada 60 segundos 
 
 unsigned long previousMillis = 0; // Armazena o tempo da última atualização para controle de intervalos
-const long interval = 300000;     // Intervalo de 5 minutos (em milissegundos) para atualizar o status do compressor
+const long interval = 10000;     // Intervalo de 5 minutos (em milissegundos) para atualizar o status do compressor 300000
 unsigned long lastToggleTime = 0; // Tempo da última troca de estado do compressor para debounce
 bool timerAtivo = false;          // Flag para verificar se o timer está ativo
 
@@ -86,6 +89,10 @@ void setupLigaDesliga(WebServer &server)
     Serial.println("Configurando o servidor Web para controle do compressor."); // Mensagem informativa sobre a configuração do servidor
     initSPIFFS();                                                               // Inicializa o sistema de arquivos SPIFFS
 
+    // Configura o pino do compressor
+    pinMode(COMPRESSOR_PIN, OUTPUT);    // Configura o pino como saída
+    digitalWrite(COMPRESSOR_PIN, LOW);  // Garante que o compressor esteja desligado inicialmente
+
     // Carrega o estado do compressor do arquivo
     compressorLigado = readCompressorState(); // Atualiza o estado do compressor com o valor lido do arquivo
 
@@ -96,7 +103,7 @@ void setupLigaDesliga(WebServer &server)
         Serial.println("Requisição recebida para alternar o estado do compressor."); // Mensagem informativa sobre a requisição recebida
 
         // Verifica se o compressor foi ligado/desligado recentemente e impede a troca até que o intervalo de 5 minutos tenha passado
-        if (compressorLigado && (currentMillis - lastToggleTime < 30000))
+        if (compressorLigado && (currentMillis - lastToggleTime < 10000))
         {
             Serial.println("Comando ignorado. O compressor foi alterado recentemente. Aguarde 5 minutos entre as tentativas."); // Mensagem de erro se a troca for feita antes do intervalo de debounce
             server.send(200, "text/plain", "Comando ignorado. Aguarde 5 minutos entre as tentativas."); // Responde com uma mensagem informando que o comando foi ignorado
@@ -105,6 +112,9 @@ void setupLigaDesliga(WebServer &server)
 
         lastToggleTime = currentMillis; // Atualiza o tempo da última troca de estado do compressor
         compressorLigado = !compressorLigado; // Alterna o estado do compressor
+
+        // Aciona ou desaciona o pino do compressor
+        digitalWrite(COMPRESSOR_PIN, compressorLigado ? HIGH : LOW);
 
         String message = compressorLigado ? "Compressor ligado!" : "Compressor desligado!"; // Mensagem dependendo do novo estado do compressor
         if (compressorLigado && (isAfterClosingTime() || isBeforeOpeningTime()))
@@ -145,6 +155,7 @@ void setupLigaDesliga(WebServer &server)
     if (isAfterClosingTime() || isBeforeOpeningTime())
     {
         compressorLigado = false;                                                   // Desliga o compressor se estiver fora do horário permitido
+        digitalWrite(COMPRESSOR_PIN, LOW);                                          // Garante que o pino do compressor está desligado
         saveCompressorState(compressorLigado);                                      // Atualiza o arquivo com o novo estado
         Serial.println("Compressor desligado devido ao horário na inicialização."); // Mensagem informativa sobre a desativação do compressor
     }
