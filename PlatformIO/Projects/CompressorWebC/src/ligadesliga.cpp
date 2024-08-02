@@ -5,7 +5,7 @@
 #include <SPIFFS.h>      // Biblioteca para usar o sistema de arquivos SPIFFS
 
 // Definição do pino para controle do compressor
-const int COMPRESSOR_PIN = 15; // Pino digital que controla o compressor
+const int COMPRESSOR_PIN = 2; // Pino digital que controla o compressor
 
 // Variáveis globais
 bool compressorLigado = false;                                  // Flag global que indica se o compressor está ligado ou desligado
