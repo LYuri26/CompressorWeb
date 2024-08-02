@@ -1,34 +1,31 @@
-#include "dashboard.h" // Inclui o cabeçalho para a configuração do dashboard
+#include "dashboard.h"    // Inclui o cabeçalho para a configuração do dashboard
 #include "autenticador.h" // Inclui o cabeçalho onde a variável userLoggedIn é declarada
-#include <WebServer.h> // Inclui a biblioteca para criar um servidor web no ESP32
-#include <FS.h>       // Inclui a biblioteca para manipulação do sistema de arquivos
-#include <SPIFFS.h>   // Inclui a biblioteca para usar o sistema de arquivos SPIFFS
+#include <WebServer.h>    // Inclui a biblioteca para criar um servidor web no ESP32
+#include <FS.h>           // Inclui a biblioteca para manipulação do sistema de arquivos
+#include <SPIFFS.h>       // Inclui a biblioteca para usar o sistema de arquivos SPIFFS
 
 extern bool compressorLigado; // Declara uma variável externa para verificar o estado do compressor (declarada em outro lugar)
-extern bool userLoggedIn; // Declara a variável externa para verificar se o usuário está logado (declarada em outro lugar)
+extern bool userLoggedIn;     // Declara a variável externa para verificar se o usuário está logado (declarada em outro lugar)
 
 // Função para configurar a página do dashboard
-void setupDashboardPage(WebServer& server)
+void setupDashboardPage(WebServer &server)
 {
-    // Configura a rota "/dashboard" para responder com a página do dashboard quando uma requisição GET é feita
-    server.on("/dashboard", HTTP_GET, [&server]() {
-        // Verifica se o usuário está logado
+    server.on("/dashboard", HTTP_GET, [&server]()
+              {
         if (!userLoggedIn) {
-            // Se o usuário não estiver logado, redireciona para a página de acesso inválido
             server.sendHeader("Location", "/acesso-invalido");
-            server.send(302, "text/plain", ""); // Envia um código de status 302 para redirecionamento e um corpo de resposta vazio
-            return; // Sai da função
+            server.send(302, "text/plain", "");
+            return;
         }
 
         // HTML da página do dashboard
         String html = R"(
-        <!DOCTYPE html> <!-- Declara o tipo de documento como HTML5 -->
-        <html lang="pt-br"> <!-- Define o idioma da página como português do Brasil -->
+        <!DOCTYPE html>
+        <html lang="pt-br">
         <head>
-            <meta charset="UTF-8"> <!-- Define a codificação de caracteres para UTF-8 -->
-            <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Configura o viewport para dispositivos móveis -->
-            <title>Dashboard</title> <!-- Define o título da página que aparece na aba do navegador -->
-            <!-- Inclui o Bootstrap para estilização da página -->
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Dashboard</title>
             <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
             <style>
                 body {
@@ -82,84 +79,76 @@ void setupDashboardPage(WebServer& server)
             </style>
         </head>
         <body>
-            <div class="dashboard-container"> <!-- Contêiner para o conteúdo do dashboard -->
-                <h2 class="dashboard-title">Bem-vindo ao Dashboard</h2> <!-- Título do dashboard -->
-                <a href="#" class="btn btn-block mb-2" id="toggleButton">Desligar</a> <!-- Botão para ligar/desligar o compressor -->
-                <a href="/umidade" class="btn btn-secondary btn-block mb-2">Umidade</a> <!-- Link para a página de umidade -->
-                <a href="/oleo" class="btn btn-secondary btn-block mb-2">Nível de Óleo</a> <!-- Link para a página de nível de óleo -->
-                <a href="/logout" class="btn btn-danger btn-block mt-3">Logout</a> <!-- Link para logout -->
+            <div class="dashboard-container">
+                <h2 class="dashboard-title">Bem-vindo ao Dashboard</h2>
+                <a href="#" class="btn btn-block mb-2" id="toggleButton">Carregando...</a>
+                <a href="/umidade" class="btn btn-secondary btn-block mb-2">Umidade</a>
+                <a href="/oleo" class="btn btn-secondary btn-block mb-2">Nível de Óleo</a>
+                <a href="/logout" class="btn btn-danger btn-block mt-3">Logout</a>
             </div>
-
-            <div class="footer"> <!-- Rodapé da página -->
-                <p>Aplicação desenvolvida pela Turma de Informática Para Internet Trilhas de Futuro 2024</p> <!-- Texto de crédito no rodapé -->
-                <p>Instrutor: Lenon Yuri</p> <!-- Texto de crédito no rodapé -->
+            <div class="footer">
+                <p>Aplicação desenvolvida pela Turma de Informática Para Internet Trilhas de Futuro 2024</p>
+                <p>Instrutor: Lenon Yuri</p>
             </div>
-
-            <!-- Inclui bibliotecas JavaScript -->
-            <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script> <!-- Inclui jQuery -->
-            <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script> <!-- Inclui JavaScript do Bootstrap -->
+            <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+            <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
             <script>
                 document.addEventListener('DOMContentLoaded', function() {
-                    var toggleButton = document.getElementById('toggleButton'); // Obtém o elemento do botão de alternância
+                    var toggleButton = document.getElementById('toggleButton');
 
                     function updateButtonState() {
-                        fetch('/compressor-state') // Faz uma requisição GET para obter o estado do compressor
-                            .then(response => response.json()) // Converte a resposta para JSON
+                        fetch('/compressor-state')
+                            .then(response => response.json())
                             .then(data => {
-                                var compressorLigado = data.compressorLigado; // Obtém o estado do compressor da resposta
+                                var compressorLigado = data.compressorLigado;
                                 if (compressorLigado) {
-                                    toggleButton.innerHTML = 'Desligar'; // Atualiza o texto do botão para "Desligar"
-                                    toggleButton.classList.add('btn-desligar'); // Adiciona a classe de botão para desligar
-                                    toggleButton.classList.remove('btn-ligar'); // Remove a classe de botão para ligar
+                                    toggleButton.innerHTML = 'Desligar';
+                                    toggleButton.classList.add('btn-desligar');
+                                    toggleButton.classList.remove('btn-ligar');
                                 } else {
-                                    toggleButton.innerHTML = 'Ligar'; // Atualiza o texto do botão para "Ligar"
-                                    toggleButton.classList.add('btn-ligar'); // Adiciona a classe de botão para ligar
-                                    toggleButton.classList.remove('btn-desligar'); // Remove a classe de botão para desligar
+                                    toggleButton.innerHTML = 'Ligar';
+                                    toggleButton.classList.add('btn-ligar');
+                                    toggleButton.classList.remove('btn-desligar');
                                 }
                             })
-                            .catch(error => console.error('Erro ao obter estado inicial do compressor:', error)); // Trata erros na requisição
+                            .catch(error => console.error('Erro ao obter estado inicial do compressor:', error));
                     }
 
-                    updateButtonState(); // Atualiza o estado do botão ao carregar a página
+                    updateButtonState();
 
                     toggleButton.addEventListener('click', function(event) {
-                        event.preventDefault(); // Previne o comportamento padrão do link
-                        var action = toggleButton.innerHTML === 'Desligar' ? 'desligar' : 'ligar'; // Define a ação com base no texto do botão
-
-                        fetch('/toggle?action=' + action) // Faz uma requisição GET para alternar o estado do compressor
-                            .then(response => response.text()) // Converte a resposta para texto
+                        event.preventDefault();
+                        var action = toggleButton.innerHTML === 'Desligar' ? 'desligar' : 'ligar';
+                        fetch('/toggle?action=' + action)
+                            .then(response => response.text())
                             .then(data => {
-                                console.log('Resposta do servidor:', data); // Exibe a resposta do servidor no console
-                                updateButtonState(); // Atualiza o estado do botão após a resposta
+                                console.log('Resposta do servidor:', data);
+                                updateButtonState();
                             })
-                            .catch(error => console.error('Erro ao enviar requisição:', error)); // Trata erros na requisição
+                            .catch(error => console.error('Erro ao enviar requisição:', error));
                     });
 
-                    setInterval(updateButtonState, 5000); // Atualiza o estado do botão a cada 5 segundos
+                    setInterval(updateButtonState, 5000);
                 });
             </script>
         </body>
         </html>
         )";
 
-        // Envia a resposta com o código de status 200 (OK) e o conteúdo HTML
-        server.send(200, "text/html", html);
-    });
+        server.send(200, "text/html", html); });
 
-    // Configura a rota "/compressor-state" para responder com o estado do compressor em formato JSON
-    server.on("/compressor-state", HTTP_GET, [&server]() {
-        // Cria uma string JSON com o estado do compressor
+    server.on("/compressor-state", HTTP_GET, [&server]()
+              {
         String stateJson = "{\"compressorLigado\":" + String(compressorLigado) + "}";
-        // Envia a resposta com o código de status 200 (OK) e o conteúdo JSON
-        server.send(200, "application/json", stateJson);
-    });
+        server.send(200, "application/json", stateJson); });
 }
 
 // Função para configurar a manipulação das ações de ligar/desligar o compressor
-void handleToggleAction(WebServer& server)
+void handleToggleAction(WebServer &server)
 {
     // Configura a rota "/toggle" para responder com base na ação solicitada
-    server.on("/toggle", HTTP_GET, [&server]() {
+    server.on("/toggle", HTTP_GET, [&server]()
+              {
         // Obtém o valor do parâmetro "action" da requisição
         String action = server.arg("action");
         // Verifica a ação e atualiza o estado do compressor
@@ -172,6 +161,5 @@ void handleToggleAction(WebServer& server)
         } else {
             // Se a ação não for válida, envia uma resposta de erro
             server.send(400, "text/plain", "Ação inválida!"); // Envia uma resposta com o código de status 400 (solicitação incorreta)
-        }
-    });
+        } });
 }
