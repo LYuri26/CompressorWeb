@@ -2,6 +2,7 @@
 #include "tempo.h"
 #include <FS.h>
 #include <SPIFFS.h>
+#include <ESPAsyncWebServer.h>
 
 // Variáveis globais
 const int pinoCompressor = 2;
@@ -82,7 +83,7 @@ bool isBeforeOpeningTime() {
     return resultado;
 }
 
-void setupLigaDesliga(WebServer &server) {
+void setupLigaDesliga(AsyncWebServer& server) {
     Serial.println("Configurando o servidor Web para controle do compressor.");
     initSPIFFS();
 
@@ -90,13 +91,13 @@ void setupLigaDesliga(WebServer &server) {
     compressorLigado = readCompressorState();
     digitalWrite(pinoCompressor, compressorLigado ? HIGH : LOW);
 
-    server.on("/toggle", HTTP_GET, [&server]() {
+    server.on("/toggle", HTTP_GET, [](AsyncWebServerRequest *request) {
         unsigned long currentMillis = millis();
         Serial.println("Requisição recebida para alternar o estado do compressor.");
 
         if (compressorLigado && (currentMillis - lastToggleTime < 30000)) {
             Serial.println("Comando ignorado. O compressor foi alterado recentemente. Aguarde 5 minutos entre as tentativas.");
-            server.send(200, "text/plain", "Comando ignorado. Aguarde 5 minutos entre as tentativas.");
+            request->send(200, "text/plain", "Comando ignorado. Aguarde 5 minutos entre as tentativas.");
             return;
         }
 
@@ -112,7 +113,7 @@ void setupLigaDesliga(WebServer &server) {
 
         Serial.print("Estado do compressor: ");
         Serial.println(message);
-        server.send(200, "text/plain", message);
+        request->send(200, "text/plain", message);
 
         saveCompressorState(compressorLigado);
 

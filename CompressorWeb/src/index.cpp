@@ -1,10 +1,10 @@
+#include <ESPAsyncWebServer.h>
 #include "index.h"  // Inclui o cabeçalho para a configuração da página inicial
-#include <WebServer.h>  // Inclui a biblioteca para criar um servidor web no ESP32
 
 // Função para configurar a página inicial do servidor web
-void setupIndexPage(WebServer& server) {
+void setupIndexPage(AsyncWebServer& server) {
     // Cria uma string HTML para a página de login
-    String html = R"(
+    String html = R"rawliteral(
         <!DOCTYPE html> <!-- Declara o tipo de documento como HTML5 -->
         <html lang="pt-br"> <!-- Define o idioma da página como português do Brasil -->
         <head>
@@ -89,10 +89,10 @@ void setupIndexPage(WebServer& server) {
             </script>
         </body>
         </html>
-    )";
+    )rawliteral";
 
     // Configura a rota "/" para responder com a página HTML definida
-    server.on("/", HTTP_GET, [html, &server]() {
-        server.send(200, "text/html", html); // Envia a resposta com o código de status 200 (OK) e o conteúdo HTML
+    server.on("/", HTTP_GET, [html](AsyncWebServerRequest *request) {
+        request->send(200, "text/html", html); // Envia a resposta com o código de status 200 (OK) e o conteúdo HTML
     });
 }

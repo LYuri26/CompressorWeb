@@ -1,14 +1,10 @@
 #ifndef AUTENTICADOR_H
 #define AUTENTICADOR_H
 
-#include <WebServer.h>
+#include <ESPAsyncWebServer.h>
 
-// Declaração das funções
-void handleLogin();
-void handleLogout();
+// Declarando as funções com o parâmetro AsyncWebServerRequest*
+void handleLogin(AsyncWebServerRequest *request);
+void handleLogout(AsyncWebServerRequest *request);
 
-// Variáveis globais
-extern bool userLoggedIn;
-extern String loggedInUser;
-
-#endif // AUTENTICACAO_H
+#endif

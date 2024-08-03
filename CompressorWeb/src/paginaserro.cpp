@@ -1,4 +1,5 @@
-#include <WebServer.h>
+#include <ESPAsyncWebServer.h>
+#include "paginaserro.h"  // Inclui o cabeçalho para a configuração da página inicial
 
 // Função para gerar o HTML para páginas de erro
 String generateErrorPage(const String& title, const String& message, const String& linkText, const String& linkHref)
@@ -60,41 +61,37 @@ String generateErrorPage(const String& title, const String& message, const Strin
 }
 
 // Configura as rotas para as páginas de erro
-void setupUsuarioJaLogadoPage(WebServer& server)
+void setupUsuarioJaLogadoPage(AsyncWebServer& server)
 {
-    server.on("/usuario-ja-logado", HTTP_GET, [&server]() {
-        server.sendHeader("Content-Type", "text/html");
-        server.send(403, "text/html", generateErrorPage("Usuário Já Logado", 
+    server.on("/usuario-ja-logado", HTTP_GET, [](AsyncWebServerRequest *request){
+        request->send(403, "text/html", generateErrorPage("Usuário Já Logado", 
             "Há um usuário atualmente logado. Por favor, tente novamente mais tarde.", 
             "Acessar Tela Inicial", "/"));
     });
 }
 
-void setupCredenciaisInvalidasPage(WebServer& server)
+void setupCredenciaisInvalidasPage(AsyncWebServer& server)
 {
-    server.on("/credenciais-invalidas", HTTP_GET, [&server]() {
-        server.sendHeader("Content-Type", "text/html");
-        server.send(401, "text/html", generateErrorPage("Credenciais Inválidas", 
+    server.on("/credenciais-invalidas", HTTP_GET, [](AsyncWebServerRequest *request){
+        request->send(401, "text/html", generateErrorPage("Credenciais Inválidas", 
             "Credenciais inválidas. Por favor, verifique seu nome de usuário e senha.", 
             "Voltar ao Login", "/"));
     });
 }
 
-void setupAcessoInvalidoPage(WebServer& server)
+void setupAcessoInvalidoPage(AsyncWebServer& server)
 {
-    server.on("/acesso-invalido", HTTP_GET, [&server]() {
-        server.sendHeader("Content-Type", "text/html");
-        server.send(403, "text/html", generateErrorPage("Acesso Inválido", 
+    server.on("/acesso-invalido", HTTP_GET, [](AsyncWebServerRequest *request){
+        request->send(403, "text/html", generateErrorPage("Acesso Inválido", 
             "Você não tem permissão para acessar esta página. Por favor, faça login para continuar.", 
             "Voltar à Página Inicial", "/"));
     });
 }
 
-void setupNotFoundPage(WebServer& server)
+void setupNotFoundPage(AsyncWebServer& server)
 {
-    server.onNotFound([&server]() {
-        server.sendHeader("Content-Type", "text/html");
-        server.send(404, "text/html", generateErrorPage("Página Não Encontrada", 
+    server.onNotFound([](AsyncWebServerRequest *request){
+        request->send(404, "text/html", generateErrorPage("Página Não Encontrada", 
             "Essa página não existe. Verifique o URL ou volte à página inicial.", 
             "Voltar à Página Inicial", "/"));
     });

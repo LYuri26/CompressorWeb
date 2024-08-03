@@ -1,7 +1,8 @@
 #include "creditos.h"  // Inclui o cabeçalho para a configuração da página de créditos
+#include <ESPAsyncWebServer.h>  // Inclui a biblioteca para o servidor web assíncrono
 
 // Função para configurar a página de créditos
-void setupCreditosPage(WebServer& server) {
+void setupCreditosPage(AsyncWebServer& server) {
     // Variável local para armazenar o HTML da página de créditos
     String creditsHtml = R"(
         <!DOCTYPE html> <!-- Declara o tipo de documento como HTML5 -->
@@ -94,7 +95,7 @@ void setupCreditosPage(WebServer& server) {
     )";
 
     // Configuração da rota "/creditos" para responder com o HTML criado
-    server.on("/creditos", HTTP_GET, [creditsHtml, &server]() {
-        server.send(200, "text/html", creditsHtml);  // Envia a resposta HTTP com o HTML da página de créditos
+    server.on("/creditos", HTTP_GET, [creditsHtml](AsyncWebServerRequest *request) {
+        request->send(200, "text/html", creditsHtml);  // Envia a resposta HTTP com o HTML da página de créditos
     });
 }

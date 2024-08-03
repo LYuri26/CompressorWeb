@@ -1,5 +1,5 @@
 #include <WiFi.h>
-#include <WebServer.h>
+#include <ESPAsyncWebServer.h>
 #include <SPIFFS.h>
 #include "index.h"
 #include "dashboard.h"
@@ -12,33 +12,33 @@
 #include "paginaserro.h"
 #include "tempo.h"
 
-// Cria um objeto servidor web na porta 80
-WebServer server(80);
+// Cria um objeto servidor web na porta 80 (HTTP)
+AsyncWebServer server(80);
 
 // Declaração de funções
 void setupServer();
 
 void setup()
 {
-    Serial.begin(115200); // Inicia a comunicação serial com velocidade de 115200 bps
+    Serial.begin(115200);                   // Inicia a comunicação serial com velocidade de 115200 bps
     Serial.println("Iniciando o setup..."); // Imprime uma mensagem na serial
 
     connectToWiFi(); // Chama a função para conectar ao WiFi
-    setupServer(); // Chama a função para configurar o servidor
+    setupServer();   // Chama a função para configurar o servidor
 
     setupTimeClient(); // Inicializa o cliente NTP
 }
 
 void loop()
 {
-    server.handleClient(); // Processa as requisições dos clientes
+    // O servidor assíncrono lida com as requisições automaticamente
     updateTime(); // Atualiza a hora e imprime a hora atual
 
     // Reconecta se a conexão WiFi for perdida
     if (WiFi.status() != WL_CONNECTED)
     {
         Serial.println("Conexão WiFi perdida. Tentando reconectar..."); // Imprime uma mensagem na serial
-        connectToWiFi(); // Tenta reconectar ao WiFi
+        connectToWiFi();                                                // Tenta reconectar ao WiFi
     }
 }
 
@@ -49,7 +49,7 @@ void setupServer()
     if (!SPIFFS.begin(true))
     {
         Serial.println("Falha ao iniciar o sistema de arquivos SPIFFS"); // Imprime uma mensagem de erro na serial
-        return; // Sai da função se falhar ao iniciar o SPIFFS
+        return;                                                          // Sai da função se falhar ao iniciar o SPIFFS
     }
 
     // Configura as páginas e rotas do servidor
@@ -67,8 +67,12 @@ void setupServer()
     setupCredenciaisInvalidasPage(server); // Configura a página de credenciais inválidas
 
     // Configura as rotas do servidor
-    server.on("/login", HTTP_POST, handleLogin); // Adiciona a rota de login para requisições POST
-    server.on("/logout", HTTP_GET, handleLogout); // Adiciona a rota de logout para requisições GET
-    server.begin(); // Inicia o servidor web
+    server.on("/login", HTTP_POST, [](AsyncWebServerRequest *request)
+              { handleLogin(request); });
+
+    server.on("/logout", HTTP_POST, [](AsyncWebServerRequest *request)
+              { handleLogout(request); });
+
+    server.begin();                      // Inicia o servidor web
     Serial.println("Servidor iniciado"); // Imprime uma mensagem na serial
 }

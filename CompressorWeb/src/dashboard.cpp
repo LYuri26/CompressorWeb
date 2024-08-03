@@ -1,25 +1,25 @@
+#include <ESPAsyncWebServer.h>
+#include <FS.h>
+#include <SPIFFS.h>
 #include "dashboard.h"    // Inclui o cabeçalho para a configuração do dashboard
 #include "autenticador.h" // Inclui o cabeçalho onde a variável userLoggedIn é declarada
-#include <WebServer.h>    // Inclui a biblioteca para criar um servidor web no ESP32
 #include <FS.h>           // Inclui a biblioteca para manipulação do sistema de arquivos
 #include <SPIFFS.h>       // Inclui a biblioteca para usar o sistema de arquivos SPIFFS
 
-extern bool compressorLigado; // Declara uma variável externa para verificar o estado do compressor (declarada em outro lugar)
-extern bool userLoggedIn;     // Declara a variável externa para verificar se o usuário está logado (declarada em outro lugar)
+// Variáveis externas
+extern bool compressorLigado;
+extern bool userLoggedIn;
 
 // Função para configurar a página do dashboard
-void setupDashboardPage(WebServer &server)
-{
-    server.on("/dashboard", HTTP_GET, [&server]()
-              {
+void setupDashboardPage(AsyncWebServer& server) {
+    server.on("/dashboard", HTTP_GET, [](AsyncWebServerRequest *request) {
         if (!userLoggedIn) {
-            server.sendHeader("Location", "/acesso-invalido");
-            server.send(302, "text/plain", "");
+            request->redirect("/acesso-invalido");
             return;
         }
 
         // HTML da página do dashboard
-        String html = R"(
+        String html = R"rawliteral(
         <!DOCTYPE html>
         <html lang="pt-br">
         <head>
@@ -29,52 +29,52 @@ void setupDashboardPage(WebServer &server)
             <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
             <style>
                 body {
-                    font-family: Arial, sans-serif; /* Define a fonte do corpo da página */
-                    background-color: #f8f9fa; /* Define a cor de fundo da página */
-                    height: 100%; /* Define a altura da página como 100% da altura do container pai */
-                    margin: 0; /* Remove a margem padrão */
-                    display: flex; /* Usa flexbox para alinhar o conteúdo */
-                    justify-content: center; /* Centraliza o conteúdo horizontalmente */
-                    align-items: center; /* Centraliza o conteúdo verticalmente */
-                    flex-direction: column; /* Alinha os itens na coluna */
+                    font-family: Arial, sans-serif;
+                    background-color: #f8f9fa;
+                    height: 100%;
+                    margin: 0;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    flex-direction: column;
                 }
 
                 .dashboard-container {
-                    background-color: #ffffff; /* Define a cor de fundo do contêiner do dashboard */
-                    padding: 20px; /* Define o preenchimento interno do contêiner */
-                    border-radius: 5px; /* Adiciona bordas arredondadas ao contêiner */
-                    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Adiciona uma sombra sutil ao contêiner */
-                    width: 100%; /* Define a largura do contêiner como 100% */
-                    max-width: 600px; /* Define a largura máxima do contêiner */
-                    text-align: center; /* Alinha o texto no centro do contêiner */
-                    margin-top: 20px; /* Adiciona uma margem superior ao contêiner */
+                    background-color: #ffffff;
+                    padding: 20px;
+                    border-radius: 5px;
+                    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                    width: 100%;
+                    max-width: 600px;
+                    text-align: center;
+                    margin-top: 20px;
                 }
 
                 .dashboard-title {
-                    font-size: 28px; /* Define o tamanho da fonte do título */
-                    margin-bottom: 20px; /* Adiciona uma margem inferior ao título */
-                    color: #007bff; /* Define a cor do texto do título */
+                    font-size: 28px;
+                    margin-bottom: 20px;
+                    color: #007bff;
                 }
 
                 .btn-ligar {
-                    background-color: #28a745; /* Define a cor de fundo para o botão de ligar */
-                    color: white; /* Define a cor do texto do botão */
+                    background-color: #28a745;
+                    color: white;
                 }
 
                 .btn-desligar {
-                    background-color: #dc3545; /* Define a cor de fundo para o botão de desligar */
-                    color: white; /* Define a cor do texto do botão */
+                    background-color: #dc3545;
+                    color: white;
                 }
 
                 .footer {
-                    width: 100%; /* Define a largura do rodapé como 100% */
-                    background-color: #007bff; /* Define a cor de fundo do rodapé */
-                    color: white; /* Define a cor do texto do rodapé */
-                    text-align: center; /* Alinha o texto no centro do rodapé */
-                    padding: 10px 0; /* Define o preenchimento interno do rodapé */
-                    position: fixed; /* Faz o rodapé fixo na parte inferior da página */
-                    bottom: 0; /* Define a posição inferior do rodapé */
-                    font-size: 14px; /* Define o tamanho da fonte do texto do rodapé */
+                    width: 100%;
+                    background-color: #007bff;
+                    color: white;
+                    text-align: center;
+                    padding: 10px 0;
+                    position: fixed;
+                    bottom: 0;
+                    font-size: 14px;
                 }
             </style>
         </head>
@@ -133,33 +133,32 @@ void setupDashboardPage(WebServer &server)
             </script>
         </body>
         </html>
-        )";
+        )rawliteral";
 
-        server.send(200, "text/html", html); });
+        request->send(200, "text/html", html);
+    });
 
-    server.on("/compressor-state", HTTP_GET, [&server]()
-              {
+    server.on("/compressor-state", HTTP_GET, [](AsyncWebServerRequest *request) {
         String stateJson = "{\"compressorLigado\":" + String(compressorLigado) + "}";
-        server.send(200, "application/json", stateJson); });
+        request->send(200, "application/json", stateJson);
+    });
 }
 
 // Função para configurar a manipulação das ações de ligar/desligar o compressor
-void handleToggleAction(WebServer &server)
-{
-    // Configura a rota "/toggle" para responder com base na ação solicitada
-    server.on("/toggle", HTTP_GET, [&server]()
-              {
+void handleToggleAction(AsyncWebServer& server) {
+    server.on("/toggle", HTTP_GET, [](AsyncWebServerRequest *request) {
         // Obtém o valor do parâmetro "action" da requisição
-        String action = server.arg("action");
+        String action = request->getParam("action")->value();
         // Verifica a ação e atualiza o estado do compressor
         if (action == "ligar") {
             compressorLigado = true; // Liga o compressor
-            server.send(200, "text/plain", "Compressor ligado!"); // Envia uma resposta indicando que o compressor foi ligado
+            request->send(200, "text/plain", "Compressor ligado!"); // Envia uma resposta indicando que o compressor foi ligado
         } else if (action == "desligar") {
             compressorLigado = false; // Desliga o compressor
-            server.send(200, "text/plain", "Compressor desligado!"); // Envia uma resposta indicando que o compressor foi desligado
+            request->send(200, "text/plain", "Compressor desligado!"); // Envia uma resposta indicando que o compressor foi desligado
         } else {
             // Se a ação não for válida, envia uma resposta de erro
-            server.send(400, "text/plain", "Ação inválida!"); // Envia uma resposta com o código de status 400 (solicitação incorreta)
-        } });
+            request->send(400, "text/plain", "Ação inválida!"); // Envia uma resposta com o código de status 400 (solicitação incorreta)
+        }
+    });
 }

@@ -1,11 +1,11 @@
 #ifndef PAGINASERRO_H
 #define PAGINASERRO_H
 
-#include <WebServer.h>
+#include <ESPAsyncWebServer.h>  // Inclui a biblioteca para o servidor web assíncrono
 
-void setupAcessoInvalidoPage(WebServer& server);
-void setupNotFoundPage(WebServer& server);
-void setupUsuarioJaLogadoPage(WebServer& server);
-void setupCredenciaisInvalidasPage(WebServer& server);
+void setupAcessoInvalidoPage(AsyncWebServer& server);
+void setupNotFoundPage(AsyncWebServer& server);
+void setupUsuarioJaLogadoPage(AsyncWebServer& server);
+void setupCredenciaisInvalidasPage(AsyncWebServer& server);
 
 #endif // PAGINASERRO_H

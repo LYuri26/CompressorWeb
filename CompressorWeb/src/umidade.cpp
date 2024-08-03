@@ -1,10 +1,9 @@
-#include "umidade.h" // Inclui o cabeçalho para a configuração da página de umidade
-#include <Arduino.h> // Inclui a biblioteca Arduino.h que fornece funções e definições básicas para a plataforma Arduino
-#include <WebServer.h> // Inclui a biblioteca WebServer.h que permite a criação de um servidor web
+#include <ESPAsyncWebServer.h> // Inclui a biblioteca ESPAsyncWebServer.h que permite a criação de um servidor web assíncrono
+#include "umidade.h"  // Inclui o cabeçalho para a configuração da página inicial
 
 // Função para configurar a página de umidade
 // Esta função configura uma rota no servidor web para exibir uma página HTML quando acessada
-void setupUmidadePage(WebServer& server)
+void setupUmidadePage(AsyncWebServer& server)
 {
     // HTML da página de umidade
     // Define a string contendo o código HTML da página de umidade usando a sintaxe de string literal (R"()")
@@ -60,8 +59,8 @@ void setupUmidadePage(WebServer& server)
 
     // Configura o servidor para responder à requisição da página de umidade
     // Configura uma rota "/umidade" no servidor web. Quando um cliente faz uma requisição GET para esta rota, a função lambda é executada
-    server.on("/umidade", HTTP_GET, [html, &server]() mutable {
-        server.send(200, "text/html", html);
+    server.on("/umidade", HTTP_GET, [html](AsyncWebServerRequest *request){
+        request->send(200, "text/html", html);
         // Envia uma resposta HTTP 200 (OK) com o tipo de conteúdo "text/html" e o conteúdo da página HTML definida acima
     });
 }
