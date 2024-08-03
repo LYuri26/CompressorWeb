@@ -20,8 +20,7 @@ void setupSPIFFS();
 void setupServer();
 void configureRoutes();
 bool isAuthenticated(AsyncWebServerRequest *request);
-void notAuthenticated(AsyncWebServerRequest *request);
-
+void redirectToAccessDenied(AsyncWebServerRequest *request);
 
 void setup() {
     Serial.begin(115200);                   // Inicia a comunicação serial com velocidade de 115200 bps
@@ -86,14 +85,31 @@ void configureRoutes() {
     // Rota protegida: Dashboard
     server.on("/dashboard", HTTP_GET, [](AsyncWebServerRequest *request) {
         if (isAuthenticated(request)) {
-            request->send(SPIFFS, "/dashboard.html", "text/html");
+            request->send(SPIFFS, "/dashboard", "text/html");
         } else {
-            notAuthenticated(request);
+            redirectToAccessDenied(request);
         }
     });
 
-    // Outras rotas protegidas podem ser adicionadas aqui
+    // Rota protegida: Toggle
+    server.on("/toggle", HTTP_ANY, [](AsyncWebServerRequest *request) {
+        if (isAuthenticated(request)) {
+            handleToggleAction(server); // Chama a função para lidar com a ação de ligar/desligar
+        } else {
+            redirectToAccessDenied(request);
+        }
+    });
 
-    // Configura a manipulação de ações de ligar/desligar
-    handleToggleAction(server);
+    // Rota para verificar autenticação
+    server.on("/check-auth", HTTP_GET, [](AsyncWebServerRequest *request) {
+        if (isAuthenticated(request)) {
+            request->send(200, "application/json", "{\"authenticated\":true}");
+        } else {
+            request->send(200, "application/json", "{\"authenticated\":false}");
+        }
+    });
+}
+
+void redirectToAccessDenied(AsyncWebServerRequest *request) {
+    request->redirect("/acesso-invalido"); // Redireciona para a página de acesso inválido
 }

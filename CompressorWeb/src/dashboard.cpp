@@ -10,8 +10,8 @@
 // Função para configurar a página do dashboard
 void setupDashboardPage(AsyncWebServer& server) {
     server.on("/dashboard", HTTP_GET, [](AsyncWebServerRequest *request) {
-        if (!userLoggedIn) {
-            request->redirect("/acesso-invalido");
+        if (!isAuthenticated(request)) {
+            redirectToAccessDenied(request);
             return;
         }
 
@@ -88,46 +88,57 @@ void setupDashboardPage(AsyncWebServer& server) {
             </div>
             <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
             <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-            <script>
-                document.addEventListener('DOMContentLoaded', function() {
-                    var toggleButton = document.getElementById('toggleButton');
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var toggleButton = document.getElementById('toggleButton');
 
-                    function updateButtonState() {
-                        fetch('/compressor-state')
-                            .then(response => response.json())
-                            .then(data => {
-                                var compressorLigado = data.compressorLigado;
-                                if (compressorLigado) {
-                                    toggleButton.innerHTML = 'Desligar';
-                                    toggleButton.classList.add('btn-desligar');
-                                    toggleButton.classList.remove('btn-ligar');
-                                } else {
-                                    toggleButton.innerHTML = 'Ligar';
-                                    toggleButton.classList.add('btn-ligar');
-                                    toggleButton.classList.remove('btn-desligar');
-                                }
-                            })
-                            .catch(error => console.error('Erro ao obter estado inicial do compressor:', error));
+        function updateButtonState() {
+            fetch('/compressor-state')
+                .then(response => response.json())
+                .then(data => {
+                    var compressorLigado = data.compressorLigado;
+                    if (compressorLigado) {
+                        toggleButton.innerHTML = 'Desligar';
+                        toggleButton.classList.add('btn-desligar');
+                        toggleButton.classList.remove('btn-ligar');
+                    } else {
+                        toggleButton.innerHTML = 'Ligar';
+                        toggleButton.classList.add('btn-ligar');
+                        toggleButton.classList.remove('btn-desligar');
                     }
+                })
+                .catch(error => console.error('Erro ao obter estado inicial do compressor:', error));
+        }
 
+        function checkAuthentication() {
+            fetch('/check-auth')
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.authenticated) {
+                        window.location.href = '/acesso-invalido';
+                    }
+                })
+                .catch(error => console.error('Erro ao verificar autenticação:', error));
+        }
+
+        updateButtonState();
+        checkAuthentication();
+
+        toggleButton.addEventListener('click', function(event) {
+            event.preventDefault();
+            var action = toggleButton.innerHTML === 'Desligar' ? 'desligar' : 'ligar';
+            fetch('/toggle?action=' + action)
+                .then(response => response.text())
+                .then(data => {
+                    console.log('Resposta do servidor:', data);
                     updateButtonState();
+                })
+                .catch(error => console.error('Erro ao enviar requisição:', error));
+        });
 
-                    toggleButton.addEventListener('click', function(event) {
-                        event.preventDefault();
-                        var action = toggleButton.innerHTML === 'Desligar' ? 'desligar' : 'ligar';
-                        fetch('/toggle?action=' + action)
-                            .then(response => response.text())
-                            .then(data => {
-                                console.log('Resposta do servidor:', data);
-                                updateButtonState();
-                            })
-                            .catch(error => console.error('Erro ao enviar requisição:', error));
-                    });
-
-                    setInterval(updateButtonState, 5000);
-                });
-            </script>
-        </body>
+        setInterval(updateButtonState, 5000);
+    });
+</script>        </body>
         </html>
         )rawliteral";
 
@@ -137,21 +148,5 @@ void setupDashboardPage(AsyncWebServer& server) {
     server.on("/compressor-state", HTTP_GET, [](AsyncWebServerRequest *request) {
         String stateJson = "{\"compressorLigado\":" + String(compressorLigado) + "}";
         request->send(200, "application/json", stateJson);
-    });
-}
-
-// Função para configurar a manipulação das ações de ligar/desligar o compressor
-void handleToggleAction(AsyncWebServer& server) {
-    server.on("/toggle", HTTP_GET, [](AsyncWebServerRequest *request) {
-        String action = request->getParam("action")->value();
-        if (action == "ligar") {
-            compressorLigado = true;
-            request->send(200, "text/plain", "Compressor ligado!");
-        } else if (action == "desligar") {
-            compressorLigado = false;
-            request->send(200, "text/plain", "Compressor desligado!");
-        } else {
-            request->send(400, "text/plain", "Ação inválida!");
-        }
     });
 }

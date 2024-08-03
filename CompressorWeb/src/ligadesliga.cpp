@@ -3,6 +3,8 @@
 #include <FS.h>
 #include <SPIFFS.h>
 #include <ESPAsyncWebServer.h>
+#include "autenticador.h" // Inclui o cabeçalho onde a variável userLoggedIn é declarada
+
 
 // Variáveis globais
 const int pinoCompressor = 2;
@@ -13,6 +15,26 @@ bool compressorLigado = false;
 bool timerAtivo = false;
 unsigned long previousMillis = 0;
 unsigned long lastToggleTime = 0;
+
+void handleToggleAction(AsyncWebServer& server) {
+    server.on("/toggle", HTTP_ANY, [](AsyncWebServerRequest *request) {
+        if (!isAuthenticated(request)) {
+            redirectToAccessDenied(request); // Certifique-se de ter essa função definida em um arquivo de cabeçalho incluído
+            return;
+        }
+        // Se estiver autenticado, continua com a lógica para ligar/desligar o compressor
+        String action = request->getParam("action")->value();
+        if (action == "ligar") {
+            compressorLigado = true;
+            request->send(200, "text/plain", "Compressor ligado!");
+        } else if (action == "desligar") {
+            compressorLigado = false;
+            request->send(200, "text/plain", "Compressor desligado!");
+        } else {
+            request->send(400, "text/plain", "Ação inválida!");
+        }
+    });
+}
 
 void initSPIFFS() {
     if (!SPIFFS.begin(true)) {

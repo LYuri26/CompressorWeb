@@ -1,14 +1,14 @@
 #include "autenticador.h"
 
-// Definição das variáveis globais
-String sessionId = ""; // Definido aqui
+// Variáveis globais
+String sessionId = ""; // ID de sessão atual
 bool userLoggedIn = false;
 String loggedInUser = "";
 
 String generateSessionId() {
-    // Simples geração de ID de sessão baseado em millis(). Você pode usar uma abordagem mais robusta.
+    // Simples geração de ID de sessão baseado em millis(). 
     String newSessionId = String(millis(), HEX);
-    Serial.println("Gerando novo sessionId: " + newSessionId); // Feedback sobre o ID gerado
+    Serial.println("Gerando novo sessionId: " + newSessionId);
     return newSessionId;
 }
 
@@ -18,8 +18,8 @@ bool isAuthenticated(AsyncWebServerRequest *request) {
         int sessionIndex = cookie.indexOf("session_id=");
         if (sessionIndex != -1) {
             String sessionValue = cookie.substring(sessionIndex + 11);
-            Serial.println("Cookie recebido: " + cookie); // Feedback sobre o cookie recebido
-            Serial.println("ID de sessão do cookie: " + sessionValue); // Feedback sobre o ID extraído
+            Serial.println("Cookie recebido: " + cookie);
+            Serial.println("ID de sessão do cookie: " + sessionValue);
             if (sessionValue.equals(sessionId)) {
                 Serial.println("Sessão autenticada com sucesso.");
                 return true;
@@ -43,12 +43,16 @@ void handleLogin(AsyncWebServerRequest *request) {
         username = request->getParam("username", true)->value();
     } else {
         Serial.println("Parâmetro 'username' não encontrado.");
+        request->redirect("/?login_failed=true");
+        return;
     }
 
     if (request->hasParam("password", true)) {
         password = request->getParam("password", true)->value();
     } else {
         Serial.println("Parâmetro 'password' não encontrado.");
+        request->redirect("/?login_failed=true");
+        return;
     }
 
     Serial.println("Tentando login com usuário: " + username + " e senha: " + password);
@@ -59,7 +63,7 @@ void handleLogin(AsyncWebServerRequest *request) {
             loggedInUser = username;
             sessionId = generateSessionId();
             Serial.println("Login bem-sucedido para o usuário: " + username);
-            Serial.println("ID de sessão definido: " + sessionId); // Feedback sobre o ID de sessão definido
+            Serial.println("ID de sessão definido: " + sessionId);
             AsyncWebServerResponse *response = request->beginResponse(302, "text/plain", "");
             response->addHeader("Set-Cookie", "session_id=" + sessionId + "; Path=/; HttpOnly");
             response->addHeader("Location", "/dashboard");
@@ -80,7 +84,7 @@ void handleLogout(AsyncWebServerRequest *request) {
         userLoggedIn = false;
         loggedInUser = "";
         sessionId = "";
-        Serial.println("ID de sessão removido: "); // Feedback ao remover o ID de sessão
+        Serial.println("ID de sessão removido.");
         AsyncWebServerResponse *response = request->beginResponse(302, "text/plain", "");
         response->addHeader("Set-Cookie", "session_id=; expires=Thu, 01 Jan 1970 00:00:00 GMT; Path=/; HttpOnly");
         response->addHeader("Location", "/");
@@ -94,4 +98,14 @@ void handleLogout(AsyncWebServerRequest *request) {
 void notAuthenticated(AsyncWebServerRequest *request) {
     Serial.println("Redirecionando para a página inicial, usuário não autenticado.");
     request->redirect("/");
+}
+
+void handleDashboard(AsyncWebServerRequest *request) {
+    if (isAuthenticated(request)) {
+        Serial.println("Acesso ao dashboard concedido.");
+        request->send(200, "text/plain", "Bem-vindo ao Dashboard!");
+    } else {
+        Serial.println("Acesso ao dashboard negado.");
+        notAuthenticated(request);
+    }
 }
