@@ -2,13 +2,10 @@
 #include <FS.h>
 #include <SPIFFS.h>
 #include "dashboard.h"    // Inclui o cabeçalho para a configuração do dashboard
+#include "ligadesliga.h"    // Inclui o cabeçalho para a configuração do dashboard
 #include "autenticador.h" // Inclui o cabeçalho onde a variável userLoggedIn é declarada
 #include <FS.h>           // Inclui a biblioteca para manipulação do sistema de arquivos
 #include <SPIFFS.h>       // Inclui a biblioteca para usar o sistema de arquivos SPIFFS
-
-// Variáveis externas
-extern bool compressorLigado;
-extern bool userLoggedIn;
 
 // Função para configurar a página do dashboard
 void setupDashboardPage(AsyncWebServer& server) {
@@ -18,7 +15,6 @@ void setupDashboardPage(AsyncWebServer& server) {
             return;
         }
 
-        // HTML da página do dashboard
         String html = R"rawliteral(
         <!DOCTYPE html>
         <html lang="pt-br">
@@ -147,18 +143,15 @@ void setupDashboardPage(AsyncWebServer& server) {
 // Função para configurar a manipulação das ações de ligar/desligar o compressor
 void handleToggleAction(AsyncWebServer& server) {
     server.on("/toggle", HTTP_GET, [](AsyncWebServerRequest *request) {
-        // Obtém o valor do parâmetro "action" da requisição
         String action = request->getParam("action")->value();
-        // Verifica a ação e atualiza o estado do compressor
         if (action == "ligar") {
-            compressorLigado = true; // Liga o compressor
-            request->send(200, "text/plain", "Compressor ligado!"); // Envia uma resposta indicando que o compressor foi ligado
+            compressorLigado = true;
+            request->send(200, "text/plain", "Compressor ligado!");
         } else if (action == "desligar") {
-            compressorLigado = false; // Desliga o compressor
-            request->send(200, "text/plain", "Compressor desligado!"); // Envia uma resposta indicando que o compressor foi desligado
+            compressorLigado = false;
+            request->send(200, "text/plain", "Compressor desligado!");
         } else {
-            // Se a ação não for válida, envia uma resposta de erro
-            request->send(400, "text/plain", "Ação inválida!"); // Envia uma resposta com o código de status 400 (solicitação incorreta)
+            request->send(400, "text/plain", "Ação inválida!");
         }
     });
 }

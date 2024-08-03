@@ -10,5 +10,6 @@ void setupLigaDesliga(AsyncWebServer& server);  // A função recebe uma referê
 // Declaração da função updateCompressorStatus
 // Esta função é responsável por atualizar o status do compressor, possivelmente com base em alguma lógica ou condição
 void updateCompressorStatus();  // A função não recebe parâmetros e não retorna nenhum valor
+extern bool compressorLigado;
 
 #endif // LIGADESLIGA_H
