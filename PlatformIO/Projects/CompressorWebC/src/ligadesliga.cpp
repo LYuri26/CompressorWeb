@@ -1,20 +1,19 @@
 #include "ligadesliga.h" // Biblioteca para funções de ligar e desligar o compressor
-#include <NTPClient.h>   // Biblioteca para obter o tempo da Internet usando o protocolo NTP
-#include <WiFiUdp.h>     // Biblioteca para comunicação UDP necessária para NTPClient
 #include <FS.h>          // Biblioteca para manipulação do sistema de arquivos
 #include <SPIFFS.h>      // Biblioteca para usar o sistema de arquivos SPIFFS
+#include <RTClib.h>      // Biblioteca para usar com o RTC
 
 // Variáveis globais
 const int pinoCompressor = 2;                         // Pino conectado ao compressor
 const long intervalo = 300000;                        // Intervalo de 5 minutos (em milissegundos) para atualizar o status do compressor
 const String arquivoEstado = "/estadocompressor.txt"; // Nome do arquivo para armazenar o estado do compressor
 
-bool compressorLigado = false;                                  // Flag global que indica se o compressor está ligado ou desligado
-bool timerAtivo = false;                                        // Flag para verificar se o timer está ativo
-unsigned long previousMillis = 0;                               // Armazena o tempo da última atualização para controle de intervalos
-unsigned long lastToggleTime = 0;                               // Tempo da última troca de estado do compressor para debounce
-WiFiUDP ntpUDP;                                                 // Objeto para gerenciar pacotes UDP necessários para o cliente NTP
-NTPClient timeClient(ntpUDP, "pool.ntp.org", -3 * 3600, 60000); // Cliente NTP para obter o tempo, ajuste o fuso horário para GMT-3 e atualiza a cada 60 segundos
+bool compressorLigado = false;    // Flag global que indica se o compressor está ligado ou desligado
+bool timerAtivo = false;          // Flag para verificar se o timer está ativo
+unsigned long previousMillis = 0; // Armazena o tempo da última atualização para controle de intervalos
+unsigned long lastToggleTime = 0; // Tempo da última troca de estado do compressor para debounce
+
+extern RTC_DS3231 rtc; // Usa o RTC configurado em tempo.cpp
 
 // Função para inicializar o sistema de arquivos SPIFFS
 void initSPIFFS()
@@ -65,8 +64,8 @@ void saveCompressorState(bool state)
 // Função para verificar se a hora atual está após o horário de fechamento
 bool isAfterClosingTime()
 {
-    timeClient.update();
-    int hour = timeClient.getHours();
+    DateTime now = rtc.now();
+    int hour = now.hour();
     bool resultado = hour >= 22;
     Serial.printf("Verificação de horário: %s\n", resultado ? "Após o horário de fechamento" : "Antes do horário de fechamento");
     return resultado;
@@ -75,8 +74,8 @@ bool isAfterClosingTime()
 // Função para verificar se a hora atual está antes do horário de abertura
 bool isBeforeOpeningTime()
 {
-    timeClient.update();
-    int hour = timeClient.getHours();
+    DateTime now = rtc.now();
+    int hour = now.hour();
     bool resultado = hour < 7;
     Serial.printf("Verificação de horário: %s\n", resultado ? "Antes do horário de abertura" : "Após o horário de abertura");
     return resultado;
@@ -132,14 +131,12 @@ void setupLigaDesliga(WebServer &server)
             Serial.println("Compressor desligado. Timer desativado.");
         } });
 
-    timeClient.begin();
-
     Serial.print("Estado inicial do compressor: ");
     Serial.println(compressorLigado ? "Ligado" : "Desligado");
 
-    timeClient.update();
+    DateTime now = rtc.now();
     Serial.print("Hora atual: ");
-    Serial.println(timeClient.getFormattedTime());
+    Serial.println(now.timestamp());
 
     if (isAfterClosingTime() || isBeforeOpeningTime())
     {

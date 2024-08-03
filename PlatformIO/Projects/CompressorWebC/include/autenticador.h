@@ -10,5 +10,6 @@ void handleLogout();
 // Variáveis globais
 extern bool userLoggedIn;
 extern String loggedInUser;
+extern WebServer server;
 
 #endif // AUTENTICACAO_H

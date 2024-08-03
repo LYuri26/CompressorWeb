@@ -1,9 +1,6 @@
 #include <WebServer.h>
 #include "autenticador.h"
 
-// Instância do servidor
-extern WebServer server;
-
 // Variáveis globais
 bool userLoggedIn = false;
 String loggedInUser = "";
