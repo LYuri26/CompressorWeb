@@ -49,12 +49,16 @@ void setupIndexPage(AsyncWebServer& server) {
                     .text-danger {
                         color: #dc3545;
                     }
+                    #clock {
+                        font-size: 18px;
+                        margin-top: 10px;
+                    }
                 </style>
             </head>
             <body>
                 <div class="login-container">
                     <h2 class="login-title">Faça o Login</h2>
-                    <form action="/login" method="post">
+                    <form action="/login" method="post" onsubmit="storeLoginData(event)">
                         <div class="form-group">
                             <input type="text" name="username" class="form-control" placeholder="Usuário" required>
                         </div>
@@ -67,9 +71,34 @@ void setupIndexPage(AsyncWebServer& server) {
                     <button onclick="window.location.href='/creditos'" class="btn btn-secondary btn-block mt-3">Créditos</button>
                 </div>
                 <div class="footer">
+                    <div id="clock"></div>
                     <p>Aplicação desenvolvida pela Turma de Informática Para Internet Trilhas de Futuro 2024</p>
                     <p>Instrutor: Lenon Yuri</p>
                 </div>
+                <script>
+                    // Função para atualizar o relógio
+                    function updateClock() {
+                        var now = new Date();
+                        var hours = now.getHours().toString().padStart(2, '0');
+                        var minutes = now.getMinutes().toString().padStart(2, '0');
+                        var seconds = now.getSeconds().toString().padStart(2, '0');
+                        var timeString = hours + ':' + minutes + ':' + seconds;
+                        document.getElementById('clock').innerHTML = timeString;
+                    }
+
+                    // Atualiza o relógio a cada segundo
+                    setInterval(updateClock, 1000);
+                    updateClock(); // Chama imediatamente para atualizar o relógio ao carregar a página
+
+                    // Função para armazenar dados de login no console
+                    function storeLoginData(event) {
+                        event.preventDefault();
+                        var username = document.querySelector('input[name="username"]').value;
+                        var password = document.querySelector('input[name="password"]').value;
+                        console.log('Tentando login com usuário: ' + username + ' e senha: ' + password);
+                        event.target.submit();
+                    }
+                </script>
             </body>
             </html>
         )rawliteral";

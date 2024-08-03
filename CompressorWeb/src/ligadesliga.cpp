@@ -53,15 +53,11 @@ void saveCompressorState(bool state) {
 
 // Função auxiliar para obter a hora a partir do formato de data e hora
 int getHoursFromTime(const String& time) {
-    // Exemplo de formato de time: "2024-08-03T12:34:56"
-    // A hora está na posição 11 a 13
     return time.substring(11, 13).toInt();
 }
 
 // Função auxiliar para obter os minutos a partir do formato de data e hora
 int getMinutesFromTime(const String& time) {
-    // Exemplo de formato de time: "2024-08-03T12:34:56"
-    // Os minutos estão na posição 14 a 16
     return time.substring(14, 16).toInt();
 }
 

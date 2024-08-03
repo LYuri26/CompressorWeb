@@ -15,11 +15,20 @@
 // Cria um objeto servidor web na porta 80 (HTTP)
 AsyncWebServer server(80);
 
+// Declaração de funções
+void setupSPIFFS();
+void setupServer();
+void configureRoutes();
+bool isAuthenticated(AsyncWebServerRequest *request);
+void notAuthenticated(AsyncWebServerRequest *request);
+
+
 void setup() {
     Serial.begin(115200);                   // Inicia a comunicação serial com velocidade de 115200 bps
     Serial.println("Iniciando o setup..."); // Imprime uma mensagem na serial
 
     connectToWiFi(); // Chama a função para conectar ao WiFi
+    setupSPIFFS();   // Inicializa o sistema de arquivos SPIFFS
     setupServer();   // Chama a função para configurar o servidor
 
     setupTimeClient(); // Inicializa o cliente NTP
@@ -27,7 +36,8 @@ void setup() {
 
 void loop() {
     // O servidor assíncrono lida com as requisições automaticamente
-    updateTime(); // Atualiza a hora e imprime a hora atual
+    updateTime();
+    delay(1000);
 
     // Reconecta se a conexão WiFi for perdida
     if (WiFi.status() != WL_CONNECTED) {
@@ -36,32 +46,54 @@ void loop() {
     }
 }
 
-void setupServer() {
-    Serial.println("Configurando o servidor..."); // Imprime uma mensagem na serial
-
+void setupSPIFFS() {
     if (!SPIFFS.begin(true)) {
         Serial.println("Falha ao iniciar o sistema de arquivos SPIFFS"); // Imprime uma mensagem de erro na serial
         return;                                                          // Sai da função se falhar ao iniciar o SPIFFS
     }
+}
+
+void setupServer() {
+    Serial.println("Configurando o servidor..."); // Imprime uma mensagem na serial
 
     // Configura as páginas e rotas do servidor
-    setupIndexPage(server); // Configura a página de login
-    setupCreditosPage(server); // Configura a página de créditos
-    setupDashboardPage(server); // Configura a página do dashboard
-    setupLigaDesliga(server); // Configura a página de ligar/desligar
-    setupUmidadePage(server); // Configura a página de umidade
-    setupOleoPage(server); // Configura a página de nível de óleo
-    setupAcessoInvalidoPage(server); // Configura a página de acesso inválido
-    setupNotFoundPage(server); // Configura a página de erro 404
-    setupUsuarioJaLogadoPage(server); // Configura a página de usuário já logado
+    setupIndexPage(server);            // Configura a página de login
+    setupCreditosPage(server);         // Configura a página de créditos
+    setupDashboardPage(server);        // Configura a página do dashboard
+    setupLigaDesliga(server);          // Configura a página de ligar/desligar
+    setupUmidadePage(server);          // Configura a página de umidade
+    setupOleoPage(server);             // Configura a página de nível de óleo
+    setupAcessoInvalidoPage(server);   // Configura a página de acesso inválido
+    setupNotFoundPage(server);         // Configura a página de erro 404
+    setupUsuarioJaLogadoPage(server);  // Configura a página de usuário já logado
     setupCredenciaisInvalidasPage(server); // Configura a página de credenciais inválidas
 
     // Configura as rotas do servidor
-    server.on("/login", HTTP_POST, [](AsyncWebServerRequest *request) { handleLogin(request); });
-    server.on("/logout", HTTP_POST, [](AsyncWebServerRequest *request) { handleLogout(request); });
+    configureRoutes();
 
-    handleToggleAction(server); // Configura a manipulação de ações de ligar/desligar
-
-    server.begin();                      // Inicia o servidor web
+    // Inicia o servidor web
+    server.begin();
     Serial.println("Servidor iniciado"); // Imprime uma mensagem na serial
+}
+
+void configureRoutes() {
+    // Rota de login
+    server.on("/login", HTTP_POST, [](AsyncWebServerRequest *request) { handleLogin(request); });
+
+    // Rota de logout
+    server.on("/logout", HTTP_GET, [](AsyncWebServerRequest *request) { handleLogout(request); });
+
+    // Rota protegida: Dashboard
+    server.on("/dashboard", HTTP_GET, [](AsyncWebServerRequest *request) {
+        if (isAuthenticated(request)) {
+            request->send(SPIFFS, "/dashboard.html", "text/html");
+        } else {
+            notAuthenticated(request);
+        }
+    });
+
+    // Outras rotas protegidas podem ser adicionadas aqui
+
+    // Configura a manipulação de ações de ligar/desligar
+    handleToggleAction(server);
 }

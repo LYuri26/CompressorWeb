@@ -3,10 +3,15 @@
 
 #include <ESPAsyncWebServer.h>
 
-// Declarando as funções com o parâmetro AsyncWebServerRequest*
-void handleLogin(AsyncWebServerRequest *request);
-void handleLogout(AsyncWebServerRequest *request);
+// Declaração das variáveis globais
+extern String sessionId;
 extern bool userLoggedIn;
 extern String loggedInUser;
 
-#endif
+// Declaração das funções
+void handleLogin(AsyncWebServerRequest *request);
+void handleLogout(AsyncWebServerRequest *request);
+bool isAuthenticated(AsyncWebServerRequest *request);
+void notAuthenticated(AsyncWebServerRequest *request);
+
+#endif // AUTENTICADOR_H

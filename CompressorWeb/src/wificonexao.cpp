@@ -2,7 +2,6 @@
 #include <ESPAsyncWebServer.h>
 #include "wificonexao.h"
 
-
 // Configurações do modo Access Point
 const char *ap_ssid = "CompressorWeb";
 const char *ap_password = "12345678";
@@ -12,6 +11,11 @@ const char *ssid1 = "CFPFR_WIFI";
 const char *password1 = "#CFP-Ur@107!";
 const char *ssid2 = "LenonClaro_2.4G";
 const char *password2 = "13539406670";
+
+// Configuração do IP fixo para o modo AP
+IPAddress local_ip(192, 168, 4, 1);  // Endereço IP do Access Point
+IPAddress gateway(192, 168, 4, 1);   // Gateway (normalmente o mesmo IP)
+IPAddress subnet(255, 255, 255, 0); // Máscara de sub-rede
 
 // Funções
 void connectToWiFi() {
@@ -30,6 +34,7 @@ void connectToWiFi() {
     if (!connected) {
         Serial.println("Falha ao conectar-se a redes WiFi. Entrando no modo Access Point...");
         WiFi.mode(WIFI_AP);
+        WiFi.softAPConfig(local_ip, gateway, subnet); // Configura IP fixo
         WiFi.softAP(ap_ssid, ap_password); // Nome e senha do Access Point
         Serial.print("Modo AP iniciado. Endereço IP: ");
         Serial.println(WiFi.softAPIP());
