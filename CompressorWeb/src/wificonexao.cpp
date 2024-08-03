@@ -1,4 +1,5 @@
-#include <WiFi.h>
+#include "wificonexao.h"
+#include <WiFiUdp.h>  // Certifique-se de que o ESP32 Framework está corretamente configurado para incluir este arquivo
 
 // Variáveis de configuração WiFi
 const char *ssid1 = "CFPFR_WIFI";
@@ -16,9 +17,6 @@ IPAddress secondaryDNS(8,8,4,4); // Google DNS
 // Configurações do modo Access Point
 const char *ap_ssid = "CompressorWeb";
 const char *ap_password = "12345678";
-
-// Protótipos de função
-bool tryConnectToWiFi(const char *ssid, const char *password, bool useStaticIP);
 
 void connectToWiFi()
 {
