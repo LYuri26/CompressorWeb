@@ -1,25 +1,22 @@
 #include "tempo.h"
-#include <WiFi.h>
-#include <WiFiUdp.h>
-#include <NTPClient.h>
-#include <time.h>
 
 const char* ntpServer = "pool.ntp.org";
-const long utcOffsetInSeconds = -3 * 3600;
+const long gmtOffset_sec = -10800;  // Offset de -3 horas em segundos
+const int daylightOffset_sec = 0;
 
 WiFiUDP ntpUDP;
-NTPClient timeClient(ntpUDP, ntpServer, utcOffsetInSeconds);
+NTPClient timeClient(ntpUDP, ntpServer, 0);  // Usar 0 para o fuso horário, vamos ajustar manualmente
 
 String currentTime = "";
 
 // Declarações de funções
-void setTimeFromNTP();
+void updateTime();
 void printInternalTime();
 
 void setupTimeClient() {
     timeClient.begin();
-    updateTime();  // Atualiza a hora pela primeira vez
-    setTimeFromNTP();  // Configura o relógio interno com a hora NTP
+    updateTime();
+    setTimeFromNTP();
     Serial.print("Hora inicial da Internet: ");
     Serial.println(currentTime);
 }
@@ -32,17 +29,18 @@ void updateTime() {
     if (WiFi.status() == WL_CONNECTED) {
         timeClient.update();
         unsigned long epochTime = timeClient.getEpochTime();
-        int hours = (epochTime % 86400L) / 3600;
-        int minutes = (epochTime % 3600) / 60;
-        int seconds = epochTime % 60;
+        time_t time = static_cast<time_t>(epochTime);
+        struct tm timeInfo;
+        localtime_r(&time, &timeInfo);
         char timeString[20];
         snprintf(timeString, sizeof(timeString), "%02d-%02d-%04dT%02d:%02d:%02d", 
-                 timeClient.getHours(), timeClient.getMinutes(), timeClient.getSeconds(), hours, minutes, seconds);
+                 timeInfo.tm_year + 1900, timeInfo.tm_mon + 1, timeInfo.tm_mday, 
+                 timeInfo.tm_hour, timeInfo.tm_min, timeInfo.tm_sec);
         currentTime = String(timeString);
 
-        if (seconds == 0) {
+        if (timeInfo.tm_sec == 0) {
             Serial.println("Hora atual da Internet: " + currentTime);
-            printInternalTime(); // Mostra a hora interna
+            printInternalTime();
         }
     } else {
         Serial.println("WiFi desconectado");
@@ -51,19 +49,15 @@ void updateTime() {
 
 void setTimeFromNTP() {
     if (WiFi.status() == WL_CONNECTED) {
-        timeClient.update();
-        unsigned long epochTime = timeClient.getEpochTime();
-        
-        // Configura a hora interna do ESP32
-        time_t time = static_cast<time_t>(epochTime); // Converte para time_t
+        configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+
         struct tm timeInfo;
-        gmtime_r(&time, &timeInfo); // Converte epochTime para tm
-        
-        Serial.print("Hora interna configurada para: ");
-        Serial.println(asctime(&timeInfo));
-        
-        // Definindo a hora do sistema
-        configTime(utcOffsetInSeconds, 0, ntpServer);
+        if (getLocalTime(&timeInfo)) {
+            Serial.print("Hora interna configurada para: ");
+            Serial.println(asctime(&timeInfo));
+        } else {
+            Serial.println("Falha ao obter hora NTP.");
+        }
     } else {
         Serial.println("WiFi desconectado. Não foi possível configurar a hora interna.");
     }
