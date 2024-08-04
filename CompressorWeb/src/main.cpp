@@ -11,7 +11,6 @@
 #include "wificonexao.h"
 #include "paginaserro.h"
 #include "tempo.h"
-#include "configuracaowifi.h"
 
 
 // Cria um objeto servidor web na porta 80 (HTTP)
@@ -65,7 +64,6 @@ void setupServer() {
     setupNotFoundPage(server);
     setupUsuarioJaLogadoPage(server);
     setupCredenciaisInvalidasPage(server);
-    setupWiFiConfigPage(server);
 
     configureRoutes();
     server.begin();

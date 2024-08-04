@@ -68,7 +68,7 @@ void setupIndexPage(AsyncWebServer& server) {
                         <div class="text-danger mt-2">%ERROR_MESSAGE%</div>
                     </form>
                     <a href="/creditos" class="btn btn-secondary btn-lg btn-block mt-3">Créditos</a>
-                    <a href="/configuracaowifi" class="btn btn-secondary btn-lg btn-block mt-3">Configuração WiFi</a>
+                    <a href="/wifigerenciador" class="btn btn-secondary btn-lg btn-block mt-3">Configuração WiFi</a>
                 </div>
                 <div class="footer">
                     <p>Aplicação desenvolvida pela Turma de Informática Para Internet Trilhas de Futuro 2024</p>
