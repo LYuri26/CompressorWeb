@@ -35,13 +35,15 @@ void setup() {
 
 void loop() {
     // O servidor assíncrono lida com as requisições automaticamente
-    updateTime();
-    delay(1000);
+    if (!isAPMode) {
+        updateTime();
+        delay(1000);
 
-    // Reconecta se a conexão WiFi for perdida
-    if (WiFi.status() != WL_CONNECTED) {
-        Serial.println("Conexão WiFi perdida. Tentando reconectar..."); // Imprime uma mensagem na serial
-        connectToWiFi();                                                // Tenta reconectar ao WiFi
+        // Reconecta se a conexão WiFi for perdida
+        if (WiFi.status() != WL_CONNECTED) {
+            Serial.println("Conexão WiFi perdida. Tentando reconectar..."); // Imprime uma mensagem na serial
+            connectToWiFi();                                                // Tenta reconectar ao WiFi
+        }
     }
 }
 
