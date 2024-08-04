@@ -71,25 +71,10 @@ void setupIndexPage(AsyncWebServer& server) {
                     <button onclick="window.location.href='/creditos'" class="btn btn-secondary btn-block mt-3">Créditos</button>
                 </div>
                 <div class="footer">
-                    <div id="clock"></div>
                     <p>Aplicação desenvolvida pela Turma de Informática Para Internet Trilhas de Futuro 2024</p>
                     <p>Instrutor: Lenon Yuri</p>
                 </div>
                 <script>
-                    // Função para atualizar o relógio
-                    function updateClock() {
-                        var now = new Date();
-                        var hours = now.getHours().toString().padStart(2, '0');
-                        var minutes = now.getMinutes().toString().padStart(2, '0');
-                        var seconds = now.getSeconds().toString().padStart(2, '0');
-                        var timeString = hours + ':' + minutes + ':' + seconds;
-                        document.getElementById('clock').innerHTML = timeString;
-                    }
-
-                    // Atualiza o relógio a cada segundo
-                    setInterval(updateClock, 1000);
-                    updateClock(); // Chama imediatamente para atualizar o relógio ao carregar a página
-
                     // Função para armazenar dados de login no console
                     function storeLoginData(event) {
                         event.preventDefault();
