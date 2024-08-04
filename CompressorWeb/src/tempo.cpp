@@ -33,7 +33,7 @@ void updateTime() {
         struct tm timeInfo;
         localtime_r(&time, &timeInfo);
         char timeString[20];
-        snprintf(timeString, sizeof(timeString), "%02d-%02d-%04dT%02d:%02d:%02d", 
+        snprintf(timeString, sizeof(timeString), "%02d-%02d-%04dT%02d:%02d", 
                  timeInfo.tm_year + 1900, timeInfo.tm_mon + 1, timeInfo.tm_mday, 
                  timeInfo.tm_hour, timeInfo.tm_min, timeInfo.tm_sec);
         currentTime = String(timeString);
@@ -69,7 +69,7 @@ void printInternalTime() {
     time(&now);
     localtime_r(&now, &timeinfo);
     char timeString[20];
-    snprintf(timeString, sizeof(timeString), "%02d-%02d-%04dT%02d:%02d:%02d", 
+    snprintf(timeString, sizeof(timeString), "%02d-%02d-%04dT%02d:%02d", 
              timeinfo.tm_year + 1900, timeinfo.tm_mon + 1, timeinfo.tm_mday, 
              timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
     Serial.println("Hora interna do ESP32: " + String(timeString));
