@@ -1,52 +1,56 @@
 #include <WiFi.h>
-#include <EEPROM.h>
+#include <ESPAsyncWebServer.h>
 #include "wificonexao.h"
-
-// Protótipo da função startAccessPoint()
-void startAccessPoint();
 
 // Configurações do modo Access Point
 const char *ap_ssid = "CompressorWeb";
 const char *ap_password = "12345678";
 
+// Configurações de rede WiFi
+const char *ssid1 = "CFPFR_WIFI";
+const char *password1 = "#CFP-Ur@107!";
+const char *ssid2 = "LenonClaro_2.4G";
+const char *password2 = "13539406670";
+
 // Configuração do IP fixo para o modo AP
-IPAddress local_ip(192, 168, 4, 1);
-IPAddress gateway(192, 168, 4, 1);
-IPAddress subnet(255, 255, 255, 0);
+IPAddress local_ip(192, 168, 4, 1);  // Endereço IP do Access Point
+IPAddress gateway(192, 168, 4, 1);   // Gateway (normalmente o mesmo IP)
+IPAddress subnet(255, 255, 255, 0); // Máscara de sub-rede
 
-// Credenciais padrão
-const char *default_ssid = "LenonClaro_2.4G";
-const char *default_password = "13539406670";
-
-// Função para conectar-se ao WiFi
+// Funções
 void connectToWiFi() {
-    EEPROM.begin(512);
-    String ssid = readStringFromEEPROM(0);
-    String password = readStringFromEEPROM(100);
+    Serial.println("Tentando conectar ao WiFi...");
 
-    // Tenta conectar com as credenciais salvas
-    if (ssid.length() > 0 && password.length() > 0) {
-        Serial.printf("Tentando conectar à rede WiFi salva: %s\n", ssid.c_str());
-        if (tryConnectToWiFi(ssid.c_str(), password.c_str())) {
-            return; // Conectado com sucesso
-        }
+    // Tenta conectar à primeira rede WiFi
+    bool connected = tryConnectToWiFi(ssid1, password1);
+
+    // Se a conexão falhar, tenta conectar à segunda rede WiFi
+    if (!connected) {
+        Serial.println("Tentando conectar à rede WiFi de backup...");
+        connected = tryConnectToWiFi(ssid2, password2);
     }
 
-    // Se as credenciais salvas falharem, tenta conectar com as credenciais padrão
-    Serial.println("Falha ao conectar com credenciais salvas ou nenhuma rede salva encontrada. Tentando conectar com credenciais padrão...");
-    if (tryConnectToWiFi(default_ssid, default_password)) {
-        return; // Conectado com sucesso
+    // Se a conexão falhar, entra no modo Access Point
+    if (!connected) {
+        Serial.println("Falha ao conectar-se a redes WiFi. Entrando no modo Access Point...");
+        WiFi.mode(WIFI_AP);
+        WiFi.softAPConfig(local_ip, gateway, subnet); // Configura IP fixo
+        WiFi.softAP(ap_ssid, ap_password); // Nome e senha do Access Point
+        Serial.print("Modo AP iniciado. Endereço IP: ");
+        Serial.println(WiFi.softAPIP());
+    } else {
+        Serial.print("Conectado ao WiFi. Endereço IP: ");
+        Serial.println(WiFi.localIP());
     }
-
-    // Se falhar ao conectar com as credenciais padrão, entra no modo Access Point
-    Serial.println("Falha ao conectar com credenciais padrão. Entrando no modo Access Point...");
-    startAccessPoint();
 }
 
 bool tryConnectToWiFi(const char *ssid, const char *password) {
-    Serial.printf("Conectando à rede WiFi: %s\n", ssid);
+    Serial.print("Conectando à rede WiFi: ");
+    Serial.println(ssid);
 
+    // Conecta ao WiFi
     WiFi.begin(ssid, password);
+
     int attempts = 0;
     while (WiFi.status() != WL_CONNECTED && attempts < 20) {
         delay(1000);
@@ -55,29 +59,19 @@ bool tryConnectToWiFi(const char *ssid, const char *password) {
     }
 
     if (WiFi.status() == WL_CONNECTED) {
-        Serial.printf("\nConectado com sucesso! Endereço IP: %s\n", WiFi.localIP().toString().c_str());
+        Serial.println();
+        Serial.print("Conectado com sucesso! Endereço IP: ");
+        Serial.println(WiFi.localIP());
+        Serial.print("Tentativas de conexão: ");
+        Serial.println(attempts);
         return true;
     } else {
-        Serial.printf("\nFalha ao conectar-se ao WiFi. Status: %d\n", WiFi.status());
+        Serial.println();
+        Serial.println("Falha ao conectar-se ao WiFi");
+        Serial.print("Status: ");
+        Serial.println(WiFi.status());
+        Serial.print("Tentativas de conexão: ");
+        Serial.println(attempts);
         return false;
     }
-}
-
-void startAccessPoint() {
-    WiFi.mode(WIFI_AP);
-    WiFi.softAPConfig(local_ip, gateway, subnet);
-    WiFi.softAP(ap_ssid, ap_password);
-    Serial.printf("Modo AP iniciado. Endereço IP: %s\n", WiFi.softAPIP().toString().c_str());
-}
-
-// Função para ler uma string da EEPROM
-String readStringFromEEPROM(int startAddress) {
-    String str = "";
-    char c = EEPROM.read(startAddress);
-    while (c != '\0') {
-        str += c;
-        startAddress++;
-        c = EEPROM.read(startAddress);
-    }
-    return str;
 }

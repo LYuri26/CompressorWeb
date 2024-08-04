@@ -85,7 +85,7 @@ int getMinutesFromTime(const String& time) {
 
 bool isAfterClosingTime() {
     updateTime(); // Atualiza o tempo antes de verificar
-    String time = getInternTime();
+    String time = getTimeClient();
     int hour = getHoursFromTime(time);
     bool resultado = hour >= 22;
     Serial.printf("Verificação de horário: %s\n", resultado ? "Após o horário de fechamento" : "Antes do horário de fechamento");
@@ -94,7 +94,7 @@ bool isAfterClosingTime() {
 
 bool isBeforeOpeningTime() {
     updateTime(); // Atualiza o tempo antes de verificar
-    String time = getInternTime();
+    String time = getTimeClient();
     int hour = getHoursFromTime(time);
     bool resultado = hour < 7;
     Serial.printf("Verificação de horário: %s\n", resultado ? "Antes do horário de abertura" : "Após o horário de abertura");
@@ -151,7 +151,7 @@ void setupLigaDesliga(AsyncWebServer& server) {
 
     updateTime();
     Serial.print("Hora atual: ");
-    Serial.println(getInternTime()); // Hora em formato completo
+    Serial.println(getTimeClient()); // Hora em formato completo
 
     if (isAfterClosingTime() || isBeforeOpeningTime()) {
         compressorLigado = false;

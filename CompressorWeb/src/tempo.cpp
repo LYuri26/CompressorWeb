@@ -1,48 +1,24 @@
 #include "tempo.h"
-#include <WiFi.h>
-#include <WiFiUdp.h>
-#include <NTPClient.h>
 
-// Configurações do servidor NTP e fuso horário
 const char* ntpServer = "pool.ntp.org";
 const long gmtOffset_sec = -10800;  // Offset de -3 horas em segundos
 const int daylightOffset_sec = 0;
 
-// Configuração do cliente NTP
 WiFiUDP ntpUDP;
-NTPClient timeClient(ntpUDP, ntpServer, 0);  // Usar 0 para o fuso horário, ajustar manualmente
+NTPClient timeClient(ntpUDP, ntpServer, 0);  // Usar 0 para o fuso horário, vamos ajustar manualmente
 
 String currentTime = "";
 
-// Declaração de funções
-void setupTimeClient();
-String getTimeClient();
+// Declarações de funções
 void updateTime();
-void setTimeFromNTP();
-void updateCurrentTime();
-String getInternTime();
-void printTimes();
-bool isTimeSynced(); // Adicionada função para verificar sincronização
+void printInternalTime();
 
 void setupTimeClient() {
     timeClient.begin();
-    Serial.println("Aguardando sincronização com o servidor NTP...");
-    
-    // Aguarda a sincronização com o servidor NTP
-    unsigned long startMillis = millis();
-    while (!isTimeSynced() && millis() - startMillis < 10000) {
-        delay(1000); // Aguarda 1 segundo antes de tentar novamente
-    }
-    
-    // Verifica se a sincronização foi bem-sucedida
-    if (isTimeSynced()) {
-        updateTime(); // Atualiza o tempo após a sincronização
-        setTimeFromNTP();
-        Serial.print("Hora inicial da Internet: ");
-        Serial.println(currentTime);
-    } else {
-        Serial.println("Falha na sincronização com o servidor NTP.");
-    }
+    updateTime();
+    setTimeFromNTP();
+    Serial.print("Hora inicial da Internet: ");
+    Serial.println(currentTime);
 }
 
 String getTimeClient() {
@@ -52,11 +28,19 @@ String getTimeClient() {
 void updateTime() {
     if (WiFi.status() == WL_CONNECTED) {
         timeClient.update();
-        updateCurrentTime();
-        
-        // Exibir as horas se for o início de um novo minuto
-        if (timeClient.getSeconds() == 0) {
-            printTimes();
+        unsigned long epochTime = timeClient.getEpochTime();
+        time_t time = static_cast<time_t>(epochTime);
+        struct tm timeInfo;
+        localtime_r(&time, &timeInfo);
+        char timeString[20];
+        snprintf(timeString, sizeof(timeString), "%02d-%02d-%04dT%02d:%02d:%02d", 
+                 timeInfo.tm_year + 1900, timeInfo.tm_mon + 1, timeInfo.tm_mday, 
+                 timeInfo.tm_hour, timeInfo.tm_min, timeInfo.tm_sec);
+        currentTime = String(timeString);
+
+        if (timeInfo.tm_sec == 0) {
+            Serial.println("Hora atual da Internet: " + currentTime);
+            printInternalTime();
         }
     } else {
         Serial.println("WiFi desconectado");
@@ -79,36 +63,14 @@ void setTimeFromNTP() {
     }
 }
 
-void updateCurrentTime() {
-    unsigned long epochTime = timeClient.getEpochTime();
-    time_t time = static_cast<time_t>(epochTime);
-    struct tm timeInfo;
-    localtime_r(&time, &timeInfo);
-    char timeString[20];
-    snprintf(timeString, sizeof(timeString), "%04d-%02d-%02dT%02d:%02d", 
-             timeInfo.tm_year + 1900, timeInfo.tm_mon + 1, timeInfo.tm_mday, 
-             timeInfo.tm_hour, timeInfo.tm_min);
-    currentTime = String(timeString);
-}
-
-String getInternTime() {
+void printInternalTime() {
     time_t now;
-    struct tm timeInfo;
+    struct tm timeinfo;
     time(&now);
-    localtime_r(&now, &timeInfo);
+    localtime_r(&now, &timeinfo);
     char timeString[20];
-    snprintf(timeString, sizeof(timeString), "%04d-%02d-%02dT%02d:%02d", 
-             timeInfo.tm_year + 1900, timeInfo.tm_mon + 1, timeInfo.tm_mday, 
-             timeInfo.tm_hour, timeInfo.tm_min);
-    return String(timeString);
-}
-
-void printTimes() {
-    Serial.println("Hora atual da Internet: " + currentTime);
-    Serial.println("Hora interna do ESP32: " + getInternTime());
-}
-
-// Função para verificar se o tempo foi sincronizado
-bool isTimeSynced() {
-    return timeClient.getEpochTime() > 0; // Retorna true se o tempo for maior que zero
+    snprintf(timeString, sizeof(timeString), "%02d-%02d-%04dT%02d:%02d:%02d", 
+             timeinfo.tm_year + 1900, timeinfo.tm_mon + 1, timeinfo.tm_mday, 
+             timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
+    Serial.println("Hora interna do ESP32: " + String(timeString));
 }

@@ -18,7 +18,5 @@ void connectToWiFi();
 void setupServer();
 // Declaração da função auxiliar para tentar conectar a uma rede WiFi
 bool tryConnectToWiFi(const char *ssid, const char *password);
-void saveStringToEEPROM(int startAddress, const String& str);
-String readStringFromEEPROM(int startAddress);
 extern AsyncWebServer server;
 #endif // WIFICONEXAO_H
