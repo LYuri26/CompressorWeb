@@ -1,0 +1,8 @@
+WebServer
+SPI
+SPIFFS
+Adafruit BusIO
+FS
+Wire
+WiFi
+NTPClient
