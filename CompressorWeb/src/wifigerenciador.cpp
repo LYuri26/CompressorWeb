@@ -26,6 +26,7 @@ void setupWiFiManagementPage(AsyncWebServer &server) {
     <title>Gerenciamento Wi-Fi</title> <!-- Define o título da página -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"> <!-- Inclui o CSS do Bootstrap para estilização -->
     <style>
+        /* Estilos para o corpo da página */
         body {
             font-family: Arial, sans-serif; /* Define a fonte do corpo da página */
             background-color: #f8f9fa; /* Define a cor de fundo da página */
@@ -33,6 +34,7 @@ void setupWiFiManagementPage(AsyncWebServer &server) {
             margin: 0; /* Remove as margens padrão */
             padding: 0; /* Remove o preenchimento padrão */
         }
+        /* Estilos para o contêiner principal */
         .container {
             background-color: #ffffff; /* Define a cor de fundo do contêiner */
             padding: 20px; /* Adiciona preenchimento interno ao contêiner */
@@ -42,6 +44,7 @@ void setupWiFiManagementPage(AsyncWebServer &server) {
             max-width: 600px; /* Define a largura máxima do contêiner */
             margin: auto; /* Centraliza o contêiner horizontalmente */
         }
+        /* Estilos para o rodapé */
         .footer {
             position: fixed; /* Define a posição do rodapé como fixa */
             bottom: 0; /* Posiciona o rodapé na parte inferior da página */
@@ -52,15 +55,12 @@ void setupWiFiManagementPage(AsyncWebServer &server) {
             padding: 10px 0; /* Adiciona preenchimento vertical ao rodapé */
             font-size: 14px; /* Define o tamanho da fonte do texto no rodapé */
         }
+        /* Estilos para a lista de redes salvas */
         #saved-networks {
             max-height: 300px; /* Define a altura máxima para a lista de redes salvas */
             overflow-y: auto; /* Adiciona rolagem vertical se o conteúdo exceder a altura máxima */
         }
-        @media (max-width: 768px) {
-            .container {
-                padding: 15px; /* Ajusta o preenchimento do contêiner em telas menores */
-            }
-        }
+        /* Estilos para o botão de salvar */
         .btn-success {
             background-color: #28a745; /* Cor de fundo do botão de salvar */
             color: white; /* Cor do texto do botão */
@@ -68,6 +68,7 @@ void setupWiFiManagementPage(AsyncWebServer &server) {
         .btn-success:hover {
             background-color: #218838; /* Cor de fundo do botão de salvar ao passar o mouse sobre ele */
         }
+        /* Estilos para o botão de voltar */
         .btn-blue {
             background-color: #007bff; /* Cor de fundo do botão de voltar */
             color: white; /* Cor do texto do botão */
@@ -76,10 +77,32 @@ void setupWiFiManagementPage(AsyncWebServer &server) {
             font-size: 16px; /* Define o tamanho da fonte do botão */
             cursor: pointer; /* Muda o cursor para uma mão ao passar o mouse sobre o botão */
             border-radius: 3px; /* Adiciona bordas arredondadas ao botão */
-            width: 100%; /* Define a largura jcomo 100% */
+            width: 100%; /* Define a largura como 100% */
         }
         .btn-blue:hover {
             background-color: #0056b3; /* Altera a cor de fundo ao passar o mouse sobre o botão de voltar */
+        }
+        /* Estilos para o botão de deletar */
+        .btn-custom-danger {
+            background-color: #dc3545; /* Cor de fundo do botão de deletar */
+            color: white; /* Cor do texto do botão */
+            border: none; /* Remove a borda do botão */
+            padding: 5px 10px; /* Adiciona padding ao botão para espaçamento interno */
+            font-size: 14px; /* Define o tamanho da fonte do botão */
+            cursor: pointer; /* Muda o cursor para uma mão ao passar o mouse sobre o botão */
+            border-radius: 3px; /* Adiciona bordas arredondadas ao botão */
+            text-decoration: none; /* Remove o sublinhado do link */
+        }
+        .btn-custom-danger:hover {
+            background-color: #c82333; /* Altera a cor de fundo ao passar o mouse sobre o botão de deletar */
+        }
+        /* Estilos para o grupo de entrada com botão de alternar senha */
+        .input-group {
+            display: flex; /* Usa o flexbox para o layout do grupo de entrada */
+            align-items: center; /* Alinha os itens verticalmente ao centro */
+        }
+        .input-group-append {
+            margin-left: -1px; /* Remove a margem esquerda do botão para que ele se encaixe com o campo de entrada */
         }
     </style>
 </head>
@@ -93,7 +116,12 @@ void setupWiFiManagementPage(AsyncWebServer &server) {
             </div>
             <div class="form-group">
                 <label for="password">Senha:</label>
-                <input type="password" id="password" name="password" class="form-control" placeholder="Digite a senha" required>
+                <div class="input-group">
+                    <input type="password" id="password" name="password" class="form-control" placeholder="Digite a senha" required>
+                    <div class="input-group-append">
+                        <button class="btn btn-outline-secondary" type="button" id="toggle-password">Mostrar</button>
+                    </div>
+                </div>
             </div>
             <button type="submit" class="btn btn-success btn-block">Salvar</button>
             <button type="button" onclick="window.history.back()" class="btn-blue">Voltar</button>
@@ -123,7 +151,7 @@ void setupWiFiManagementPage(AsyncWebServer &server) {
                         // Se houver redes salvas, atualiza a lista na página
                         networks.forEach(network => {
                             var parts = network.split(','); // Divide cada linha em SSID e senha
-                            savedNetworks.innerHTML += '<p><strong>SSID:</strong> ' + parts[0] + ' <a class="btn-delete" href="/delete-wifi?ssid=' + parts[0] + '">Delete</a></p>';
+                            savedNetworks.innerHTML += '<p><strong>SSID:</strong> ' + parts[0] + ' <a class="btn btn-custom-danger" href="/delete-wifi?ssid=' + parts[0] + '">Delete</a></p>';
                         });
                     } else {
                         savedNetworks.innerHTML = '<p>Nenhuma rede salva encontrada.</p>'; // Mensagem se nenhuma rede estiver salva
@@ -139,6 +167,19 @@ void setupWiFiManagementPage(AsyncWebServer &server) {
         // Atualiza a lista de redes salvas ao carregar a página
         document.addEventListener('DOMContentLoaded', function() {
             fetchSavedNetworks();
+        });
+
+        // Função para alternar a visibilidade da senha
+        document.getElementById('toggle-password').addEventListener('click', function () {
+            var passwordField = document.getElementById('password'); // Obtém o campo de senha
+            var toggleButton = this; // Obtém o botão de alternar
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text'; // Muda o tipo para texto para mostrar a senha
+                toggleButton.textContent = 'Ocultar'; // Altera o texto do botão
+            } else {
+                passwordField.type = 'password'; // Muda o tipo para senha para ocultar a senha
+                toggleButton.textContent = 'Mostrar'; // Altera o texto do botão
+            }
         });
     </script>
 </body>

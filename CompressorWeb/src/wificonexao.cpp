@@ -40,7 +40,7 @@ void connectToWiFi(const char* ssid, const char* password) {
     WiFi.begin(ssid, password);  // Inicia a conexão com o Wi-Fi
 
     int attempts = 0;           // Contador de tentativas
-    const int maxAttempts = 5;  // Número máximo de tentativas de conexão
+    const int maxAttempts = 20;  // Número máximo de tentativas de conexão
 
     // Tenta conectar ao Wi-Fi até o número máximo de tentativas
     while (WiFi.status() != WL_CONNECTED && attempts < maxAttempts) {
