@@ -1,16 +1,35 @@
-#ifndef DASHBOARD_H  // Verifica se a macro DASHBOARD_H não está definida
-#define DASHBOARD_H  // Define a macro DASHBOARD_H para evitar múltiplas inclusões deste arquivo de cabeçalho
+#ifndef DASHBOARD_H
+#define DASHBOARD_H
 
-#include <ESPAsyncWebServer.h>  // Inclui a biblioteca para o servidor web assíncrono
+// -------------------------------------------------------------------------
+// Inclusão de Bibliotecas
+// -------------------------------------------------------------------------
 
-// Declaração da função setupDashboardPage
-// A função setupDashboardPage é responsável por configurar a página do dashboard no servidor web
-// Recebe uma referência para um objeto AsyncWebServer como parâmetro, que será utilizado para definir rotas e manipuladores (handlers)
+#include <ESPAsyncWebServer.h>  // Inclui a biblioteca para criar e gerenciar um servidor web assíncrono
+
+// -------------------------------------------------------------------------
+// Declaração de Funções
+// -------------------------------------------------------------------------
+
+/**
+ * Configura a página do dashboard no servidor web.
+ * 
+ * Esta função define a configuração para a página do dashboard acessada pelo servidor web.
+ * Ela adiciona rotas HTTP e manipuladores (handlers) necessários para servir o conteúdo da
+ * página do dashboard. A página do dashboard pode incluir informações de status e controles.
+ * 
+ * @param server Referência para o objeto AsyncWebServer usado para adicionar e configurar rotas e handlers.
+ */
 void setupDashboardPage(AsyncWebServer& server);
 
-// Declaração da função handleToggleAction
-// A função handleToggleAction é responsável por configurar as ações de ligar/desligar do compressor no servidor web
-// Recebe uma referência para um objeto AsyncWebServer como parâmetro, que será utilizado para definir rotas e manipuladores (handlers)
+/**
+ * Configura as ações de ligar/desligar do compressor no servidor web.
+ * 
+ * Esta função adiciona rotas e manipuladores (handlers) específicos para controlar o estado do compressor
+ * (ligar ou desligar). A função deve tratar as requisições do usuário para alterar o estado do compressor.
+ * 
+ * @param server Referência para o objeto AsyncWebServer usado para definir rotas e handlers relacionados ao controle do compressor.
+ */
 void handleToggleAction(AsyncWebServer& server);
 
-#endif  // Finaliza a diretiva de pré-processador #ifndef/#define
+#endif // DASHBOARD_H

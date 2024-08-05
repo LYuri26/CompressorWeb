@@ -1,11 +1,25 @@
-#ifndef INDEX_H  // Verifica se a macro INDEX_H não está definida
-#define INDEX_H  // Define a macro INDEX_H para evitar múltiplas inclusões deste arquivo de cabeçalho
+#ifndef INDEX_H
+#define INDEX_H
 
-#include <ESPAsyncWebServer.h>  // Inclui a biblioteca para o servidor web assíncrono
+// -------------------------------------------------------------------------
+// Inclusão de Bibliotecas
+// -------------------------------------------------------------------------
 
-// Declaração da função setupIndexPage
-// A função setupIndexPage é responsável por configurar a página inicial do servidor web
-// Recebe uma referência para um objeto AsyncWebServer como parâmetro, que será utilizado para definir rotas e manipuladores (handlers)
+#include <ESPAsyncWebServer.h>  // Biblioteca para criar e gerenciar um servidor web assíncrono
+
+// -------------------------------------------------------------------------
+// Declaração de Funções
+// -------------------------------------------------------------------------
+
+/**
+ * Configura a página inicial do servidor web.
+ * 
+ * Esta função define a configuração para a página inicial acessada pelo servidor web.
+ * Ela define as rotas HTTP e os manipuladores necessários para servir o conteúdo da
+ * página inicial do servidor.
+ * 
+ * @param server Referência para o objeto AsyncWebServer que é usado para configurar rotas e handlers.
+ */
 void setupIndexPage(AsyncWebServer& server);
 
-#endif  // Finaliza a diretiva de pré-processador #ifndef/#define
+#endif // INDEX_H

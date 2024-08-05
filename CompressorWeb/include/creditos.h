@@ -1,11 +1,25 @@
-#ifndef CREDITOS_H  // Verifica se a macro CREDITOS_H não está definida
-#define CREDITOS_H  // Define a macro CREDITOS_H para evitar inclusão múltipla deste cabeçalho
+#ifndef CREDITOS_H
+#define CREDITOS_H
+
+// -------------------------------------------------------------------------
+// Inclusão de Bibliotecas
+// -------------------------------------------------------------------------
 
 #include <ESPAsyncWebServer.h>  // Inclui a biblioteca para o servidor web assíncrono
 
-// Declaração da função setupCreditosPage
-// A função setupCreditosPage é responsável por configurar a página de créditos no servidor web
-// Recebe uma referência ao objeto AsyncWebServer como parâmetro, que será utilizado para definir rotas e manipuladores (handlers)
+// -------------------------------------------------------------------------
+// Declaração de Funções
+// -------------------------------------------------------------------------
+
+/**
+ * Configura a página de créditos no servidor web.
+ * 
+ * Esta função define as rotas e manipuladores (handlers) necessários para a página de créditos,
+ * que é uma página web acessada pelo servidor. A página de créditos pode conter informações sobre
+ * os criadores do projeto, agradecimentos e outras informações relacionadas.
+ * 
+ * @param server Referência para o objeto AsyncWebServer utilizado para adicionar e configurar rotas e handlers.
+ */
 void setupCreditosPage(AsyncWebServer& server);
 
-#endif // CREDITOS_H  // Finaliza a diretiva de pré-processador #ifndef/#define
+#endif // CREDITOS_H

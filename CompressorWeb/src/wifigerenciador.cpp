@@ -1,154 +1,198 @@
-#include <WiFi.h>
-#include <ESPAsyncWebServer.h>
-#include <SPIFFS.h>
-#include "wificonexao.h"
+#include <WiFi.h>                   // Inclui a biblioteca WiFi para conectar-se a redes Wi-Fi
+#include <ESPAsyncWebServer.h>      // Inclui a biblioteca para o servidor web assíncrono
+#include <SPIFFS.h>                 // Inclui a biblioteca para o sistema de arquivos SPIFFS
+#include "wificonexao.h"            // Inclui o arquivo de cabeçalho com funções de conexão Wi-Fi
+
 
 // Função para configurar a página de gerenciamento de Wi-Fi
 void setupWiFiManagementPage(AsyncWebServer &server) {
+    // Inicializa o sistema de arquivos SPIFFS
     if (!SPIFFS.begin(true)) {
         Serial.println("Falha ao iniciar o sistema de arquivos SPIFFS");
-        return;
+        return; // Interrompe a função se SPIFFS não iniciar
     }
 
+    // -------------------------------------------------------------------------
     // Rota para a página de gerenciamento de Wi-Fi
+    // -------------------------------------------------------------------------
     server.on("/wifi-management", HTTP_GET, [](AsyncWebServerRequest *request) {
+        // Define o conteúdo HTML da página de gerenciamento de Wi-Fi
         String html = R"rawliteral(
-            <!DOCTYPE html>
-            <html lang="pt-br">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Gerenciamento Wi-Fi</title>
-                <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-                <style>
-                    body {
-                        font-family: Arial, sans-serif;
-                        background-color: #f8f9fa;
-                        height: 100vh;
-                        margin: 0;
-                        padding: 0;
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8"> <!-- Define a codificação de caracteres para UTF-8 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Define a largura da página e o zoom inicial -->
+    <title>Gerenciamento Wi-Fi</title> <!-- Define o título da página -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"> <!-- Inclui o CSS do Bootstrap para estilização -->
+    <style>
+        body {
+            font-family: Arial, sans-serif; /* Define a fonte do corpo da página */
+            background-color: #f8f9fa; /* Define a cor de fundo da página */
+            height: 100vh; /* Define a altura da página como 100% da altura da janela de visualização */
+            margin: 0; /* Remove as margens padrão */
+            padding: 0; /* Remove o preenchimento padrão */
+        }
+        .container {
+            background-color: #ffffff; /* Define a cor de fundo do contêiner */
+            padding: 20px; /* Adiciona preenchimento interno ao contêiner */
+            border-radius: 5px; /* Adiciona bordas arredondadas ao contêiner */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Adiciona uma sombra ao contêiner */
+            width: 100%; /* Define a largura do contêiner como 100% */
+            max-width: 600px; /* Define a largura máxima do contêiner */
+            margin: auto; /* Centraliza o contêiner horizontalmente */
+        }
+        .footer {
+            position: fixed; /* Define a posição do rodapé como fixa */
+            bottom: 0; /* Posiciona o rodapé na parte inferior da página */
+            width: 100%; /* Define a largura do rodapé como 100% */
+            background-color: #007bff; /* Define a cor de fundo do rodapé */
+            color: white; /* Define a cor do texto no rodapé */
+            text-align: center; /* Centraliza o texto no rodapé */
+            padding: 10px 0; /* Adiciona preenchimento vertical ao rodapé */
+            font-size: 14px; /* Define o tamanho da fonte do texto no rodapé */
+        }
+        #saved-networks {
+            max-height: 300px; /* Define a altura máxima para a lista de redes salvas */
+            overflow-y: auto; /* Adiciona rolagem vertical se o conteúdo exceder a altura máxima */
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px; /* Ajusta o preenchimento do contêiner em telas menores */
+            }
+        }
+        .btn-success {
+            background-color: #28a745; /* Cor de fundo do botão de salvar */
+            color: white; /* Cor do texto do botão */
+        }
+        .btn-success:hover {
+            background-color: #218838; /* Cor de fundo do botão de salvar ao passar o mouse sobre ele */
+        }
+        .btn-blue {
+            background-color: #007bff; /* Cor de fundo do botão de voltar */
+            color: white; /* Cor do texto do botão */
+            border: none; /* Remove a borda do botão */
+            padding: 10px 20px; /* Adiciona padding ao botão para espaçamento interno */
+            font-size: 16px; /* Define o tamanho da fonte do botão */
+            cursor: pointer; /* Muda o cursor para uma mão ao passar o mouse sobre o botão */
+            border-radius: 3px; /* Adiciona bordas arredondadas ao botão */
+            width: 100%; /* Define a largura como 100% */
+        }
+        .btn-blue:hover {
+            background-color: #0056b3; /* Altera a cor de fundo ao passar o mouse sobre o botão de voltar */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Gerenciamento de Redes Wi-Fi</h2>
+        <form id="save-form" action="/save-wifi" method="post">
+            <div class="form-group">
+                <label for="ssid">SSID da Rede Wi-Fi:</label>
+                <input type="text" id="ssid" name="ssid" class="form-control" placeholder="Digite o SSID" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Senha:</label>
+                <input type="password" id="password" name="password" class="form-control" placeholder="Digite a senha" required>
+            </div>
+            <button type="submit" class="btn btn-success btn-block">Salvar</button>
+            <button type="button" onclick="window.history.back()" class="btn-blue">Voltar</button>
+        </form>
+        <hr>
+        <div id="saved-networks">Aguardando redes salvas...</div>
+    </div>
+    <div class="footer">
+        <p>Aplicação desenvolvida pela Turma de Informática Para Internet Trilhas de Futuro 2024</p>
+        <p>Instrutor: Lenon Yuri</p>
+    </div>
+    <script>
+        // Função para buscar redes Wi-Fi salvas e atualizar a interface
+        function fetchSavedNetworks() {
+            fetch('/list-saved-wifi') // Faz uma solicitação GET para a rota '/list-saved-wifi'
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
                     }
-                    .container {
-                        background-color: #ffffff;
-                        padding: 20px;
-                        border-radius: 5px;
-                        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-                        width: 100%;
-                        max-width: 600px;
-                        margin: auto;
+                    return response.text(); // Converte a resposta em texto
+                })
+                .then(data => {
+                    var savedNetworks = document.getElementById('saved-networks');
+                    savedNetworks.innerHTML = ''; // Limpa o conteúdo atual
+                    var networks = data.trim().split('\n'); // Divide a resposta em linhas
+                    if (networks.length > 0 && networks[0] !== "") {
+                        // Se houver redes salvas, atualiza a lista na página
+                        networks.forEach(network => {
+                            var parts = network.split(','); // Divide cada linha em SSID e senha
+                            savedNetworks.innerHTML += '<p><strong>SSID:</strong> ' + parts[0] + ' <a class="btn-delete" href="/delete-wifi?ssid=' + parts[0] + '">Delete</a></p>';
+                        });
+                    } else {
+                        savedNetworks.innerHTML = '<p>Nenhuma rede salva encontrada.</p>'; // Mensagem se nenhuma rede estiver salva
                     }
-                    .footer {
-                        position: fixed;
-                        bottom: 0;
-                        width: 100%;
-                        background-color: #007bff;
-                        color: white;
-                        text-align: center;
-                        padding: 10px 0;
-                        font-size: 14px;
-                    }
-                    #saved-networks {
-                        max-height: 300px;
-                        overflow-y: auto;
-                    }
-                    @media (max-width: 768px) {
-                        .container {
-                            padding: 15px;
-                        }
-                    }
-                </style>
-            </head>
-            <body>
-                <div class="container">
-                    <h2>Gerenciamento de Redes Wi-Fi</h2>
-                    <form id="save-form" action="/save-wifi" method="post">
-                        <div class="form-group">
-                            <label for="ssid">SSID da Rede Wi-Fi:</label>
-                            <input type="text" id="ssid" name="ssid" class="form-control" placeholder="Digite o SSID" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="password">Senha:</label>
-                            <input type="password" id="password" name="password" class="form-control" placeholder="Digite a senha" required>
-                        </div>
-                        <button type="submit" class="btn btn-success btn-block">Salvar</button>
-                    </form>
-                    <hr>
-                    <div id="saved-networks">Aguardando redes salvas...</div>
-                </div>
-                <div class="footer">
-                    <p>Aplicação desenvolvida pela Turma de Informática Para Internet Trilhas de Futuro 2024</p>
-                    <p>Instrutor: Lenon Yuri</p>
-                </div>
-                <script>
-                    function fetchSavedNetworks() {
-                        fetch('/list-saved-wifi')
-                            .then(response => {
-                                if (!response.ok) {
-                                    throw new Error('Network response was not ok');
-                                }
-                                return response.text();
-                            })
-                            .then(data => {
-                                var savedNetworks = document.getElementById('saved-networks');
-                                savedNetworks.innerHTML = '';
-                                var networks = data.trim().split('\\n');
-                                if (networks.length > 0 && networks[0] !== "") {
-                                    networks.forEach(network => {
-                                        var parts = network.split(',');
-                                        savedNetworks.innerHTML += '<p><strong>SSID:</strong> ' + parts[0] + ' <a href="/delete-wifi?ssid=' + parts[0] + '">Delete</a></p>';
-                                    });
-                                } else {
-                                    savedNetworks.innerHTML = '<p>Nenhuma rede salva encontrada.</p>';
-                                }
-                            })
-                            .catch(error => {
-                                console.error('Erro ao buscar as redes salvas:', error);
-                                var savedNetworks = document.getElementById('saved-networks');
-                                savedNetworks.innerHTML = '<p>Erro ao buscar redes salvas.</p>';
-                            });
-                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao buscar as redes salvas:', error); // Log de erros no console
+                    var savedNetworks = document.getElementById('saved-networks');
+                    savedNetworks.innerHTML = '<p>Erro ao buscar redes salvas.</p>'; // Mensagem de erro na página
+                });
+        }
 
-                    document.addEventListener('DOMContentLoaded', function() {
-                        fetchSavedNetworks();
-                    });
-                </script>
-            </body>
-            </html>
+        // Atualiza a lista de redes salvas ao carregar a página
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchSavedNetworks();
+        });
+    </script>
+</body>
+</html>
         )rawliteral";
 
+        // Envia a resposta HTML com o código definido
         request->send(200, "text/html", html);
     });
 
+    // -------------------------------------------------------------------------
     // Rota para listar redes Wi-Fi salvas
+    // -------------------------------------------------------------------------
     server.on("/list-saved-wifi", HTTP_GET, [](AsyncWebServerRequest *request) {
+        // Abre o arquivo de redes Wi-Fi para leitura
         File file = SPIFFS.open("/wifiredes.txt", FILE_READ);
         if (!file) {
-            request->send(500, "text/plain", "Erro ao abrir o arquivo de redes Wi-Fi");
+            request->send(500, "text/plain", "Erro ao abrir o arquivo de redes Wi-Fi"); // Responde com erro se não conseguir abrir o arquivo
             return;
         }
 
+        // Lê o conteúdo do arquivo
         String networks = file.readString();
-        file.close();
-        request->send(200, "text/plain", networks);
+        file.close(); // Fecha o arquivo após leitura
+        request->send(200, "text/plain", networks); // Envia o conteúdo lido como resposta
     });
 
+    // -------------------------------------------------------------------------
     // Rota para salvar uma nova rede Wi-Fi
+    // -------------------------------------------------------------------------
     server.on("/save-wifi", HTTP_POST, [](AsyncWebServerRequest *request) {
         String ssid;
         String password;
 
         if (request->hasParam("ssid", true) && request->hasParam("password", true)) {
+            // Obtém o SSID e a senha do formulário
             ssid = request->getParam("ssid", true)->value();
             password = request->getParam("password", true)->value();
 
-            // Adicionar nova rede ao arquivo
+            // Abre o arquivo de redes Wi-Fi para leitura
             File file = SPIFFS.open("/wifiredes.txt", FILE_READ);
+            if (!file) {
+                request->send(500, "text/plain", "Erro ao abrir o arquivo de redes Wi-Fi"); // Responde com erro se não conseguir abrir o arquivo
+                return;
+            }
+
+            // Lê o conteúdo do arquivo
             String content = file.readString();
-            file.close();
+            file.close(); // Fecha o arquivo após leitura
 
             String newContent = "";
             bool ssidExists = false;
             if (content.length() > 0) {
+                // Processa o conteúdo existente para verificar se o SSID já está presente
                 int start = 0;
                 while (start < content.length()) {
                     int end = content.indexOf('\n', start);
@@ -159,45 +203,55 @@ void setupWiFiManagementPage(AsyncWebServer &server) {
                     int commaIndex = line.indexOf(',');
                     String savedSSID = line.substring(0, commaIndex);
                     if (savedSSID == ssid) {
-                        newContent += ssid + "," + password + "\n";
+                        newContent += ssid + "," + password + "\n"; // Atualiza a entrada existente com a nova senha
                         ssidExists = true;
                     } else {
-                        newContent += line + "\n";
+                        newContent += line + "\n"; // Mantém a entrada existente
                     }
                     start = end + 1;
                 }
             }
 
             if (!ssidExists) {
-                newContent += ssid + "," + password + "\n";
+                newContent += ssid + "," + password + "\n"; // Adiciona nova entrada se o SSID não existir
             }
 
+            // Abre o arquivo de redes Wi-Fi para escrita
             file = SPIFFS.open("/wifiredes.txt", FILE_WRITE);
             if (!file) {
-                request->send(500, "text/plain", "Erro ao abrir o arquivo para escrita");
+                request->send(500, "text/plain", "Erro ao abrir o arquivo para escrita"); // Responde com erro se não conseguir abrir o arquivo
                 return;
             }
-            file.print(newContent);
-            file.close();
+            file.print(newContent); // Escreve o conteúdo atualizado no arquivo
+            file.close(); // Fecha o arquivo após escrita
 
-            // Tentar conectar à nova rede salva
+            // Tenta conectar à nova rede salva
             connectToWiFi(ssid.c_str(), password.c_str());
 
-            request->redirect("/wifi-management");
+            request->redirect("/wifi-management"); // Redireciona para a página de gerenciamento de Wi-Fi
         } else {
-            request->send(400, "text/plain", "Dados ausentes.");
+            request->send(400, "text/plain", "Dados ausentes."); // Responde com erro se os dados estiverem ausentes
         }
     });
 
+    // -------------------------------------------------------------------------
     // Rota para deletar uma rede Wi-Fi salva
+    // -------------------------------------------------------------------------
     server.on("/delete-wifi", HTTP_GET, [](AsyncWebServerRequest *request) {
         if (request->hasParam("ssid")) {
+            // Obtém o SSID a ser excluído
             String ssidToDelete = request->getParam("ssid")->value();
 
-            // Remover rede do arquivo
+            // Abre o arquivo de redes Wi-Fi para leitura
             File file = SPIFFS.open("/wifiredes.txt", FILE_READ);
+            if (!file) {
+                request->send(500, "text/plain", "Erro ao abrir o arquivo de redes Wi-Fi"); // Responde com erro se não conseguir abrir o arquivo
+                return;
+            }
+
+            // Lê o conteúdo do arquivo
             String content = file.readString();
-            file.close();
+            file.close(); // Fecha o arquivo após leitura
 
             String newContent = "";
             int start = 0;
@@ -210,22 +264,23 @@ void setupWiFiManagementPage(AsyncWebServer &server) {
                 int commaIndex = line.indexOf(',');
                 String savedSSID = line.substring(0, commaIndex);
                 if (savedSSID != ssidToDelete) {
-                    newContent += line + "\n";
+                    newContent += line + "\n"; // Mantém a entrada que não deve ser excluída
                 }
                 start = end + 1;
             }
 
+            // Abre o arquivo de redes Wi-Fi para escrita
             file = SPIFFS.open("/wifiredes.txt", FILE_WRITE);
             if (!file) {
-                request->send(500, "text/plain", "Erro ao abrir o arquivo para escrita");
+                request->send(500, "text/plain", "Erro ao abrir o arquivo para escrita"); // Responde com erro se não conseguir abrir o arquivo
                 return;
             }
-            file.print(newContent);
-            file.close();
+            file.print(newContent); // Escreve o conteúdo atualizado no arquivo
+            file.close(); // Fecha o arquivo após escrita
 
-            request->redirect("/wifi-management");
+            request->redirect("/wifi-management"); // Redireciona para a página de gerenciamento de Wi-Fi
         } else {
-            request->send(400, "text/plain", "SSID ausente.");
+            request->send(400, "text/plain", "SSID ausente."); // Responde com erro se o SSID estiver ausente
         }
     });
 }

@@ -1,41 +1,59 @@
-#include "ligadesliga.h"
-#include "tempo.h"
-#include <FS.h>
-#include <SPIFFS.h>
-#include <ESPAsyncWebServer.h>
-#include "autenticador.h" // Inclui o cabeçalho onde a variável userLoggedIn é declarada
+// -------------------------------------------------------------------------
+// Inclusões de Bibliotecas e Cabeçalhos
+// -------------------------------------------------------------------------
+#include <FS.h>                 // Biblioteca para manipulação do sistema de arquivos
+#include <SPIFFS.h>             // Biblioteca para o sistema de arquivos SPIFFS
+#include <ESPAsyncWebServer.h>  // Biblioteca para servidor web assíncrono
+#include "autenticador.h"       // Cabeçalho onde a variável userLoggedIn é declarada
+#include "ligadesliga.h"        // Cabeçalho para manipulação do compressor
+#include "tempo.h"             // Cabeçalho para manipulação de tempo
 
+// -------------------------------------------------------------------------
+// Configurações e Variáveis Globais
+// -------------------------------------------------------------------------
+const int pinoCompressor = 2;             // Pino do compressor
+const long intervalo = 300000;           // Intervalo de 5 minutos (300000 ms)
+const String arquivoEstado = "/estadocompressor.txt"; // Arquivo para salvar o estado do compressor
 
-// Variáveis globais
-const int pinoCompressor = 2;
-const long intervalo = 300000; // 5 minutos
-const String arquivoEstado = "/estadocompressor.txt";
+bool compressorLigado = false;            // Estado atual do compressor (ligado ou desligado)
+bool timerAtivo = false;                  // Indicador de se o timer está ativo
+unsigned long previousMillis = 0;        // Tempo de referência para o controle do compressor
+unsigned long lastToggleTime = 0;        // Tempo da última alteração do estado do compressor
 
-bool compressorLigado = false;
-bool timerAtivo = false;
-unsigned long previousMillis = 0;
-unsigned long lastToggleTime = 0;
+// -------------------------------------------------------------------------
+// Funções de Manipulação do Compressor
+// -------------------------------------------------------------------------
 
+/**
+ * Função para manipular a ação de ligar/desligar o compressor.
+ *
+ * @param server Instância do servidor web assíncrono.
+ */
 void handleToggleAction(AsyncWebServer& server) {
     server.on("/toggle", HTTP_ANY, [](AsyncWebServerRequest *request) {
+        // Verifica se o usuário está autenticado
         if (!isAuthenticated(request)) {
-            redirectToAccessDenied(request); // Certifique-se de ter essa função definida em um arquivo de cabeçalho incluído
+            redirectToAccessDenied(request); // Redireciona se não autenticado
             return;
         }
-        // Se estiver autenticado, continua com a lógica para ligar/desligar o compressor
+
+        // Lógica para alternar o estado do compressor com base no parâmetro "action"
         String action = request->getParam("action")->value();
         if (action == "ligar") {
-            compressorLigado = true;
-            request->send(200, "text/plain", "Compressor ligado!");
+            compressorLigado = true; // Liga o compressor
+            request->send(200, "text/plain", "Compressor ligado!"); // Resposta ao cliente
         } else if (action == "desligar") {
-            compressorLigado = false;
-            request->send(200, "text/plain", "Compressor desligado!");
+            compressorLigado = false; // Desliga o compressor
+            request->send(200, "text/plain", "Compressor desligado!"); // Resposta ao cliente
         } else {
-            request->send(400, "text/plain", "Ação inválida!");
+            request->send(400, "text/plain", "Ação inválida!"); // Ação inválida
         }
     });
 }
 
+/**
+ * Função para inicializar o sistema de arquivos SPIFFS.
+ */
 void initSPIFFS() {
     if (!SPIFFS.begin(true)) {
         Serial.println("Erro ao iniciar SPIFFS. O sistema de arquivos não pôde ser montado.");
@@ -44,22 +62,31 @@ void initSPIFFS() {
     Serial.println("SPIFFS inicializado com sucesso.");
 }
 
+/**
+ * Função para ler o estado do compressor a partir do arquivo SPIFFS.
+ *
+ * @return Estado do compressor (ligado ou desligado).
+ */
 bool readCompressorState() {
     Serial.println("Tentando ler o estado do compressor do arquivo.");
     File file = SPIFFS.open(arquivoEstado, "r");
     if (!file) {
         Serial.println("Arquivo de estado não encontrado, assumindo estado desligado.");
-        return false;
+        return false; // Assumindo que o compressor está desligado se o arquivo não for encontrado
     }
 
-    String state = file.readStringUntil('\n');
+    String state = file.readStringUntil('\n'); // Lê o estado do arquivo
     file.close();
-
-    bool estado = state.toInt() == 1;
+    bool estado = state.toInt() == 1; // Converte o valor lido para booleano
     Serial.printf("Estado lido do arquivo: %s\n", estado ? "Ligado" : "Desligado");
     return estado;
 }
 
+/**
+ * Função para salvar o estado do compressor no arquivo SPIFFS.
+ *
+ * @param state Estado atual do compressor (ligado ou desligado).
+ */
 void saveCompressorState(bool state) {
     Serial.printf("Salvando o estado do compressor: %s\n", state ? "Ligado" : "Desligado");
     File file = SPIFFS.open(arquivoEstado, "w");
@@ -68,61 +95,96 @@ void saveCompressorState(bool state) {
         return;
     }
 
-    file.println(state ? "1" : "0");
+    file.println(state ? "1" : "0"); // Salva o estado como "1" para ligado e "0" para desligado
     file.close();
     Serial.println("Estado do compressor salvo com sucesso.");
 }
 
-// Função auxiliar para obter a hora a partir do formato de data e hora
+// -------------------------------------------------------------------------
+// Funções de Manipulação de Tempo
+// -------------------------------------------------------------------------
+
+/**
+ * Função auxiliar para obter as horas a partir do formato de data e hora.
+ *
+ * @param time String com a data e hora.
+ * @return Horas extraídas da string.
+ */
 int getHoursFromTime(const String& time) {
-    return time.substring(11, 13).toInt();
+    return time.substring(11, 13).toInt(); // Extrai as horas do formato de data e hora
 }
 
-// Função auxiliar para obter os minutos a partir do formato de data e hora
+/**
+ * Função auxiliar para obter os minutos a partir do formato de data e hora.
+ *
+ * @param time String com a data e hora.
+ * @return Minutos extraídos da string.
+ */
 int getMinutesFromTime(const String& time) {
-    return time.substring(14, 16).toInt();
+    return time.substring(14, 16).toInt(); // Extrai os minutos do formato de data e hora
 }
 
+/**
+ * Função para verificar se o horário atual é após o horário de fechamento.
+ *
+ * @return Verdadeiro se for após o horário de fechamento, caso contrário, falso.
+ */
 bool isAfterClosingTime() {
     updateTime(); // Atualiza o tempo antes de verificar
-    String time = getTimeClient();
-    int hour = getHoursFromTime(time);
-    bool resultado = hour >= 22;
+    String time = getTimeClient(); // Obtém a hora atual
+    int hour = getHoursFromTime(time); // Obtém as horas atuais
+    bool resultado = hour >= 22; // Verifica se é após as 22:00
     Serial.printf("Verificação de horário: %s\n", resultado ? "Após o horário de fechamento" : "Antes do horário de fechamento");
     return resultado;
 }
 
+/**
+ * Função para verificar se o horário atual é antes do horário de abertura.
+ *
+ * @return Verdadeiro se for antes do horário de abertura, caso contrário, falso.
+ */
 bool isBeforeOpeningTime() {
     updateTime(); // Atualiza o tempo antes de verificar
-    String time = getTimeClient();
-    int hour = getHoursFromTime(time);
-    bool resultado = hour < 7;
+    String time = getTimeClient(); // Obtém a hora atual
+    int hour = getHoursFromTime(time); // Obtém as horas atuais
+    bool resultado = hour < 7; // Verifica se é antes das 07:00
     Serial.printf("Verificação de horário: %s\n", resultado ? "Antes do horário de abertura" : "Após o horário de abertura");
     return resultado;
 }
 
+// -------------------------------------------------------------------------
+// Funções de Configuração do Servidor Web
+// -------------------------------------------------------------------------
+
+/**
+ * Função para configurar o servidor Web para controle do compressor.
+ *
+ * @param server Instância do servidor web assíncrono.
+ */
 void setupLigaDesliga(AsyncWebServer& server) {
     Serial.println("Configurando o servidor Web para controle do compressor.");
-    initSPIFFS();
+    initSPIFFS(); // Inicializa o sistema de arquivos SPIFFS
 
-    pinMode(pinoCompressor, OUTPUT);
-    compressorLigado = readCompressorState();
-    digitalWrite(pinoCompressor, compressorLigado ? HIGH : LOW);
+    pinMode(pinoCompressor, OUTPUT); // Configura o pino do compressor como saída
+    compressorLigado = readCompressorState(); // Lê o estado do compressor do arquivo
+    digitalWrite(pinoCompressor, compressorLigado ? HIGH : LOW); // Define o estado inicial do compressor
 
     server.on("/toggle", HTTP_GET, [](AsyncWebServerRequest *request) {
-        unsigned long currentMillis = millis();
+        unsigned long currentMillis = millis(); // Obtém o tempo atual
         Serial.println("Requisição recebida para alternar o estado do compressor.");
 
+        // Verifica se o compressor foi alterado recentemente e evita comandos repetidos
         if (compressorLigado && (currentMillis - lastToggleTime < 30000)) {
-            Serial.println("Comando ignorado. O compressor foi alterado recentemente. Aguarde 5 minutos entre as tentativas.");
-            request->send(200, "text/plain", "Comando ignorado. Aguarde 5 minutos entre as tentativas.");
+            Serial.println("Comando ignorado. O compressor foi alterado recentemente. Aguarde 30 segundos entre as tentativas.");
+            request->send(200, "text/plain", "Comando ignorado. Aguarde 30 segundos entre as tentativas.");
             return;
         }
 
-        lastToggleTime = currentMillis;
-        compressorLigado = !compressorLigado;
-        digitalWrite(pinoCompressor, compressorLigado ? HIGH : LOW);
+        lastToggleTime = currentMillis; // Atualiza o tempo da última alteração
+        compressorLigado = !compressorLigado; // Alterna o estado do compressor
+        digitalWrite(pinoCompressor, compressorLigado ? HIGH : LOW); // Atualiza o pino do compressor
 
+        // Mensagem de resposta com base no estado do compressor
         String message = compressorLigado ? "Compressor ligado!" : "Compressor desligado!";
         if (compressorLigado && (isAfterClosingTime() || isBeforeOpeningTime())) {
             message += " Alerta! Já se passou das 22:30 e ainda não chegou às 07:30, atente-se para desligar o compressor após o uso.";
@@ -131,10 +193,11 @@ void setupLigaDesliga(AsyncWebServer& server) {
 
         Serial.print("Estado do compressor: ");
         Serial.println(message);
-        request->send(200, "text/plain", message);
+        request->send(200, "text/plain", message); // Envia a resposta ao cliente
 
-        saveCompressorState(compressorLigado);
+        saveCompressorState(compressorLigado); // Salva o estado do compressor no arquivo
 
+        // Inicializa o timer se o compressor estiver ligado
         if (compressorLigado) {
             previousMillis = millis();
             timerAtivo = true;
@@ -144,35 +207,46 @@ void setupLigaDesliga(AsyncWebServer& server) {
         }
     });
 
-    setupTimeClient();
+    setupTimeClient(); // Configura o cliente de tempo
 
     Serial.print("Estado inicial do compressor: ");
     Serial.println(compressorLigado ? "Ligado" : "Desligado");
 
-    updateTime();
+    updateTime(); // Atualiza o tempo
     Serial.print("Hora atual: ");
-    Serial.println(getTimeClient()); // Hora em formato completo
+    Serial.println(getTimeClient()); // Exibe a hora atual em formato completo
 
+    // Desliga o compressor se estiver fora do horário permitido
     if (isAfterClosingTime() || isBeforeOpeningTime()) {
         compressorLigado = false;
         digitalWrite(pinoCompressor, LOW);
-        saveCompressorState(compressorLigado);
+        saveCompressorState(compressorLigado); // Salva o estado do compressor como desligado
         Serial.println("Compressor desligado devido ao horário na inicialização.");
     } else {
         Serial.println("Compressor inicializado dentro do horário permitido.");
     }
 }
 
+// -------------------------------------------------------------------------
+// Funções de Atualização e Desligamento
+// -------------------------------------------------------------------------
+
+/**
+ * Função para atualizar o status do compressor com base no intervalo definido.
+ */
 void updateCompressorStatus() {
     unsigned long currentMillis = millis();
     if (compressorLigado && (currentMillis - previousMillis >= intervalo)) {
-        previousMillis = currentMillis;
+        previousMillis = currentMillis; // Atualiza o tempo de referência
         Serial.println("Compressor status atualizado.");
-        saveCompressorState(compressorLigado);
+        saveCompressorState(compressorLigado); // Salva o estado do compressor
     }
 }
 
+/**
+ * Função para desligar o dispositivo e salvar o estado do compressor.
+ */
 void shutdown() {
-    saveCompressorState(compressorLigado);
+    saveCompressorState(compressorLigado); // Salva o estado do compressor
     Serial.println("Dispositivo desligado. Estado do compressor salvo.");
 }

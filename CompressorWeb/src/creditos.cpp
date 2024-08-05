@@ -1,10 +1,18 @@
-#include "creditos.h"  // Inclui o cabeçalho para a configuração da página de créditos
-#include <ESPAsyncWebServer.h>  // Inclui a biblioteca para o servidor web assíncrono
+#include "creditos.h"          // Inclui o cabeçalho para a configuração da página de créditos
+#include <ESPAsyncWebServer.h> // Inclui a biblioteca para o servidor web assíncrono
 
+// -------------------------------------------------------------------------
 // Função para configurar a página de créditos
+// -------------------------------------------------------------------------
+
+/**
+ * Configura a rota e o conteúdo da página de créditos no servidor web.
+ *
+ * @param server A instância do servidor web assíncrono.
+ */
 void setupCreditosPage(AsyncWebServer& server) {
-    // Variável local para armazenar o HTML da página de créditos
-    String creditsHtml = R"(
+    // Define o conteúdo HTML da página de créditos
+    String creditsHtml = R"rawliteral(
         <!DOCTYPE html> <!-- Declara o tipo de documento como HTML5 -->
         <html lang="pt-br"> <!-- Define o idioma da página como português do Brasil -->
         <head>
@@ -12,6 +20,7 @@ void setupCreditosPage(AsyncWebServer& server) {
             <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Configura o viewport para dispositivos móveis -->
             <title>Créditos</title> <!-- Define o título da página que aparece na aba do navegador -->
             <style>
+                /* Estilo da página */
                 body {
                     font-family: Arial, sans-serif; /* Define a fonte padrão do texto */
                     background-color: #f0f0f0; /* Define a cor de fundo da página */
@@ -88,13 +97,14 @@ void setupCreditosPage(AsyncWebServer& server) {
                     <a href="https://github.com/LYuri26" class="btn-link" target="_blank">Lenon Yuri</a> <!-- Link para o instrutor Lenon Yuri -->
                     <a href="https://github.com/RoCkHeLuCk" class="btn-link" target="_blank">Franco M. A. Caixeta</a> <!-- Link para o instrutor Franco M. A. Caixeta -->
                 </div>
-                <button onclick="window.location.href='/'" class="btn-link-voltar">Voltar</button> <!-- Botão para voltar à página inicial -->
+                <!-- Botão para voltar à página inicial -->
+                <button onclick="window.location.href='/'" class="btn-link-voltar">Voltar</button>
             </div>
         </body>
         </html>
-    )";
+    )rawliteral";
 
-    // Configuração da rota "/creditos" para responder com o HTML criado
+    // Configura a rota "/creditos" para responder com o HTML da página de créditos
     server.on("/creditos", HTTP_GET, [creditsHtml](AsyncWebServerRequest *request) {
         request->send(200, "text/html", creditsHtml);  // Envia a resposta HTTP com o HTML da página de créditos
     });
