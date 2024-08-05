@@ -38,7 +38,15 @@ void redirectToAccessDenied(AsyncWebServerRequest *request); // Função para re
 // Variáveis de Controle de Reconexão WiFi
 // -------------------------------------------------------------------------
 unsigned long lastReconnectAttempt = 0;          // Armazena o tempo da última tentativa de reconexão
-const unsigned long reconnectInterval = 1800000; // Intervalo de reconexão em milissegundos (30 minutos)
+
+// Definição dos intervalos
+const unsigned long RECONNECT_INTERVAL = 1000; // Intervalo para reconexão WiFi (1 segundo)
+const unsigned long UPDATE_INTERVAL = 300000;  // Intervalo para atualização do tempo e status do compressor (5 minutos)
+const unsigned long RESTART_TIME = 60000;      // Tempo para aguardar após verificar horário de reinicialização (1 minuto)
+
+// Variáveis para controle de tempo
+unsigned long lastUpdate = 0;
+
 
 // -------------------------------------------------------------------------
 // Função de Configuração Inicial
@@ -65,34 +73,39 @@ void setup()
 // -------------------------------------------------------------------------
 // Função de Loop Principal
 // -------------------------------------------------------------------------
-void loop()
-{
-    // O servidor assíncrono lida com as requisições automaticamente
-    if (!isAPMode) // Verifica se o dispositivo não está em modo AP
-    {
-        delay(1000); // Aguarda 1 segundo
+void loop() {
+    unsigned long currentMillis = millis();
+
+    // Verifica se o tempo para atualizar o tempo e o status do compressor foi alcançado
+    if (currentMillis - lastUpdate >= UPDATE_INTERVAL) {
+        updateTime(); // Atualiza o tempo
+
+        // Atualiza o status do compressor
+        updateCompressorStatus(); // Atualiza o status do compressor com base no intervalo definido
+
+        lastUpdate = currentMillis; // Atualiza o tempo da última atualização
+    }
+
+    // Verifica se o dispositivo está em modo AP e se não está, executa a reconexão WiFi
+    if (!isAPMode) { // Verifica se o dispositivo não está em modo AP
+        delay(RECONNECT_INTERVAL); // Aguarda o intervalo de reconexão WiFi
 
         // Verifica se a conexão WiFi está perdida e tenta reconectar
-        if (WiFi.status() != WL_CONNECTED) // Se o status do WiFi não for conectado
-        {
+        if (WiFi.status() != WL_CONNECTED) { // Se o status do WiFi não for conectado
             unsigned long currentMillis = millis(); // Obtém o tempo atual
-            if (currentMillis - lastReconnectAttempt >= reconnectInterval) // Verifica se o intervalo de reconexão foi alcançado
-            {
+            if (currentMillis - lastReconnectAttempt >= RECONNECT_INTERVAL) { // Verifica se o intervalo de reconexão foi alcançado
                 lastReconnectAttempt = currentMillis; // Atualiza o tempo da última tentativa de reconexão
                 Serial.println("Conexão WiFi perdida. Tentando reconectar..."); // Mensagem indicando tentativa de reconexão
 
                 // Tenta reconectar à rede WiFi
-                connectToWiFi(ssid, password); // Função para conectar ao WiFi (não definida no código fornecido)
-                if (WiFi.status() != WL_CONNECTED) // Se ainda não estiver conectado
-                {
+                connectToWiFi(ssid, password); // Função para conectar ao WiFi
+                if (WiFi.status() != WL_CONNECTED) { // Se ainda não estiver conectado
                     Serial.println("WiFi desconectado, entrando em modo AP"); // Mensagem indicando que o dispositivo entrará em modo AP
-                    enterAPMode(); // Função para entrar em modo Access Point (não definida no código fornecido)
+                    enterAPMode(); // Função para entrar em modo Access Point
                 }
             }
         }
     }
-    delay(1000); // Aguarda 1 segundo
-    updateTime(); // Função para atualizar o tempo (não definida no código fornecido)
 }
 
 // -------------------------------------------------------------------------

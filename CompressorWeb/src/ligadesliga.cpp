@@ -15,10 +15,11 @@ const int pinoCompressor = 2;             // Pino do compressor
 const long intervalo = 300000;           // Intervalo de 5 minutos (300000 ms)
 const String arquivoEstado = "/estadocompressor.txt"; // Arquivo para salvar o estado do compressor
 
+bool reiniciadoHoje = false; // Controla se o ESP32 já foi reiniciado hoje
 bool compressorLigado = false;            // Estado atual do compressor (ligado ou desligado)
 bool timerAtivo = false;                  // Indicador de se o timer está ativo
 unsigned long previousMillis = 0;        // Tempo de referência para o controle do compressor
-unsigned long lastToggleTime = 0;        // Tempo da última alteração do estado do compressor
+unsigned long lastToggleTime = 0;     // Tempo da última alteração do estado
 
 // -------------------------------------------------------------------------
 // Funções de Manipulação do Compressor
@@ -133,8 +134,11 @@ bool isAfterClosingTime() {
     updateTime(); // Atualiza o tempo antes de verificar
     String time = getTimeClient(); // Obtém a hora atual
     int hour = getHoursFromTime(time); // Obtém as horas atuais
-    bool resultado = hour >= 22; // Verifica se é após as 22:00
-    Serial.printf("Verificação de horário: %s\n", resultado ? "Após o horário de fechamento" : "Antes do horário de fechamento");
+    int minute = getMinutesFromTime(time); // Obtém os minutos atuais
+
+    // Verifica se é após as 22:30
+    bool resultado = (hour > 22) || (hour == 22 && minute >= 30);
+    Serial.printf("Verificação de horário (fechamento): %s\n", resultado ? "Após 22:30" : "Antes de 22:30");
     return resultado;
 }
 
@@ -147,8 +151,11 @@ bool isBeforeOpeningTime() {
     updateTime(); // Atualiza o tempo antes de verificar
     String time = getTimeClient(); // Obtém a hora atual
     int hour = getHoursFromTime(time); // Obtém as horas atuais
-    bool resultado = hour < 7; // Verifica se é antes das 07:00
-    Serial.printf("Verificação de horário: %s\n", resultado ? "Antes do horário de abertura" : "Após o horário de abertura");
+    int minute = getMinutesFromTime(time); // Obtém os minutos atuais
+
+    // Verifica se é antes das 07:30
+    bool resultado = (hour < 7) || (hour == 7 && minute < 30);
+    Serial.printf("Verificação de horário (abertura): %s\n", resultado ? "Antes de 07:30" : "Após 07:30");
     return resultado;
 }
 
@@ -236,12 +243,30 @@ void setupLigaDesliga(AsyncWebServer& server) {
  */
 void updateCompressorStatus() {
     unsigned long currentMillis = millis();
+    // Atualiza o estado do compressor com base no intervalo definido
     if (compressorLigado && (currentMillis - previousMillis >= intervalo)) {
         previousMillis = currentMillis; // Atualiza o tempo de referência
         Serial.println("Compressor status atualizado.");
         saveCompressorState(compressorLigado); // Salva o estado do compressor
     }
+
+    // Verifica se é após as 22:30 e desliga o compressor se estiver ligado
+    if (compressorLigado && isAfterClosingTime()) {
+        Serial.println("Desligando o compressor pois é após as 22:30.");
+        compressorLigado = false;
+        digitalWrite(pinoCompressor, LOW); // Desliga o compressor
+        saveCompressorState(compressorLigado); // Salva o estado do compressor
+    }
+
+    // Verifica se é exatamente às 22:30 e reinicia o ESP32 se ainda não foi reiniciado hoje
+    if (isAfterClosingTime() && !reiniciadoHoje) {
+        Serial.println("Reiniciando o ESP32 às 22:30.");
+        reiniciadoHoje = true; // Marca que o ESP32 foi reiniciado hoje
+        delay(1000); // Aguarda um segundo para garantir que a mensagem seja exibida
+        ESP.restart(); // Reinicia o ESP32
+    }
 }
+
 
 /**
  * Função para desligar o dispositivo e salvar o estado do compressor.
@@ -249,4 +274,6 @@ void updateCompressorStatus() {
 void shutdown() {
     saveCompressorState(compressorLigado); // Salva o estado do compressor
     Serial.println("Dispositivo desligado. Estado do compressor salvo.");
+    delay(1000); // Aguarda um segundo para garantir que a mensagem seja exibida
+    ESP.restart(); // Reinicia o ESP32
 }

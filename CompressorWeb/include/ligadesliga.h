@@ -4,7 +4,6 @@
 // -------------------------------------------------------------------------
 // Inclusão de Bibliotecas
 // -------------------------------------------------------------------------
-
 #include <ESPAsyncWebServer.h> // Biblioteca para criar e gerenciar um servidor web assíncrono
 
 // -------------------------------------------------------------------------
@@ -20,12 +19,13 @@
  */
 extern bool compressorLigado;
 
+
 // -------------------------------------------------------------------------
 // Declaração de Funções
 // -------------------------------------------------------------------------
 
 /**
- * Configura as rotas e handlers do servidor web relacionados à funcionalidade de ligar e desligar.
+ * Configura as rotas e handlers do servidor web para controle do compressor.
  * 
  * Esta função define as rotas HTTP e os handlers associados para permitir 
  * que o servidor web possa controlar o estado do compressor, ligando-o ou 
@@ -36,12 +36,12 @@ extern bool compressorLigado;
 void setupLigaDesliga(AsyncWebServer& server);
 
 /**
- * Atualiza o status do compressor.
+ * Atualiza o status do compressor com base em condições específicas.
  * 
- * Esta função pode ser usada para ligar ou desligar o compressor com base em
- * alguma lógica ou condição específica. Ela altera o estado do compressor 
- * e pode acionar ações correspondentes.
+ * Esta função é responsável por verificar e atualizar o estado do compressor, 
+ * ligando-o ou desligando-o conforme a lógica definida, como o tempo decorrido ou o horário.
  */
 void updateCompressorStatus();
+
 
 #endif // LIGADESLIGA_H

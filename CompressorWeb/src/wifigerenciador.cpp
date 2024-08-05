@@ -76,7 +76,7 @@ void setupWiFiManagementPage(AsyncWebServer &server) {
             font-size: 16px; /* Define o tamanho da fonte do botão */
             cursor: pointer; /* Muda o cursor para uma mão ao passar o mouse sobre o botão */
             border-radius: 3px; /* Adiciona bordas arredondadas ao botão */
-            width: 100%; /* Define a largura como 100% */
+            width: 100%; /* Define a largura jcomo 100% */
         }
         .btn-blue:hover {
             background-color: #0056b3; /* Altera a cor de fundo ao passar o mouse sobre o botão de voltar */
