@@ -186,7 +186,7 @@ const char *getWiFiManagementPage()
         });
 
         // -------------------------------------------------------------------------
-        // Intercepta o envio do formulário para exibir a mensagem "Rede salva"
+        // Intercepta o envio do formulário para exibir a mensagem "Rede conectada"
         // -------------------------------------------------------------------------
         document.getElementById('save-form').addEventListener('submit', function(event) {
             event.preventDefault(); // Impede o envio padrão do formulário
@@ -206,15 +206,15 @@ const char *getWiFiManagementPage()
             .then(data => {
                 var message = document.getElementById('message');
                 message.className = 'alert alert-success'; // Define a classe CSS para o alerta de sucesso
-                message.textContent = 'Rede salva'; // Define a mensagem de sucesso
+                message.textContent = 'Rede conectada'; // Define a mensagem de sucesso
                 form.reset(); // Limpa os campos do formulário
                 fetchSavedNetworks(); // Atualiza a lista de redes salvas
             })
             .catch(error => {
-                console.error('Erro ao salvar a rede:', error); // Log de erros no console
+                console.error('Erro ao conectar na  rede:', error); // Log de erros no console
                 var message = document.getElementById('message');
                 message.className = 'alert alert-danger'; // Define a classe CSS para o alerta de erro
-                message.textContent = 'Erro ao salvar a rede'; // Define a mensagem de erro
+                message.textContent = 'Erro ao conectar na  rede'; // Define a mensagem de erro
             });
         });
     </script>
