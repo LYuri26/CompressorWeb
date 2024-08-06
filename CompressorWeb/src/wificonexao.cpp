@@ -161,6 +161,7 @@ void loadSavedWiFiNetworks()
 
     String ssid;
     String password;
+    std::vector<String> networks; // Vector para armazenar as redes
 
     int start = 0;
     while (start < content.length())
@@ -171,6 +172,14 @@ void loadSavedWiFiNetworks()
             end = content.length(); // Se não houver nova linha, vai até o fim do conteúdo
         }
         String line = content.substring(start, end); // Extrai a linha atual
+        networks.push_back(line);                    // Adiciona a linha ao vector
+        start = end + 1;                             // Move para o início da próxima linha
+    }
+
+    // Tenta conectar começando da última rede salva
+    for (int i = networks.size() - 1; i >= 0; i--)
+    {
+        String line = networks[i];
         int commaIndex = line.indexOf(',');          // Encontra a posição da vírgula
         if (commaIndex != -1)
         {
@@ -182,6 +191,5 @@ void loadSavedWiFiNetworks()
                 return; // Se conectado, sai da função
             }
         }
-        start = end + 1; // Move para o início da próxima linha
     }
 }
