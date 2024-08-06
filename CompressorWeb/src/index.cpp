@@ -79,7 +79,7 @@ void setupIndexPage(AsyncWebServer& server) {
                     </form>
                     <!-- Botões para navegação -->
                     <button onclick="window.location.href='/creditos'" class="btn btn-secondary btn-block mt-3">Créditos</button>
-                    <button onclick="window.location.href='/wifi-management'" class="btn btn-warning btn-block mt-3">Gerenciamento Wi-Fi</button>
+                    <button onclick="window.location.href='/wifigerenciamento'" class="btn btn-warning btn-block mt-3">Gerenciamento Wi-Fi</button>
                 </div>
                 <div class="footer">
                     <p>Aplicação desenvolvida pela Turma de Informática Para Internet Trilhas de Futuro 2024</p>
