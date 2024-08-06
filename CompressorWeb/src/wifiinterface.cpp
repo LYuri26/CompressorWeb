@@ -1,4 +1,5 @@
-const char* getWiFiManagementPage() {
+const char *getWiFiManagementPage()
+{
     return R"rawliteral(
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -183,8 +184,41 @@ const char* getWiFiManagementPage() {
                 button.textContent = 'Mostrar'; // Muda o texto do botão para 'Mostrar'
             }
         });
+
+        // -------------------------------------------------------------------------
+        // Intercepta o envio do formulário para exibir a mensagem "Rede salva"
+        // -------------------------------------------------------------------------
+        document.getElementById('save-form').addEventListener('submit', function(event) {
+            event.preventDefault(); // Impede o envio padrão do formulário
+            var form = this;
+            var formData = new FormData(form);
+
+            fetch(form.action, {
+                method: form.method,
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.text(); // Converte a resposta em texto
+            })
+            .then(data => {
+                var message = document.getElementById('message');
+                message.className = 'alert alert-success'; // Define a classe CSS para o alerta de sucesso
+                message.textContent = 'Rede salva'; // Define a mensagem de sucesso
+                form.reset(); // Limpa os campos do formulário
+                fetchSavedNetworks(); // Atualiza a lista de redes salvas
+            })
+            .catch(error => {
+                console.error('Erro ao salvar a rede:', error); // Log de erros no console
+                var message = document.getElementById('message');
+                message.className = 'alert alert-danger'; // Define a classe CSS para o alerta de erro
+                message.textContent = 'Erro ao salvar a rede'; // Define a mensagem de erro
+            });
+        });
     </script>
 </body>
 </html>
-        )rawliteral";
+    )rawliteral";
 }

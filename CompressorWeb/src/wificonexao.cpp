@@ -12,7 +12,7 @@ const char *ap_ssid = "CompressorWeb"; // SSID do Access Point
 const char *ap_password = "12345678";  // Senha do Access Point
 
 // Configurações do Access Point
-IPAddress local_ip(192, 168, 4, 1); // IP local do Access Point
+IPAddress local_ip(192, 168, 26, 7); // IP local do Access Point
 IPAddress gateway(192, 168, 4, 1);  // Gateway do Access Point
 IPAddress subnet(255, 255, 255, 0); // Máscara de sub-rede do Access Point
 
