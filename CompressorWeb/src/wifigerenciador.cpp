@@ -60,13 +60,13 @@ void setupWiFiManagementPage(AsyncWebServer &server) {
             max-height: 300px; /* Define a altura máxima para a lista de redes salvas */
             overflow-y: auto; /* Adiciona rolagem vertical se o conteúdo exceder a altura máxima */
         }
-        /* Estilos para o botão de salvar */
+        /* Estilos para o botão de conectar */
         .btn-success {
-            background-color: #28a745; /* Cor de fundo do botão de salvar */
+            background-color: #28a745; /* Cor de fundo do botão de conectar */
             color: white; /* Cor do texto do botão */
         }
         .btn-success:hover {
-            background-color: #218838; /* Cor de fundo do botão de salvar ao passar o mouse sobre ele */
+            background-color: #218838; /* Cor de fundo do botão de conectar ao passar o mouse sobre ele */
         }
         /* Estilos para o botão de voltar */
         .btn-blue {
@@ -123,7 +123,7 @@ void setupWiFiManagementPage(AsyncWebServer &server) {
                     </div>
                 </div>
             </div>
-            <button type="submit" class="btn btn-success btn-block">Salvar</button>
+            <button type="submit" class="btn btn-success btn-block">Conectar</button>
             <button type="button" onclick="window.history.back()" class="btn-blue">Voltar</button>
         </form>
         <hr>
