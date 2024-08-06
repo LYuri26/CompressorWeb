@@ -3,10 +3,11 @@
 #include <SPIFFS.h>                 // Inclui a biblioteca para o sistema de arquivos SPIFFS
 #include "wificonexao.h"            // Inclui o arquivo de cabeçalho com funções de conexão Wi-Fi
 
-
 // Função para configurar a página de gerenciamento de Wi-Fi
 void setupWiFiManagementPage(AsyncWebServer &server) {
+    // -------------------------------------------------------------------------
     // Inicializa o sistema de arquivos SPIFFS
+    // -------------------------------------------------------------------------
     if (!SPIFFS.begin(true)) {
         Serial.println("Falha ao iniciar o sistema de arquivos SPIFFS");
         return; // Interrompe a função se SPIFFS não iniciar
@@ -30,10 +31,13 @@ void setupWiFiManagementPage(AsyncWebServer &server) {
         body {
             font-family: Arial, sans-serif; /* Define a fonte do corpo da página */
             background-color: #f8f9fa; /* Define a cor de fundo da página */
-            height: 100vh; /* Define a altura da página como 100% da altura da janela de visualização */
             margin: 0; /* Remove as margens padrão */
             padding: 0; /* Remove o preenchimento padrão */
+            display: flex; /* Usa flexbox para o layout da página */
+            flex-direction: column; /* Define a direção do layout como coluna */
+            min-height: 100vh; /* Define a altura mínima da página como 100% da altura da janela de visualização */
         }
+
         /* Estilos para o contêiner principal */
         .container {
             background-color: #ffffff; /* Define a cor de fundo do contêiner */
@@ -42,32 +46,37 @@ void setupWiFiManagementPage(AsyncWebServer &server) {
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Adiciona uma sombra ao contêiner */
             width: 100%; /* Define a largura do contêiner como 100% */
             max-width: 600px; /* Define a largura máxima do contêiner */
-            margin: auto; /* Centraliza o contêiner horizontalmente */
+            margin: 30px auto; /* Define a margem superior e inferior como 30px e centraliza horizontalmente */
+            flex: 1; /* Faz o contêiner crescer para preencher o espaço disponível */
         }
+
         /* Estilos para o rodapé */
         .footer {
-            position: fixed; /* Define a posição do rodapé como fixa */
-            bottom: 0; /* Posiciona o rodapé na parte inferior da página */
-            width: 100%; /* Define a largura do rodapé como 100% */
             background-color: #007bff; /* Define a cor de fundo do rodapé */
             color: white; /* Define a cor do texto no rodapé */
             text-align: center; /* Centraliza o texto no rodapé */
             padding: 10px 0; /* Adiciona preenchimento vertical ao rodapé */
             font-size: 14px; /* Define o tamanho da fonte do texto no rodapé */
+            margin-top: 30px; /* Adiciona uma margem superior ao rodapé para separá-lo do conteúdo acima */
         }
+
         /* Estilos para a lista de redes salvas */
         #saved-networks {
             max-height: 300px; /* Define a altura máxima para a lista de redes salvas */
             overflow-y: auto; /* Adiciona rolagem vertical se o conteúdo exceder a altura máxima */
+            margin-bottom: 20px; /* Adiciona espaçamento inferior */
         }
+
         /* Estilos para o botão de conectar */
         .btn-success {
             background-color: #28a745; /* Cor de fundo do botão de conectar */
             color: white; /* Cor do texto do botão */
         }
+
         .btn-success:hover {
             background-color: #218838; /* Cor de fundo do botão de conectar ao passar o mouse sobre ele */
         }
+
         /* Estilos para o botão de voltar */
         .btn-blue {
             background-color: #007bff; /* Cor de fundo do botão de voltar */
@@ -79,9 +88,11 @@ void setupWiFiManagementPage(AsyncWebServer &server) {
             border-radius: 3px; /* Adiciona bordas arredondadas ao botão */
             width: 100%; /* Define a largura como 100% */
         }
+
         .btn-blue:hover {
             background-color: #0056b3; /* Altera a cor de fundo ao passar o mouse sobre o botão de voltar */
         }
+
         /* Estilos para o botão de deletar */
         .btn-custom-danger {
             background-color: #dc3545; /* Cor de fundo do botão de deletar */
@@ -93,14 +104,17 @@ void setupWiFiManagementPage(AsyncWebServer &server) {
             border-radius: 3px; /* Adiciona bordas arredondadas ao botão */
             text-decoration: none; /* Remove o sublinhado do link */
         }
+
         .btn-custom-danger:hover {
             background-color: #c82333; /* Altera a cor de fundo ao passar o mouse sobre o botão de deletar */
         }
+
         /* Estilos para o grupo de entrada com botão de alternar senha */
         .input-group {
             display: flex; /* Usa o flexbox para o layout do grupo de entrada */
             align-items: center; /* Alinha os itens verticalmente ao centro */
         }
+
         .input-group-append {
             margin-left: -1px; /* Remove a margem esquerda do botão para que ele se encaixe com o campo de entrada */
         }
@@ -109,6 +123,7 @@ void setupWiFiManagementPage(AsyncWebServer &server) {
 <body>
     <div class="container">
         <h2>Gerenciamento de Redes Wi-Fi</h2>
+        <div id="message" class="alert" role="alert"></div> <!-- Div para mensagens de status -->
         <form id="save-form" action="/save-wifi" method="post">
             <div class="form-group">
                 <label for="ssid">SSID da Rede Wi-Fi:</label>
@@ -134,7 +149,9 @@ void setupWiFiManagementPage(AsyncWebServer &server) {
         <p>Instrutor: Lenon Yuri</p>
     </div>
     <script>
+        // -------------------------------------------------------------------------
         // Função para buscar redes Wi-Fi salvas e atualizar a interface
+        // -------------------------------------------------------------------------
         function fetchSavedNetworks() {
             fetch('/list-saved-wifi') // Faz uma solicitação GET para a rota '/list-saved-wifi'
                 .then(response => {
@@ -164,21 +181,25 @@ void setupWiFiManagementPage(AsyncWebServer &server) {
                 });
         }
 
+        // -------------------------------------------------------------------------
         // Atualiza a lista de redes salvas ao carregar a página
+        // -------------------------------------------------------------------------
         document.addEventListener('DOMContentLoaded', function() {
-            fetchSavedNetworks();
+            fetchSavedNetworks(); // Chama a função para buscar as redes salvas
         });
 
-        // Função para alternar a visibilidade da senha
-        document.getElementById('toggle-password').addEventListener('click', function () {
-            var passwordField = document.getElementById('password'); // Obtém o campo de senha
-            var toggleButton = this; // Obtém o botão de alternar
+        // -------------------------------------------------------------------------
+        // Alterna a visibilidade da senha no campo de entrada
+        // -------------------------------------------------------------------------
+        document.getElementById('toggle-password').addEventListener('click', function() {
+            var passwordField = document.getElementById('password');
+            var button = this;
             if (passwordField.type === 'password') {
-                passwordField.type = 'text'; // Muda o tipo para texto para mostrar a senha
-                toggleButton.textContent = 'Ocultar'; // Altera o texto do botão
+                passwordField.type = 'text';
+                button.textContent = 'Ocultar'; // Muda o texto do botão para 'Ocultar'
             } else {
-                passwordField.type = 'password'; // Muda o tipo para senha para ocultar a senha
-                toggleButton.textContent = 'Mostrar'; // Altera o texto do botão
+                passwordField.type = 'password';
+                button.textContent = 'Mostrar'; // Muda o texto do botão para 'Mostrar'
             }
         });
     </script>
@@ -186,7 +207,9 @@ void setupWiFiManagementPage(AsyncWebServer &server) {
 </html>
         )rawliteral";
 
+        // -------------------------------------------------------------------------
         // Envia a resposta HTML com o código definido
+        // -------------------------------------------------------------------------
         request->send(200, "text/html", html);
     });
 
