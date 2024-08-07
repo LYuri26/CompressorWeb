@@ -147,7 +147,7 @@ bool isAfterClosingTime()
     int minute = getMinutesFromTime(time); // Obtém os minutos atuais
 
     // Verifica se é após as 22:30
-    bool resultado = (hour > 3) || (hour == 3 && minute >= 30);
+    bool resultado = (hour > 22) || (hour == 22 && minute >= 30);
     Serial.printf("Verificação de horário (fechamento): %s\n", resultado ? "Após 22:30" : "Antes de 22:30");
     return resultado;
 }
