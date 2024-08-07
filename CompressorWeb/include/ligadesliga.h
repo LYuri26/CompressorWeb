@@ -42,6 +42,7 @@ void setupLigaDesliga(AsyncWebServer& server);
  * ligando-o ou desligando-o conforme a lógica definida, como o tempo decorrido ou o horário.
  */
 void updateCompressorStatus();
-
+extern const int pinoLigaDesliga;          // Declara a variável global
+void saveCompressorState(bool state); // Declara a função global
 
 #endif // LIGADESLIGA_H

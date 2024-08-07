@@ -19,6 +19,7 @@
 #include "paginaserro.h"     // Cabeçalho para as páginas de erro
 #include "tempo.h"           // Cabeçalho para a configuração do tempo
 #include "wifigerenciador.h" // Cabeçalho para o gerenciamento do WiFi
+#include "manutencao.h"
 
 // -------------------------------------------------------------------------
 // Configuração do Servidor Web
@@ -40,7 +41,7 @@ void redirectToAccessDenied(AsyncWebServerRequest *request); // Função para re
 unsigned long lastReconnectAttempt = 0; // Armazena o tempo da última tentativa de reconexão
 int reconnectAttempts = 0;              // Contador de tentativas de reconexão
 
-const int MAX_RECONNECT_ATTEMPTS = 10;         // Número máximo de tentativas de reconexão
+const int MAX_RECONNECT_ATTEMPTS = 10; // Número máximo de tentativas de reconexão
 
 // Definição dos intervalos
 const unsigned long RECONNECT_INTERVAL = 1000; // Intervalo para reconexão WiFi (1 segundo)
@@ -70,46 +71,62 @@ void setup()
     // Configura o servidor web e inicializa o cliente NTP
     setupServer();     // Chama a função para configurar o servidor e suas rotas
     setupTimeClient(); // Função para configurar o cliente NTP (não definida no código fornecido)
+    setupManutencao(); // Adiciona a configuração do botão de manutenção
 }
 
 // -------------------------------------------------------------------------
 // Função de Loop Principal
 // -------------------------------------------------------------------------
-void loop() {
+void loop()
+{
     unsigned long currentMillis = millis();
 
-    // Verifica se o tempo para atualizar o tempo e o status do compressor foi alcançado
-    if (currentMillis - lastUpdate >= UPDATE_INTERVAL) {
-        updateTime(); // Atualiza o tempo
-
-        // Atualiza o status do compressor
-        updateCompressorStatus(); // Atualiza o status do compressor com base no intervalo definido
-
-        lastUpdate = currentMillis; // Atualiza o tempo da última atualização
+    // Atualiza o tempo e o status do compressor a cada intervalo definido
+    if (currentMillis - lastUpdate >= UPDATE_INTERVAL)
+    {
+        updateTime();             // Atualiza o tempo
+        lastUpdate = currentMillis;
     }
 
-    // Verifica se o dispositivo está em modo AP e se não está, executa a reconexão WiFi
-    if (!isAPMode) { // Verifica se o dispositivo não está em modo AP
-        if (WiFi.status() != WL_CONNECTED) { // Se o status do WiFi não for conectado
-            unsigned long currentMillis = millis(); // Obtém o tempo atual
-            if (currentMillis - lastReconnectAttempt >= RECONNECT_INTERVAL) { // Verifica se o intervalo de reconexão foi alcançado
-                lastReconnectAttempt = currentMillis; // Atualiza o tempo da última tentativa de reconexão
-                Serial.println("Conexão WiFi perdida. Tentando reconectar..."); // Mensagem indicando tentativa de reconexão
+    // Se o compressor está ligado, execute a atualização do status repetidamente
+    if (compressorLigado)
+    {
+        updateCompressorStatus(); // Atualiza o status do compressor
+    }
 
-                // Tenta reconectar à rede WiFi
-                connectToWiFi(ssid, password); // Função para conectar ao WiFi
-                reconnectAttempts++; // Incrementa o contador de tentativas
-                if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) { // Verifica se o número máximo de tentativas foi alcançado
+    // Verifica o estado do botão de manutenção
+    atualizarEstadoManutencao();
+
+    // Se o sistema está em modo Station e não em modo AP, verifique a conexão WiFi
+    if (!isAPMode)
+    {
+        if (WiFi.status() != WL_CONNECTED)
+        {
+            if (currentMillis - lastReconnectAttempt >= RECONNECT_INTERVAL)
+            {
+                lastReconnectAttempt = currentMillis;
+                Serial.println("Conexão WiFi perdida. Tentando reconectar...");
+                connectToWiFi(ssid, password);
+                reconnectAttempts++;
+                if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS)
+                {
                     Serial.println("Número máximo de tentativas de reconexão alcançado. Entrando em modo AP.");
-                    enterAPMode(); // Função para entrar em modo Access Point
-                    reconnectAttempts = 0; // Reseta o contador de tentativas após entrar no modo AP
+                    enterAPMode();
+                    reconnectAttempts = 0;
                 }
             }
         }
-    } else {
-        reconnectAttempts = 0; // Reseta o contador de tentativas quando estiver em modo AP
+        else
+        {
+            reconnectAttempts = 0; // Resetar tentativas de reconexão se conectado
+        }
+    }
+    else
+    {
+        reconnectAttempts = 0; // Resetar tentativas de reconexão se em modo AP
     }
 }
+
 // -------------------------------------------------------------------------
 // Funções Auxiliares
 // -------------------------------------------------------------------------

@@ -14,9 +14,11 @@
  *
  * @param server A instância do servidor web assíncrono.
  */
-void setupDashboardPage(AsyncWebServer& server) {
+void setupDashboardPage(AsyncWebServer &server)
+{
     // Configura o endpoint para a página do dashboard
-    server.on("/dashboard", HTTP_GET, [](AsyncWebServerRequest *request) {
+    server.on("/dashboard", HTTP_GET, [](AsyncWebServerRequest *request)
+              {
         // Verifica se o usuário está autenticado
         if (!isAuthenticated(request)) {
             redirectToAccessDenied(request);
@@ -108,77 +110,62 @@ void setupDashboardPage(AsyncWebServer& server) {
                     document.addEventListener('DOMContentLoaded', function() {
                         var toggleButton = document.getElementById('toggleButton');
 
-                        /**
-                         * Atualiza o estado do botão com base no estado do compressor.
-                         */
                         function updateButtonState() {
                             fetch('/compressor-state')
                                 .then(response => response.json())
                                 .then(data => {
                                     var compressorLigado = data.compressorLigado;
-                                    if (compressorLigado) {
-                                        toggleButton.innerHTML = 'Desligar'; // Atualiza o texto do botão
-                                        toggleButton.classList.add('btn-desligar'); // Adiciona a classe para cor de fundo
-                                        toggleButton.classList.remove('btn-ligar'); // Remove a classe anterior
+                                    var sistemaEmManutencao = data.sistemaEmManutencao;
+                                    if (sistemaEmManutencao) {
+                                        toggleButton.innerHTML = 'Sistema em manutenção'; // Mensagem de manutenção
+                                        toggleButton.classList.add('btn-disabled'); // Desativa o botão
+                                        toggleButton.classList.remove('btn-ligar', 'btn-desligar'); // Remove classes anteriores
+                                    } else if (compressorLigado) {
+                                        toggleButton.innerHTML = 'Desligar';
+                                        toggleButton.classList.add('btn-desligar');
+                                        toggleButton.classList.remove('btn-ligar');
                                     } else {
-                                        toggleButton.innerHTML = 'Ligar'; // Atualiza o texto do botão
-                                        toggleButton.classList.add('btn-ligar'); // Adiciona a classe para cor de fundo
-                                        toggleButton.classList.remove('btn-desligar'); // Remove a classe anterior
+                                        toggleButton.innerHTML = 'Ligar';
+                                        toggleButton.classList.add('btn-ligar');
+                                        toggleButton.classList.remove('btn-desligar');
                                     }
                                 })
                                 .catch(error => console.error('Erro ao obter estado inicial do compressor:', error));
                         }
 
-                        /**
-                         * Verifica a autenticação do usuário e redireciona se não estiver autenticado.
-                         */
-                        function checkAuthentication() {
-                            fetch('/check-auth')
-                                .then(response => response.json())
-                                .then(data => {
-                                    if (!data.authenticated) {
-                                        window.location.href = '/acesso-invalido'; // Redireciona para a página de acesso inválido
-                                    }
-                                })
-                                .catch(error => console.error('Erro ao verificar autenticação:', error));
-                        }
-
-                        /**
-                         * Configura o botão para alternar o estado do compressor.
-                         */
                         toggleButton.addEventListener('click', function(event) {
-                            event.preventDefault(); // Previne o comportamento padrão do link
-                            var action = toggleButton.innerHTML === 'Desligar' ? 'desligar' : 'ligar'; // Define a ação com base no texto do botão
+                            event.preventDefault();
+                            if (toggleButton.classList.contains('btn-disabled')) {
+                                return; // Não faz nada se o botão estiver desativado
+                            }
+                            var action = toggleButton.innerHTML === 'Desligar' ? 'desligar' : 'ligar';
                             fetch('/toggle?action=' + action)
                                 .then(response => response.text())
                                 .then(data => {
-                                    console.log('Resposta do servidor:', data); // Exibe a resposta do servidor
-                                    updateButtonState(); // Atualiza o estado do botão após a requisição
+                                    console.log('Resposta do servidor:', data);
+                                    updateButtonState();
                                 })
                                 .catch(error => console.error('Erro ao enviar requisição:', error));
                         });
 
-                        // Atualiza o estado do botão a cada 5 segundos
                         setInterval(updateButtonState, 5000);
 
-                        // Inicializa o estado do botão e verifica a autenticação
                         updateButtonState();
                         checkAuthentication();
                     });
                 </script>
-            </body>
+                </body>
             </html>
         )rawliteral";
 
         // Envia a resposta HTML ao cliente
-        request->send(200, "text/html", html);
-    });
+        request->send(200, "text/html", html); });
 
     // Configura o endpoint para retornar o estado do compressor em formato JSON
-    server.on("/compressor-state", HTTP_GET, [](AsyncWebServerRequest *request) {
+    server.on("/compressor-state", HTTP_GET, [](AsyncWebServerRequest *request)
+              {
         // Cria um JSON com o estado atual do compressor
         String stateJson = "{\"compressorLigado\":" + String(compressorLigado) + "}";
         // Envia o JSON como resposta
-        request->send(200, "application/json", stateJson);
-    });
+        request->send(200, "application/json", stateJson); });
 }
