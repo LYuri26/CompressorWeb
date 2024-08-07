@@ -50,6 +50,7 @@ const unsigned long RESTART_TIME = 60000;      // Tempo para aguardar após veri
 
 // Variáveis para controle de tempo
 unsigned long lastUpdate = 0;
+unsigned long lastCompressorUpdate = 0;
 
 // -------------------------------------------------------------------------
 // Função de Configuração Inicial
@@ -81,49 +82,52 @@ void loop()
 {
     unsigned long currentMillis = millis();
 
-    // Atualiza o tempo e o status do compressor a cada intervalo definido
+    // Verifica se o tempo para atualizar o tempo foi alcançado
     if (currentMillis - lastUpdate >= UPDATE_INTERVAL)
     {
-        updateTime();             // Atualiza o tempo
-        lastUpdate = currentMillis;
+        updateTime(); // Atualiza o tempo
+        lastUpdate = currentMillis; // Atualiza o tempo da última atualização
     }
 
-    // Se o compressor está ligado, execute a atualização do status repetidamente
-    if (compressorLigado)
+    // Se o compressor está ligado e o sistema não está em manutenção, atualize o status do compressor
+    if (compressorLigado && !sistemaEmManutencao)
     {
-        updateCompressorStatus(); // Atualiza o status do compressor
+        // Atualiza o status do compressor a cada 5 minutos para evitar loops excessivos
+        if (currentMillis - lastCompressorUpdate >= UPDATE_INTERVAL)
+        {
+            updateCompressorStatus();
+            lastCompressorUpdate = currentMillis; // Atualiza o tempo da última atualização do compressor
+        }
     }
 
     // Verifica o estado do botão de manutenção
     atualizarEstadoManutencao();
 
-    // Se o sistema está em modo Station e não em modo AP, verifique a conexão WiFi
+    // Verifica se o dispositivo está em modo AP e se não está, executa a reconexão WiFi
     if (!isAPMode)
-    {
+    { // Verifica se o dispositivo não está em modo AP
         if (WiFi.status() != WL_CONNECTED)
-        {
+        {                                           // Se o status do WiFi não for conectado
             if (currentMillis - lastReconnectAttempt >= RECONNECT_INTERVAL)
-            {
-                lastReconnectAttempt = currentMillis;
-                Serial.println("Conexão WiFi perdida. Tentando reconectar...");
-                connectToWiFi(ssid, password);
-                reconnectAttempts++;
+            {                                                                   // Verifica se o intervalo de reconexão foi alcançado
+                lastReconnectAttempt = currentMillis;                           // Atualiza o tempo da última tentativa de reconexão
+                Serial.println("Conexão WiFi perdida. Tentando reconectar..."); // Mensagem indicando tentativa de reconexão
+
+                // Tenta reconectar à rede WiFi
+                connectToWiFi(ssid, password); // Função para conectar ao WiFi
+                reconnectAttempts++;           // Incrementa o contador de tentativas
                 if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS)
-                {
+                { // Verifica se o número máximo de tentativas foi alcançado
                     Serial.println("Número máximo de tentativas de reconexão alcançado. Entrando em modo AP.");
-                    enterAPMode();
-                    reconnectAttempts = 0;
+                    enterAPMode();         // Função para entrar em modo Access Point
+                    reconnectAttempts = 0; // Reseta o contador de tentativas após entrar no modo AP
                 }
             }
-        }
-        else
-        {
-            reconnectAttempts = 0; // Resetar tentativas de reconexão se conectado
         }
     }
     else
     {
-        reconnectAttempts = 0; // Resetar tentativas de reconexão se em modo AP
+        reconnectAttempts = 0; // Reseta o contador de tentativas quando estiver em modo AP
     }
 }
 

@@ -16,7 +16,6 @@ const int pinoLigaDesliga = 2;                    // Pino do compressor
 const long intervalo = 300000;                        // Intervalo de 5 minutos (300000 ms)
 const String arquivoEstado = "/estadocompressor.txt"; // Arquivo para salvar o estado do compressor
 
-bool reiniciadoHoje = false;      // Controla se o ESP32 já foi reiniciado hoje
 bool compressorLigado = false;    // Estado atual do compressor (ligado ou desligado)
 bool timerAtivo = false;          // Indicador de se o timer está ativo
 unsigned long previousMillis = 0; // Tempo de referência para o controle do compressor
@@ -148,7 +147,7 @@ bool isAfterClosingTime()
     int minute = getMinutesFromTime(time); // Obtém os minutos atuais
 
     // Verifica se é após as 22:30
-    bool resultado = (hour > 22) || (hour == 22 && minute >= 30);
+    bool resultado = (hour > 3) || (hour == 3 && minute >= 30);
     Serial.printf("Verificação de horário (fechamento): %s\n", resultado ? "Após 22:30" : "Antes de 22:30");
     return resultado;
 }
@@ -254,9 +253,6 @@ void setupLigaDesliga(AsyncWebServer &server)
 // Funções de Atualização e Desligamento
 // -------------------------------------------------------------------------
 
-/**
- * Função para atualizar o status do compressor com base no intervalo definido.
- */
 // Função para atualizar o status do compressor com base no intervalo definido
 void updateCompressorStatus()
 {
@@ -287,15 +283,6 @@ void updateCompressorStatus()
         digitalWrite(pinoLigaDesliga, LOW);    // Desliga o compressor
         saveCompressorState(compressorLigado); // Salva o estado do compressor
         Serial.println("Desligando o compressor pois é após as 22:30.");
-    }
-
-    // Verifica se é exatamente às 22:30 e reinicia o ESP32 se ainda não foi reiniciado hoje
-    if (isAfterClosingTime() && !reiniciadoHoje)
-    {
-        Serial.println("Reiniciando o ESP32 às 22:30.");
-        reiniciadoHoje = true; // Marca que o ESP32 foi reiniciado hoje
-        delay(1000);           // Aguarda um segundo para garantir que a mensagem seja exibida
-        ESP.restart();         // Reinicia o ESP32
     }
 }
 
