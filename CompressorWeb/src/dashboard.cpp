@@ -102,7 +102,7 @@ void setupDashboardPage(AsyncWebServer &server)
         <a href="#" class="btn btn-block mb-2" id="toggleButton">Carregando...</a>
         <!-- Links para outras páginas -->
         <a href="/umidade" class="btn btn-secondary btn-block mb-2">Umidade</a>
-        <a href="/oleo" class="btn btn-secondary btn-block mb-2">Nível de Óleo</a>
+        <a href="/pressao" class="btn btn-secondary btn-block mb-2">Pressão</a>
         <a href="/logout" class="btn btn-danger btn-block mt-3">Logout</a>
     </div>
     <div id="messageBox" class="mt-3"></div>

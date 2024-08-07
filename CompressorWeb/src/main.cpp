@@ -14,7 +14,7 @@
 #include "ligadesliga.h"     // Cabeçalho para as funções de ligar e desligar
 #include "creditos.h"        // Cabeçalho para a página de créditos
 #include "umidade.h"         // Cabeçalho para a página de umidade
-#include "oleo.h"            // Cabeçalho para a página de nível de óleo
+#include "pressao.h"            // Cabeçalho para a página de nível de óleo
 #include "wificonexao.h"     // Cabeçalho para a configuração WiFi
 #include "paginaserro.h"     // Cabeçalho para as páginas de erro
 #include "tempo.h"           // Cabeçalho para a configuração do tempo
@@ -160,7 +160,7 @@ void setupServer()
     setupDashboardPage(server);            // Configura a página do dashboard
     setupLigaDesliga(server);              // Configura as funções de ligar e desligar
     setupUmidadePage(server);              // Configura a página de umidade
-    setupOleoPage(server);                 // Configura a página de nível de óleo
+    setupPressaoPage(server);                 // Configura a página de nível de óleo
     setupAcessoInvalidoPage(server);       // Configura a página de acesso inválido
     setupNotFoundPage(server);             // Configura a página de não encontrado
     setupUsuarioJaLogadoPage(server);      // Configura a página de usuário já logado

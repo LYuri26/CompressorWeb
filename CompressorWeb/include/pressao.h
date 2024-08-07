@@ -1,5 +1,5 @@
-#ifndef OLEO_H
-#define OLEO_H
+#ifndef PRESSAO_H
+#define PRESSAO_H
 
 // -------------------------------------------------------------------------
 // Inclusão de Bibliotecas
@@ -21,6 +21,6 @@
  * @param server Referência para o objeto do servidor web assíncrono que 
  *               gerenciará a configuração da página.
  */
-void setupOleoPage(AsyncWebServer& server);
+void setupPressaoPage(AsyncWebServer& server);
 
-#endif // OLEO_H
+#endif // PRESSAO_H

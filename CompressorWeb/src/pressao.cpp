@@ -2,14 +2,14 @@
 // Configurações da Página de Nível de Óleo
 // -------------------------------------------------------------------------
 #include <ESPAsyncWebServer.h>     // Biblioteca para criar um servidor web assíncrono
-#include "oleo.h"                 // Cabeçalho para a configuração da página de nível de óleo
+#include "pressao.h"                 // Cabeçalho para a configuração da página de nível de óleo
 
 /**
  * Configura a página de nível de óleo no servidor web.
  *
  * @param server A instância do servidor web assíncrono.
  */
-void setupOleoPage(AsyncWebServer& server)
+void setupPressaoPage(AsyncWebServer& server)
 {
     // Define o HTML da página de nível de óleo usando uma string literal (R"()")
     String html = R"rawliteral(
@@ -62,7 +62,7 @@ void setupOleoPage(AsyncWebServer& server)
     )rawliteral";
 
     // Configura o servidor para responder a requisições para a página de nível de óleo
-    server.on("/oleo", HTTP_GET, [html](AsyncWebServerRequest *request) {
+    server.on("/pressao", HTTP_GET, [html](AsyncWebServerRequest *request) {
         // Envia uma resposta HTTP 200 (OK) com o tipo de conteúdo "text/html" e o conteúdo da página HTML definida
         request->send(200, "text/html", html);
     });
