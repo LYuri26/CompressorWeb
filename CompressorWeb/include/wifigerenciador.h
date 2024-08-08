@@ -12,7 +12,7 @@
  * 
  * @param server Referência para o servidor web assíncrono.
  */
-void setupWiFiManagementPage(AsyncWebServer& server);
+void setupWiFiGerenciadorPage(AsyncWebServer& server);
 
 /**
  * Conecta ao WiFi com o SSID e a senha fornecidos.

@@ -165,7 +165,7 @@ void setupServer()
     setupNotFoundPage(server);             // Configura a página de não encontrado
     setupUsuarioJaLogadoPage(server);      // Configura a página de usuário já logado
     setupCredenciaisInvalidasPage(server); // Configura a página de credenciais inválidas
-    setupWiFiManagementPage(server);       // Configura a página de gerenciamento WiFi
+    setupWiFiGerenciadorPage(server);       // Configura a página de gerenciamento WiFi
 
     // Configura as rotas protegidas e públicas
     configureRoutes(); // Chama a função para configurar as rotas

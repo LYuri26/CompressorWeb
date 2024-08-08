@@ -5,7 +5,7 @@
 #include "wifiinterface.h"
 
 // Função para configurar a página de gerenciamento de Wi-Fi
-void setupWiFiManagementPage(AsyncWebServer &server) {
+void setupWiFiGerenciadorPage(AsyncWebServer &server) {
     // -------------------------------------------------------------------------
     // Inicializa o sistema de arquivos SPIFFS
     // -------------------------------------------------------------------------
