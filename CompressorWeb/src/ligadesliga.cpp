@@ -12,7 +12,7 @@
 // -------------------------------------------------------------------------
 // Configurações e Variáveis Globais
 // -------------------------------------------------------------------------
-const int pinoLigaDesliga = 26;                    // Pino do compressor
+const int pinoLigaDesliga = 2;                    // Pino do compressor
 const long intervalo = 300000;                        // Intervalo de 5 minutos (300000 ms)
 const String arquivoEstado = "/estadocompressor.txt"; // Arquivo para salvar o estado do compressor
 

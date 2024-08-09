@@ -19,7 +19,6 @@
 #include "paginaserro.h"     // Cabeçalho para as páginas de erro
 #include "tempo.h"           // Cabeçalho para a configuração do tempo
 #include "wifigerenciador.h" // Cabeçalho para o gerenciamento do WiFi
-#include "wifiinterface.h" // Cabeçalho para o gerenciamento do WiFi
 #include "manutencao.h"
 
 // -------------------------------------------------------------------------
@@ -167,7 +166,6 @@ void setupServer()
     setupUsuarioJaLogadoPage(server);      // Configura a página de usuário já logado
     setupCredenciaisInvalidasPage(server); // Configura a página de credenciais inválidas
     setupWiFiGerenciadorPage(server);       // Configura a página de gerenciamento WiFi
-    setupWiFiInterface();  // Aqui é onde você chama a função para configurar as rotas de WiFi
 
     // Configura as rotas protegidas e públicas
     configureRoutes(); // Chama a função para configurar as rotas
