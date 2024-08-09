@@ -19,7 +19,7 @@ void setupWiFiGerenciadorPage(AsyncWebServer &server) {
     // -------------------------------------------------------------------------
     server.on("/wifigerenciamento", HTTP_GET, [](AsyncWebServerRequest *request) {
         // Envia a página de gerenciamento de Wi-Fi
-        request->send(200, "text/html", getWiFiManagementPage());
+        request->send(200, "text/html", getWiFiGerenciamentoPage());
     });
 
     // -------------------------------------------------------------------------
