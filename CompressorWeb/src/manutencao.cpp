@@ -8,7 +8,7 @@
 // Configuração do pino para o botão de manutenção
 // -------------------------------------------------------------------------
 
-const int pinoManutencao = 4; // Define o pino 4 como o pino para o botão de manutenção
+const int pinoManutencao = 25; // Define o pino 4 como o pino para o botão de manutenção
 
 // -------------------------------------------------------------------------
 // Variável para verificar se o sistema está em manutenção

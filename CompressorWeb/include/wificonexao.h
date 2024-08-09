@@ -52,7 +52,7 @@ void connectToWiFi(const char *ssid, const char *password);
  * 
  * @note Esta função configura o dispositivo para criar uma rede WiFi própria, permitindo que outros dispositivos se conectem a ele.
  */
-void enterAPMode();
+void setupAP();
 
 /**
  * Carrega redes WiFi salvas na memória.

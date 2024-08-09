@@ -36,7 +36,9 @@ void setupWiFiGerenciadorPage(AsyncWebServer &server) {
         // Lê o conteúdo do arquivo
         String networks = file.readString();
         file.close(); // Fecha o arquivo após leitura
-        request->send(200, "text/plain", networks); // Envia o conteúdo lido como resposta
+
+        // Envia o conteúdo lido como resposta
+        request->send(200, "text/plain", networks);
     });
 
     // -------------------------------------------------------------------------
@@ -155,5 +157,14 @@ void setupWiFiGerenciadorPage(AsyncWebServer &server) {
         } else {
             request->send(400, "text/plain", "SSID ausente."); // Responde com erro se o SSID estiver ausente
         }
+    });
+
+    // -------------------------------------------------------------------------
+    // Rota para obter o IP da rede conectada
+    // -------------------------------------------------------------------------
+    server.on("/ipdarede", HTTP_GET, [](AsyncWebServerRequest *request) {
+        String ip = WiFi.localIP().toString(); // Obtém o IP local da rede conectada
+        String jsonResponse = "{\"ip\":\"" + ip + "\"}"; // Formata a resposta em JSON
+        request->send(200, "application/json", jsonResponse); // Envia a resposta como JSON
     });
 }

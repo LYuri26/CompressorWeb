@@ -1,224 +1,231 @@
+// -------------------------------------------------------------------------
+// Função que retorna o código HTML da página de gerenciamento Wi-Fi
+// -------------------------------------------------------------------------
 const char *getWiFiManagementPage()
 {
+    // -------------------------------------------------------------------------
+    // Utilização de R"rawliteral" para facilitar a inclusão de texto multiline
+    // contendo HTML, CSS e JavaScript dentro do código C++
+    // -------------------------------------------------------------------------
     return R"rawliteral(
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8"> <!-- Define a codificação de caracteres para UTF-8 -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Define a largura da página e o zoom inicial -->
-    <title>Gerenciamento Wi-Fi</title> <!-- Define o título da página -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"> <!-- Inclui o CSS do Bootstrap para estilização -->
-    <style>
-        /* Estilos para o corpo da página */
-        body {
-            font-family: Arial, sans-serif; /* Define a fonte do corpo da página */
-            background-color: #f8f9fa; /* Define a cor de fundo da página */
-            margin: 0; /* Remove as margens padrão */
-            padding: 0; /* Remove o preenchimento padrão */
-            display: flex; /* Usa flexbox para o layout da página */
-            flex-direction: column; /* Define a direção do layout como coluna */
-            min-height: 100vh; /* Define a altura mínima da página como 100% da altura da janela de visualização */
-        }
-
-        /* Estilos para o contêiner principal */
-        .container {
-            background-color: #ffffff; /* Define a cor de fundo do contêiner */
-            padding: 20px; /* Adiciona preenchimento interno ao contêiner */
-            border-radius: 5px; /* Adiciona bordas arredondadas ao contêiner */
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Adiciona uma sombra ao contêiner */
-            width: 100%; /* Define a largura do contêiner como 100% */
-            max-width: 600px; /* Define a largura máxima do contêiner */
-            margin: 30px auto; /* Define a margem superior e inferior como 30px e centraliza horizontalmente */
-            flex: 1; /* Faz o contêiner crescer para preencher o espaço disponível */
-        }
-
-        /* Estilos para o rodapé */
-        .footer {
-            background-color: #007bff; /* Define a cor de fundo do rodapé */
-            color: white; /* Define a cor do texto no rodapé */
-            text-align: center; /* Centraliza o texto no rodapé */
-            padding: 10px 0; /* Adiciona preenchimento vertical ao rodapé */
-            font-size: 14px; /* Define o tamanho da fonte do texto no rodapé */
-            margin-top: 30px; /* Adiciona uma margem superior ao rodapé para separá-lo do conteúdo acima */
-        }
-
-        /* Estilos para a lista de redes salvas */
-        #saved-networks {
-            max-height: 300px; /* Define a altura máxima para a lista de redes salvas */
-            overflow-y: auto; /* Adiciona rolagem vertical se o conteúdo exceder a altura máxima */
-            margin-bottom: 20px; /* Adiciona espaçamento inferior */
-        }
-
-        /* Estilos para o botão de conectar */
-        .btn-success {
-            background-color: #28a745; /* Cor de fundo do botão de conectar */
-            color: white; /* Cor do texto do botão */
-        }
-
-        .btn-success:hover {
-            background-color: #218838; /* Cor de fundo do botão de conectar ao passar o mouse sobre ele */
-        }
-
-        /* Estilos para o botão de voltar */
-        .btn-blue {
-            background-color: #007bff; /* Cor de fundo do botão de voltar */
-            color: white; /* Cor do texto do botão */
-            border: none; /* Remove a borda do botão */
-            padding: 10px 20px; /* Adiciona padding ao botão para espaçamento interno */
-            font-size: 16px; /* Define o tamanho da fonte do botão */
-            cursor: pointer; /* Muda o cursor para uma mão ao passar o mouse sobre o botão */
-            border-radius: 3px; /* Adiciona bordas arredondadas ao botão */
-            width: 100%; /* Define a largura como 100% */
-        }
-
-        .btn-blue:hover {
-            background-color: #0056b3; /* Altera a cor de fundo ao passar o mouse sobre o botão de voltar */
-        }
-
-        /* Estilos para o botão de deletar */
-        .btn-custom-danger {
-            background-color: #dc3545; /* Cor de fundo do botão de deletar */
-            color: white; /* Cor do texto do botão */
-            border: none; /* Remove a borda do botão */
-            padding: 5px 10px; /* Adiciona padding ao botão para espaçamento interno */
-            font-size: 14px; /* Define o tamanho da fonte do botão */
-            cursor: pointer; /* Muda o cursor para uma mão ao passar o mouse sobre o botão */
-            border-radius: 3px; /* Adiciona bordas arredondadas ao botão */
-            text-decoration: none; /* Remove o sublinhado do link */
-        }
-
-        .btn-custom-danger:hover {
-            background-color: #c82333; /* Altera a cor de fundo ao passar o mouse sobre o botão de deletar */
-        }
-
-        /* Estilos para o grupo de entrada com botão de alternar senha */
-        .input-group {
-            display: flex; /* Usa o flexbox para o layout do grupo de entrada */
-            align-items: center; /* Alinha os itens verticalmente ao centro */
-        }
-
-        .input-group-append {
-            margin-left: -1px; /* Remove a margem esquerda do botão para que ele se encaixe com o campo de entrada */
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h2>Gerenciamento de Redes Wi-Fi</h2>
-        <div id="message" class="alert" role="alert"></div> <!-- Div para mensagens de status -->
-        <form id="save-form" action="/salvarwifi" method="post">
-            <div class="form-group">
-                <label for="ssid">SSID da Rede Wi-Fi:</label>
-                <input type="text" id="ssid" name="ssid" class="form-control" placeholder="Digite o SSID" required>
-            </div>
-            <div class="form-group">
-                <label for="password">Senha:</label>
-                <div class="input-group">
-                    <input type="password" id="password" name="password" class="form-control" placeholder="Digite a senha" required>
-                    <div class="input-group-append">
-                        <button class="btn btn-outline-secondary" type="button" id="toggle-password">Mostrar</button>
+    <!DOCTYPE html> <!-- Declaração do tipo de documento HTML5 -->
+    <html lang="pt-br"> <!-- Início do documento HTML, idioma definido como português do Brasil -->
+    <head> <!-- Cabeçalho do documento contendo meta informações e links para recursos externos -->
+        <meta charset="UTF-8"> <!-- Define a codificação de caracteres como UTF-8 -->
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Define o viewport para responsividade em dispositivos móveis -->
+        <title>Gerenciamento Wi-Fi</title> <!-- Título da página exibido na aba do navegador -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"> <!-- Link para o CSS do Bootstrap para estilização rápida -->
+        <style> <!-- Início da seção de estilos personalizados CSS -->
+            /* Estilos gerais da página */
+            body {
+                font-family: Arial, sans-serif; /* Define a fonte padrão como Arial */
+                background-color: #f8f9fa; /* Cor de fundo da página */
+                margin: 0; /* Remove margens padrão */
+                padding: 0; /* Remove preenchimentos padrão */
+                display: flex; /* Define a exibição do body como flexbox */
+                flex-direction: column; /* Define a direção dos itens flexíveis como coluna */
+                min-height: 100vh; /* Define a altura mínima como 100% da altura da janela de visualização */
+            }
+            /* Estilos da div container que envolve todo o conteúdo principal */
+            .container {
+                background-color: #ffffff; /* Define a cor de fundo como branco */
+                padding: 20px; /* Adiciona preenchimento interno de 20px */
+                border-radius: 5px; /* Define bordas arredondadas com raio de 5px */
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Adiciona sombra ao redor da caixa */
+                width: 100%; /* Define a largura como 100% do container pai */
+                max-width: 600px; /* Define a largura máxima como 600px */
+                margin: 30px auto; /* Centraliza horizontalmente e adiciona margem superior de 30px */
+                flex: 1; /* Permite que o container cresça para ocupar o espaço disponível */
+            }
+            /* Estilos para o rodapé */
+            .footer {
+                background-color: #007bff; /* Define a cor de fundo como azul */
+                color: white; /* Define a cor do texto como branca */
+                text-align: center; /* Centraliza o texto */
+                padding: 10px 0; /* Adiciona preenchimento superior e inferior de 10px */
+                font-size: 14px; /* Define o tamanho da fonte como 14px */
+                margin-top: 30px; /* Adiciona margem superior de 30px */
+            }
+            /* Estilos para a seção que lista as redes Wi-Fi salvas */
+            #saved-networks {
+                max-height: 300px; /* Define a altura máxima como 300px */
+                overflow-y: auto; /* Adiciona barra de rolagem vertical se necessário */
+                margin-bottom: 20px; /* Adiciona margem inferior de 20px */
+            }
+            /* Estilos para o botão de conexão Wi-Fi */
+            .btn-success {
+                background-color: #28a745; /* Define a cor de fundo como verde */
+                color: white; /* Define a cor do texto como branca */
+            }
+            .btn-success:hover {
+                background-color: #218838; /* Define a cor de fundo ao passar o mouse */
+            }
+            /* Estilos para o botão de voltar */
+            .btn-blue {
+                background-color: #007bff; /* Define a cor de fundo como azul */
+                color: white; /* Define a cor do texto como branca */
+                border: none; /* Remove a borda padrão */
+                padding: 10px 20px; /* Adiciona preenchimento interno de 10px nas laterais e 20px superior/inferior */
+                font-size: 16px; /* Define o tamanho da fonte como 16px */
+                cursor: pointer; /* Muda o cursor para pointer ao passar sobre o botão */
+                border-radius: 3px; /* Define bordas arredondadas com raio de 3px */
+                width: 100%; /* Define a largura como 100% do container pai */
+            }
+            .btn-blue:hover {
+                background-color: #0056b3; /* Define a cor de fundo ao passar o mouse */
+            }
+            /* Estilos para o botão de exclusão personalizado */
+            .btn-custom-danger {
+                background-color: #dc3545; /* Define a cor de fundo como vermelho */
+                color: white; /* Define a cor do texto como branca */
+                border: none; /* Remove a borda padrão */
+                padding: 5px 10px; /* Adiciona preenchimento interno de 5px nas laterais e 10px superior/inferior */
+                font-size: 14px; /* Define o tamanho da fonte como 14px */
+                cursor: pointer; /* Muda o cursor para pointer ao passar sobre o botão */
+                border-radius: 3px; /* Define bordas arredondadas com raio de 3px */
+                text-decoration: none; /* Remove a decoração padrão (sublinhado) do link */
+            }
+            .btn-custom-danger:hover {
+                background-color: #c82333; /* Define a cor de fundo ao passar o mouse */
+            }
+            /* Estilos para o grupo de inputs */
+            .input-group {
+                display: flex; /* Define o grupo de inputs como flexbox */
+                align-items: center; /* Alinha os itens no centro verticalmente */
+            }
+            /* Estilos para o botão que aparece ao lado do campo de senha */
+            .input-group-append {
+                margin-left: -1px; /* Remove a margem à esquerda para alinhar o botão com o campo de input */
+            }
+        </style> <!-- Fim da seção de estilos personalizados -->
+    </head>
+    <body> <!-- Início do corpo do documento HTML -->
+        <div class="container"> <!-- Início do container principal -->
+            <h2>Gerenciamento de Redes Wi-Fi</h2> <!-- Título principal da página -->
+            <div id="message" class="alert" role="alert"></div> <!-- Div para exibir mensagens de sucesso ou erro -->
+            <p id="connected-ip">Aguardando IP...</p> <!-- Parágrafo para exibir o IP da rede conectada -->
+            <form id="save-form" action="/salvarwifi" method="post"> <!-- Formulário para salvar redes Wi-Fi -->
+                <div class="form-group"> <!-- Grupo do campo SSID -->
+                    <label for="ssid">SSID da Rede Wi-Fi:</label> <!-- Rótulo para o campo SSID -->
+                    <input type="text" id="ssid" name="ssid" class="form-control" placeholder="Digite o SSID" required> <!-- Campo de input para SSID -->
+                </div>
+                <div class="form-group"> <!-- Grupo do campo Senha -->
+                    <label for="password">Senha:</label> <!-- Rótulo para o campo Senha -->
+                    <div class="input-group"> <!-- Grupo de input que contém o campo de senha e o botão de alternância -->
+                        <input type="password" id="password" name="password" class="form-control" placeholder="Digite a senha" required> <!-- Campo de input para a senha -->
+                        <div class="input-group-append"> <!-- Div que agrupa o botão de alternância de visibilidade da senha -->
+                            <button class="btn btn-outline-secondary" type="button" id="toggle-password">Mostrar</button> <!-- Botão para alternar visibilidade da senha -->
+                        </div>
                     </div>
                 </div>
-            </div>
-            <button type="submit" class="btn btn-success btn-block">Conectar</button>
-            <button type="button" onclick="window.history.back()" class="btn-blue">Voltar</button>
-        </form>
-        <hr>
-        <div id="saved-networks">Aguardando redes salvas...</div>
-    </div>
-    <div class="footer">
-        <p>Aplicação desenvolvida pela Turma de Informática Para Internet Trilhas de Futuro 2024</p>
-        <p>Instrutor: Lenon Yuri</p>
-    </div>
-    <script>
-        // -------------------------------------------------------------------------
-        // Função para buscar redes Wi-Fi salvas e atualizar a interface
-        // -------------------------------------------------------------------------
-        function fetchSavedNetworks() {
-            fetch('/listadewifi') // Faz uma solicitação GET para a rota '/listadewifi'
+                <button type="submit" class="btn btn-success btn-block">Conectar</button> <!-- Botão para enviar o formulário -->
+                <button type="button" onclick="window.history.back()" class="btn-blue">Voltar</button> <!-- Botão para voltar à página anterior -->
+            </form>
+            <hr> <!-- Linha horizontal para separar seções da página -->
+            <div id="saved-networks">Aguardando redes salvas...</div> <!-- Div que conterá a lista de redes Wi-Fi salvas -->
+        </div>
+        <div class="footer"> <!-- Início do rodapé da página -->
+            <p>Aplicação desenvolvida pela Turma de Informática Para Internet Trilhas de Futuro 2024</p> <!-- Texto no rodapé -->
+            <p>Instrutor: Lenon Yuri</p> <!-- Texto no rodapé -->
+        </div>
+        <script> <!-- Início da seção de scripts JavaScript -->
+            // -------------------------------------------------------------------------
+            // Funções JavaScript para manipulação de dados da página
+            // -------------------------------------------------------------------------
+
+            // Função para buscar as redes Wi-Fi salvas e exibir na página
+            function fetchSavedNetworks() {
+                fetch('/listadewifi') // Faz uma requisição GET ao endpoint /listadewifi
+                    .then(response => {
+                        if (!response.ok) { // Verifica se a resposta da requisição foi bem-sucedida
+                            throw new Error('Network response was not ok'); // Lança um erro se a resposta não foi OK
+                        }
+                        return response.text(); // Retorna a resposta como texto
+                    })
+                    .then(data => {
+                        var savedNetworks = document.getElementById('saved-networks'); // Seleciona o elemento onde as redes salvas serão exibidas
+                        savedNetworks.innerHTML = ''; // Limpa o conteúdo atual da div
+                        var networks = data.trim().split('\n'); // Divide os dados recebidos em uma lista de redes, cada linha representa uma rede
+                        if (networks.length > 0 && networks[0] !== "") { // Verifica se há redes salvas e se a primeira linha não está vazia
+                            networks.forEach(network => { // Itera sobre cada rede salva
+                                var parts = network.split(','); // Divide cada linha em partes separadas por vírgula (ex: SSID, outra informação)
+                                savedNetworks.innerHTML += '<p><strong>SSID:</strong> ' + parts[0] + ' <a class="btn btn-custom-danger" href="/excluirwifi?ssid=' + parts[0] + '">Delete</a></p>'; // Adiciona o SSID da rede e um link para excluir a rede
+                            });
+                        } else {
+                            savedNetworks.innerHTML = '<p>Nenhuma rede salva encontrada.</p>'; // Exibe mensagem caso não haja redes salvas
+                        }
+                    })
+                    .catch(error => { // Lida com erros na requisição ou no processamento dos dados
+                        console.error('Erro ao buscar as redes salvas:', error); // Exibe o erro no console
+                        var savedNetworks = document.getElementById('saved-networks'); // Seleciona novamente o elemento de redes salvas
+                        savedNetworks.innerHTML = '<p>Erro ao buscar redes salvas.</p>'; // Exibe mensagem de erro na página
+                    });
+            }
+
+            // Função para buscar o IP da rede conectada e atualizar na página
+            function fetchConnectedNetworkInfo() {
+                fetch('/ipdarede') // Faz uma requisição GET ao endpoint /ipdarede
+                    .then(response => response.json()) // Converte a resposta em JSON
+                    .then(data => {
+                        document.getElementById('connected-ip').innerText = `IP da Rede Conectada: ${data.ip}`; // Atualiza o elemento na página com o IP retornado
+                    })
+                    .catch(error => console.error('Erro ao carregar informações da rede conectada:', error)); // Lida com erros na requisição ou no processamento dos dados
+            }
+
+            // -------------------------------------------------------------------------
+            // Inicialização ao carregar a página
+            // -------------------------------------------------------------------------
+            document.addEventListener('DOMContentLoaded', function() {
+                fetchSavedNetworks(); // Carrega as redes salvas quando a página é carregada
+                fetchConnectedNetworkInfo(); // Carrega informações da rede conectada quando a página é carregada
+            });
+
+            // Alterna a visibilidade da senha no campo de input
+            document.getElementById('toggle-password').addEventListener('click', function() {
+                var passwordField = document.getElementById('password'); // Seleciona o campo de senha
+                var button = this; // Armazena a referência ao botão
+                if (passwordField.type === 'password') { // Verifica se o campo de senha está do tipo 'password'
+                    passwordField.type = 'text'; // Altera o campo para tipo 'text' para exibir a senha
+                    button.textContent = 'Ocultar'; // Altera o texto do botão para 'Ocultar'
+                } else {
+                    passwordField.type = 'password'; // Altera o campo para tipo 'password' para esconder a senha
+                    button.textContent = 'Mostrar'; // Altera o texto do botão para 'Mostrar'
+                }
+            });
+
+            // Lida com a submissão do formulário para salvar as credenciais de Wi-Fi
+            document.getElementById('save-form').addEventListener('submit', function(event) {
+                event.preventDefault(); // Evita que o formulário seja enviado da maneira padrão
+                var form = this; // Armazena a referência ao formulário
+                var formData = new FormData(form); // Cria um objeto FormData com os dados do formulário
+
+                fetch(form.action, {
+                    method: form.method, // Utiliza o método definido no formulário (POST)
+                    body: formData // Envia os dados do formulário
+                })
                 .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
+                    if (!response.ok) { // Verifica se a resposta da requisição foi bem-sucedida
+                        throw new Error('Network response was not ok'); // Lança um erro se a resposta não foi OK
                     }
-                    return response.text(); // Converte a resposta em texto
+                    return response.text(); // Retorna a resposta como texto
                 })
                 .then(data => {
-                    var savedNetworks = document.getElementById('saved-networks');
-                    savedNetworks.innerHTML = ''; // Limpa o conteúdo atual
-                    var networks = data.trim().split('\n'); // Divide a resposta em linhas
-                    if (networks.length > 0 && networks[0] !== "") {
-                        // Se houver redes salvas, atualiza a lista na página
-                        networks.forEach(network => {
-                            var parts = network.split(','); // Divide cada linha em SSID e senha
-                            savedNetworks.innerHTML += '<p><strong>SSID:</strong> ' + parts[0] + ' <a class="btn btn-custom-danger" href="/excluirwifi?ssid=' + parts[0] + '">Delete</a></p>';
-                        });
-                    } else {
-                        savedNetworks.innerHTML = '<p>Nenhuma rede salva encontrada.</p>'; // Mensagem se nenhuma rede estiver salva
-                    }
+                    var message = document.getElementById('message'); // Seleciona o elemento de mensagem
+                    message.className = 'alert alert-success'; // Define a classe do elemento para exibir uma mensagem de sucesso
+                    message.textContent = 'Rede conectada'; // Define o conteúdo da mensagem
+                    form.reset(); // Reseta o formulário após submissão bem-sucedida
+                    fetchSavedNetworks(); // Atualiza a lista de redes salvas
+                    fetchConnectedNetworkInfo(); // Atualiza o elemento IP com as informações da nova rede conectada
                 })
                 .catch(error => {
-                    console.error('Erro ao buscar as redes salvas:', error); // Log de erros no console
-                    var savedNetworks = document.getElementById('saved-networks');
-                    savedNetworks.innerHTML = '<p>Erro ao buscar redes salvas.</p>'; // Mensagem de erro na página
+                    console.error('Erro ao conectar na rede:', error); // Exibe o erro no console
+                    var message = document.getElementById('message'); // Seleciona o elemento de mensagem
+                    message.className = 'alert alert-danger'; // Define a classe do elemento para exibir uma mensagem de erro
+                    message.textContent = 'Erro ao conectar na rede'; // Define o conteúdo da mensagem de erro
                 });
-        }
-
-        // -------------------------------------------------------------------------
-        // Atualiza a lista de redes salvas ao carregar a página
-        // -------------------------------------------------------------------------
-        document.addEventListener('DOMContentLoaded', function() {
-            fetchSavedNetworks(); // Chama a função para buscar as redes salvas
-        });
-
-        // -------------------------------------------------------------------------
-        // Alterna a visibilidade da senha no campo de entrada
-        // -------------------------------------------------------------------------
-        document.getElementById('toggle-password').addEventListener('click', function() {
-            var passwordField = document.getElementById('password');
-            var button = this;
-            if (passwordField.type === 'password') {
-                passwordField.type = 'text';
-                button.textContent = 'Ocultar'; // Muda o texto do botão para 'Ocultar'
-            } else {
-                passwordField.type = 'password';
-                button.textContent = 'Mostrar'; // Muda o texto do botão para 'Mostrar'
-            }
-        });
-
-        // -------------------------------------------------------------------------
-        // Intercepta o envio do formulário para exibir a mensagem "Rede conectada"
-        // -------------------------------------------------------------------------
-        document.getElementById('save-form').addEventListener('submit', function(event) {
-            event.preventDefault(); // Impede o envio padrão do formulário
-            var form = this;
-            var formData = new FormData(form);
-
-            fetch(form.action, {
-                method: form.method,
-                body: formData
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.text(); // Converte a resposta em texto
-            })
-            .then(data => {
-                var message = document.getElementById('message');
-                message.className = 'alert alert-success'; // Define a classe CSS para o alerta de sucesso
-                message.textContent = 'Rede conectada'; // Define a mensagem de sucesso
-                form.reset(); // Limpa os campos do formulário
-                fetchSavedNetworks(); // Atualiza a lista de redes salvas
-            })
-            .catch(error => {
-                console.error('Erro ao conectar na  rede:', error); // Log de erros no console
-                var message = document.getElementById('message');
-                message.className = 'alert alert-danger'; // Define a classe CSS para o alerta de erro
-                message.textContent = 'Erro ao conectar na  rede'; // Define a mensagem de erro
             });
-        });
-    </script>
-</body>
-</html>
-    )rawliteral";
+        </script> <!-- Fim da seção de scripts JavaScript -->
+    </body> <!-- Fim do corpo do documento HTML -->
+    </html> <!-- Fim do documento HTML -->
+    )rawliteral"; // Fim do retorno do conteúdo HTML dentro do R"rawliteral"
 }

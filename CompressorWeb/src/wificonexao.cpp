@@ -13,7 +13,7 @@ const char *ap_password = "12345678";  // Senha do Access Point
 
 // Configurações do Access Point
 IPAddress local_ip(192, 168, 26, 7); // IP local do Access Point
-IPAddress gateway(192, 168, 4, 1);  // Gateway do Access Point
+IPAddress gateway(192, 168, 26, 1);  // Gateway do Access Point
 IPAddress subnet(255, 255, 255, 0); // Máscara de sub-rede do Access Point
 
 // Variáveis para o gerenciamento de escaneamento de redes Wi-Fi
@@ -26,6 +26,19 @@ bool scanDone = false; // Indica se o escaneamento foi concluído
 int scanResults = 0;   // Número de redes encontradas
 
 // -------------------------------------------------------------------------
+// Função para Configurar o Modo AP
+// -------------------------------------------------------------------------
+void setupAP()
+{
+    WiFi.mode(WIFI_AP_STA); // Configura o ESP32 para o modo Access Point e Estação
+    WiFi.softAPConfig(local_ip, gateway, subnet); // Configura o IP, gateway e máscara do AP
+    WiFi.softAP(ap_ssid, ap_password);            // Inicia o Access Point com SSID e senha
+    Serial.print("Modo AP iniciado. Endereço IP: ");
+    Serial.println(WiFi.softAPIP()); // Imprime o IP do Access Point
+    isAPMode = true;                 // Marca que o dispositivo está em modo Access Point
+}
+
+// -------------------------------------------------------------------------
 // Função para Conectar ao Wi-Fi
 // -------------------------------------------------------------------------
 void connectToWiFi(const char *ssid, const char *password)
@@ -34,7 +47,6 @@ void connectToWiFi(const char *ssid, const char *password)
     if (!ssid || !password || strlen(ssid) == 0 || strlen(password) == 0)
     {
         Serial.println("SSID ou senha inválidos.");
-        enterAPMode(); // Entra no modo Access Point se os dados forem inválidos
         return;
     }
 
@@ -59,28 +71,14 @@ void connectToWiFi(const char *ssid, const char *password)
         Serial.println();
         Serial.print("Conexão feita! Endereço IP: ");
         Serial.println(WiFi.localIP()); // Imprime o IP local atribuído
-        isAPMode = false;               // Desativa o modo Access Point
+        isAPMode = false;               // Desativa o modo Access Point se a conexão for bem-sucedida
     }
     else
     {
         Serial.println();
         Serial.println("Conexão falha.");
-        enterAPMode(); // Entra no modo Access Point se a conexão falhar
+        // Mantenha o modo AP ativo independentemente do sucesso da conexão
     }
-}
-
-// -------------------------------------------------------------------------
-// Função para Entrar no Modo Access Point
-// -------------------------------------------------------------------------
-void enterAPMode()
-{
-    Serial.println("Entrando no modo Access Point...");
-    WiFi.mode(WIFI_AP);                           // Configura o ESP32 para o modo Access Point
-    WiFi.softAPConfig(local_ip, gateway, subnet); // Configura o IP, gateway e máscara
-    WiFi.softAP(ap_ssid, ap_password);            // Inicia o Access Point com SSID e senha
-    Serial.print("Modo AP iniciado. Endereço IP: ");
-    Serial.println(WiFi.softAPIP()); // Imprime o IP do Access Point
-    isAPMode = true;                 // Marca que o dispositivo está em modo Access Point
 }
 
 // -------------------------------------------------------------------------
