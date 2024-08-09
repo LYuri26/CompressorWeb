@@ -4,9 +4,12 @@
 // Variáveis Globais
 // -------------------------------------------------------------------------
 
-String sessionId = "";           // ID da sessão atual do usuário
-bool userLoggedIn = false;       // Status de login do usuário
-String loggedInUser = "";        // Nome do usuário que está logado
+String sessionId = "";              // ID da sessão atual do usuário
+bool userLoggedIn = false;          // Status de login do usuário
+String loggedInUser = "";           // Nome do usuário que está logado
+unsigned long lastActivityTime = 0; // Tempo da última atividade do usuário
+
+const unsigned long SESSION_TIMEOUT = 5 * 60 * 1000; // Tempo de expiração da sessão (5 minutos em milissegundos)
 
 // -------------------------------------------------------------------------
 // Funções de Autenticação
@@ -17,8 +20,8 @@ String loggedInUser = "";        // Nome do usuário que está logado
  *
  * @return String contendo o novo ID de sessão.
  */
-String generateSessionId() {
-    // Cria um ID de sessão usando o valor atual de millis() convertido para hexadecimal
+String generateSessionId()
+{
     String newSessionId = String(millis(), HEX);
     Serial.println("Gerando novo sessionId: " + newSessionId);
     return newSessionId;
@@ -30,30 +33,54 @@ String generateSessionId() {
  * @param request Ponteiro para o pedido HTTP.
  * @return true se o usuário estiver autenticado, false caso contrário.
  */
-bool isAuthenticated(AsyncWebServerRequest *request) {
-    if (request->hasHeader("Cookie")) {
-        // Obtém o valor do cookie de sessão
+bool isAuthenticated(AsyncWebServerRequest *request)
+{
+    if (request->hasHeader("Cookie"))
+    {
         String cookie = request->header("Cookie");
         int sessionIndex = cookie.indexOf("session_id=");
-        if (sessionIndex != -1) {
-            // Extrai o valor do ID de sessão do cookie
+        if (sessionIndex != -1)
+        {
             String sessionValue = cookie.substring(sessionIndex + 11);
             Serial.println("Cookie recebido: " + cookie);
             Serial.println("ID de sessão do cookie: " + sessionValue);
-            // Verifica se o ID de sessão do cookie corresponde ao ID atual
-            if (sessionValue.equals(sessionId)) {
-                Serial.println("Sessão autenticada com sucesso.");
-                return true;
-            } else {
+            if (sessionValue.equals(sessionId))
+            {
+                // Verifica se a sessão não expirou
+                unsigned long currentTime = millis();
+                if (currentTime - lastActivityTime < SESSION_TIMEOUT)
+                {
+                    Serial.println("Sessão autenticada com sucesso.");
+                    return true;
+                }
+                else
+                {
+                    Serial.println("Sessão expirou.");
+                }
+            }
+            else
+            {
                 Serial.println("ID de sessão do cookie não corresponde ao ID atual.");
             }
-        } else {
+        }
+        else
+        {
             Serial.println("Cabeçalho de cookie não contém 'session_id'.");
         }
-    } else {
+    }
+    else
+    {
         Serial.println("Cabeçalho de cookie não encontrado.");
     }
     return false;
+}
+
+/**
+ * Atualiza o tempo da última atividade do usuário.
+ */
+void updateLastActivityTime()
+{
+    lastActivityTime = millis();
 }
 
 /**
@@ -61,23 +88,28 @@ bool isAuthenticated(AsyncWebServerRequest *request) {
  *
  * @param request Ponteiro para o pedido HTTP.
  */
-void handleLogin(AsyncWebServerRequest *request) {
+void handleLogin(AsyncWebServerRequest *request)
+{
     String username;
     String password;
 
-    // Obtém o parâmetro de nome de usuário
-    if (request->hasParam("username", true)) {
+    if (request->hasParam("username", true))
+    {
         username = request->getParam("username", true)->value();
-    } else {
+    }
+    else
+    {
         Serial.println("Parâmetro 'username' não encontrado.");
         request->redirect("/?login_failed=true");
         return;
     }
 
-    // Obtém o parâmetro de senha
-    if (request->hasParam("password", true)) {
+    if (request->hasParam("password", true))
+    {
         password = request->getParam("password", true)->value();
-    } else {
+    }
+    else
+    {
         Serial.println("Parâmetro 'password' não encontrado.");
         request->redirect("/?login_failed=true");
         return;
@@ -85,24 +117,29 @@ void handleLogin(AsyncWebServerRequest *request) {
 
     Serial.println("Tentando login com usuário: " + username + " e senha: " + password);
 
-    // Verifica credenciais
-    if (username == "admin" && password == "admin123") {
-        if (!userLoggedIn) {
-            // Processa o login bem-sucedido
+    if (username == "admin" && password == "admin123")
+    {
+        if (!userLoggedIn)
+        {
             userLoggedIn = true;
             loggedInUser = username;
             sessionId = generateSessionId();
+            updateLastActivityTime(); // Atualiza o tempo da última atividade
             Serial.println("Login bem-sucedido para o usuário: " + username);
             Serial.println("ID de sessão definido: " + sessionId);
             AsyncWebServerResponse *response = request->beginResponse(302, "text/plain", "");
             response->addHeader("Set-Cookie", "session_id=" + sessionId + "; Path=/; HttpOnly");
             response->addHeader("Location", "/dashboard");
             request->send(response);
-        } else {
+        }
+        else
+        {
             Serial.println("Tentativa de login para o usuário já logado: " + username);
             request->redirect("/usuario-ja-logado");
         }
-    } else {
+    }
+    else
+    {
         Serial.println("Falha de login para o usuário: " + username);
         request->redirect("/?login_failed=true");
     }
@@ -113,9 +150,10 @@ void handleLogin(AsyncWebServerRequest *request) {
  *
  * @param request Ponteiro para o pedido HTTP.
  */
-void handleLogout(AsyncWebServerRequest *request) {
-    if (userLoggedIn) {
-        // Processa o logout
+void handleLogout(AsyncWebServerRequest *request)
+{
+    if (userLoggedIn)
+    {
         Serial.println("Logout do usuário: " + loggedInUser);
         userLoggedIn = false;
         loggedInUser = "";
@@ -125,7 +163,9 @@ void handleLogout(AsyncWebServerRequest *request) {
         response->addHeader("Set-Cookie", "session_id=; expires=Thu, 01 Jan 1970 00:00:00 GMT; Path=/; HttpOnly");
         response->addHeader("Location", "/");
         request->send(response);
-    } else {
+    }
+    else
+    {
         Serial.println("Tentativa de logout quando nenhum usuário está logado.");
         request->redirect("/");
     }
@@ -140,7 +180,8 @@ void handleLogout(AsyncWebServerRequest *request) {
  *
  * @param request Ponteiro para o pedido HTTP.
  */
-void notAuthenticated(AsyncWebServerRequest *request) {
+void notAuthenticated(AsyncWebServerRequest *request)
+{
     Serial.println("Redirecionando para a página inicial, usuário não autenticado.");
     request->redirect("/");
 }
@@ -150,13 +191,16 @@ void notAuthenticated(AsyncWebServerRequest *request) {
  *
  * @param request Ponteiro para o pedido HTTP.
  */
-void handleDashboard(AsyncWebServerRequest *request) {
-    if (isAuthenticated(request)) {
-        // Acesso concedido ao dashboard
+void handleDashboard(AsyncWebServerRequest *request)
+{
+    if (isAuthenticated(request))
+    {
+        updateLastActivityTime(); // Atualiza o tempo da última atividade
         Serial.println("Acesso ao dashboard concedido.");
         request->send(200, "text/plain", "Bem-vindo ao Dashboard!");
-    } else {
-        // Acesso negado, redireciona para a página inicial
+    }
+    else
+    {
         Serial.println("Acesso ao dashboard negado.");
         notAuthenticated(request);
     }

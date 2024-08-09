@@ -6,35 +6,34 @@
 // -------------------------------------------------------------------------
 // Configurações Globais
 // -------------------------------------------------------------------------
-const char *ssid = "";                 // SSID da rede Wi-Fi para conexão
-const char *password = "";             // Senha da rede Wi-Fi para conexão
-const char *ap_ssid = "CompressorWeb"; // SSID do Access Point
-const char *ap_password = "12345678";  // Senha do Access Point
 
-// Configurações do Access Point
-IPAddress local_ip(192, 168, 26, 7); // IP local do Access Point
-IPAddress gateway(192, 168, 26, 1);  // Gateway do Access Point
-IPAddress subnet(255, 255, 255, 0); // Máscara de sub-rede do Access Point
+const char *ssid = "";                 // SSID da rede Wi-Fi para conexão (deve ser preenchido com o SSID desejado)
+const char *password = "";             // Senha da rede Wi-Fi para conexão (deve ser preenchida com a senha desejada)
+const char *ap_ssid = "CompressorWeb"; // SSID do Access Point (SSID padrão do AP)
+const char *ap_password = "12345678";  // Senha do Access Point (senha padrão do AP)
 
-// Variáveis para o gerenciamento de escaneamento de redes Wi-Fi
-bool scanning = false;                   // Indica se o escaneamento está em andamento
-unsigned long lastScan = 0;              // Tempo do último escaneamento
+IPAddress local_ip(192, 168, 26, 7); // IP local do Access Point (configura o IP que o AP usará)
+IPAddress gateway(192, 168, 26, 1);  // Gateway do Access Point (configura o IP do gateway para o AP)
+IPAddress subnet(255, 255, 255, 0); // Máscara de sub-rede do Access Point (define a máscara de sub-rede)
+
+bool scanning = false;                   // Indica se o escaneamento de redes está em andamento
+unsigned long lastScan = 0;              // Armazena o tempo do último escaneamento de redes
 const unsigned long scanInterval = 5000; // Intervalo entre escaneamentos (em milissegundos)
 
 bool isAPMode = false; // Indica se o dispositivo está no modo Access Point
 bool scanDone = false; // Indica se o escaneamento foi concluído
-int scanResults = 0;   // Número de redes encontradas
+int scanResults = 0;   // Número de redes encontradas durante o escaneamento
 
 // -------------------------------------------------------------------------
 // Função para Configurar o Modo AP
 // -------------------------------------------------------------------------
 void setupAP()
 {
-    WiFi.mode(WIFI_AP_STA); // Configura o ESP32 para o modo Access Point e Estação
-    WiFi.softAPConfig(local_ip, gateway, subnet); // Configura o IP, gateway e máscara do AP
-    WiFi.softAP(ap_ssid, ap_password);            // Inicia o Access Point com SSID e senha
+    WiFi.mode(WIFI_AP_STA); // Configura o ESP32 para operar tanto em modo Access Point quanto em modo Estação
+    WiFi.softAPConfig(local_ip, gateway, subnet); // Configura o IP, gateway e máscara de sub-rede do AP
+    WiFi.softAP(ap_ssid, ap_password);            // Inicia o Access Point com o SSID e a senha fornecidos
     Serial.print("Modo AP iniciado. Endereço IP: ");
-    Serial.println(WiFi.softAPIP()); // Imprime o IP do Access Point
+    Serial.println(WiFi.softAPIP()); // Imprime o IP do Access Point no monitor serial
     isAPMode = true;                 // Marca que o dispositivo está em modo Access Point
 }
 
@@ -46,15 +45,15 @@ void connectToWiFi(const char *ssid, const char *password)
     // Verifica se o SSID e a senha são válidos
     if (!ssid || !password || strlen(ssid) == 0 || strlen(password) == 0)
     {
-        Serial.println("SSID ou senha inválidos.");
+        Serial.println("SSID ou senha inválidos."); // Informa que o SSID ou a senha fornecida é inválida
         return;
     }
 
     Serial.print("Tentando conectar ao WiFi: ");
-    Serial.println(ssid);
-    WiFi.begin(ssid, password); // Inicia a conexão com o Wi-Fi
+    Serial.println(ssid); // Imprime o SSID da rede Wi-Fi que está tentando conectar
+    WiFi.begin(ssid, password); // Inicia a conexão com a rede Wi-Fi
 
-    int attempts = 0;           // Contador de tentativas
+    int attempts = 0;           // Contador de tentativas de conexão
     const int maxAttempts = 5; // Número máximo de tentativas de conexão
 
     // Tenta conectar ao Wi-Fi até o número máximo de tentativas
@@ -62,7 +61,7 @@ void connectToWiFi(const char *ssid, const char *password)
     {
         delay(1000);       // Espera 1 segundo entre tentativas
         Serial.print("."); // Imprime um ponto para indicar que está tentando conectar
-        attempts++;
+        attempts++;       // Incrementa o contador de tentativas
     }
 
     // Verifica se a conexão foi bem-sucedida
@@ -70,13 +69,13 @@ void connectToWiFi(const char *ssid, const char *password)
     {
         Serial.println();
         Serial.print("Conexão feita! Endereço IP: ");
-        Serial.println(WiFi.localIP()); // Imprime o IP local atribuído
+        Serial.println(WiFi.localIP()); // Imprime o IP local atribuído ao dispositivo
         isAPMode = false;               // Desativa o modo Access Point se a conexão for bem-sucedida
     }
     else
     {
         Serial.println();
-        Serial.println("Conexão falha.");
+        Serial.println("Conexão falha."); // Informa que a tentativa de conexão falhou
         // Mantenha o modo AP ativo independentemente do sucesso da conexão
     }
 }
@@ -90,7 +89,7 @@ void startScanWiFiNetworks()
     if (!scanning && millis() - lastScan > scanInterval)
     {
         scanning = true;         // Marca que o escaneamento está em andamento
-        WiFi.scanNetworks(true); // Inicia o escaneamento de redes Wi-Fi
+        WiFi.scanNetworks(true); // Inicia o escaneamento de redes Wi-Fi (modo ativo)
         lastScan = millis();     // Atualiza o tempo do último escaneamento
     }
 }
@@ -100,16 +99,16 @@ void startScanWiFiNetworks()
 // -------------------------------------------------------------------------
 String getScanResults()
 {
-    int n = WiFi.scanComplete(); // Obtém o número de redes encontradas
+    int n = WiFi.scanComplete(); // Obtém o número de redes encontradas no último escaneamento
     if (n == -2 || n == -1)
     {
         // O escaneamento não foi iniciado ou está em andamento
-        return "[]";
+        return "[]"; // Retorna um array JSON vazio
     }
     else if (n == 0)
     {
         // Nenhuma rede encontrada
-        return "[]";
+        return "[]"; // Retorna um array JSON vazio
     }
     else
     {
@@ -117,13 +116,13 @@ String getScanResults()
         String json = "[";
         for (int i = 0; i < n; i++)
         {
-            json += "{\"ssid\":\"" + WiFi.SSID(i) + "\"}";
+            json += "{\"ssid\":\"" + WiFi.SSID(i) + "\"}"; // Adiciona cada SSID encontrado no formato JSON
             if (i < n - 1)
                 json += ","; // Adiciona vírgula entre os itens, exceto no último
         }
         json += "]";
         scanning = false; // Marca que o escaneamento foi concluído
-        return json;
+        return json; // Retorna o array JSON com os resultados do escaneamento
     }
 }
 
@@ -149,7 +148,7 @@ void loadSavedWiFiNetworks()
     File file = SPIFFS.open("/wifiredes.txt", FILE_READ);
     if (!file)
     {
-        Serial.println("Erro ao abrir o arquivo de redes Wi-Fi");
+        Serial.println("Erro ao abrir o arquivo de redes Wi-Fi"); // Informa que houve um erro ao abrir o arquivo
         return;
     }
 
@@ -169,7 +168,7 @@ void loadSavedWiFiNetworks()
         {
             end = content.length(); // Se não houver nova linha, vai até o fim do conteúdo
         }
-        String line = content.substring(start, end); // Extrai a linha atual
+        String line = content.substring(start, end); // Extrai a linha atual do conteúdo
         networks.push_back(line);                    // Adiciona a linha ao vector
         start = end + 1;                             // Move para o início da próxima linha
     }
@@ -181,8 +180,8 @@ void loadSavedWiFiNetworks()
         int commaIndex = line.indexOf(',');          // Encontra a posição da vírgula
         if (commaIndex != -1)
         {
-            ssid = line.substring(0, commaIndex);          // Extrai o SSID
-            password = line.substring(commaIndex + 1);     // Extrai a senha
+            ssid = line.substring(0, commaIndex);          // Extrai o SSID da linha
+            password = line.substring(commaIndex + 1);     // Extrai a senha da linha
             connectToWiFi(ssid.c_str(), password.c_str()); // Tenta conectar com o SSID e senha extraídos
             if (WiFi.status() == WL_CONNECTED)
             {
