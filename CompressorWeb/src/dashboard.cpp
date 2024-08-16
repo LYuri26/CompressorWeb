@@ -1,213 +1,304 @@
-#include <ESPAsyncWebServer.h> // Biblioteca para servidor web assíncrono
-#include <FS.h>                // Biblioteca para sistema de arquivos
-#include <SPIFFS.h>            // Biblioteca para sistema de arquivos SPIFFS
-#include "dashboard.h"         // Inclui o cabeçalho para a configuração do dashboard
-#include "ligadesliga.h"       // Inclui o cabeçalho para a configuração do compressor
-#include "autenticador.h"      // Inclui o cabeçalho onde a variável userLoggedIn é declarada
-#include "manutencao.h"        // Inclui o cabeçalho para a configuração de manutenção
+#include <ESPAsyncWebServer.h> // Inclui a biblioteca necessária para criar um servidor web assíncrono no ESP8266/ESP32
+#include <FS.h>                // Inclui a biblioteca para manipulação do sistema de arquivos
+#include <SPIFFS.h>            // Inclui a biblioteca para usar o SPIFFS (SPI Flash File System)
+#include "dashboard.h"         // Inclui o cabeçalho com definições específicas para o dashboard
+#include "ligadesliga.h"       // Inclui o cabeçalho para a lógica de ligar e desligar dispositivos
+#include "autenticador.h"      // Inclui o cabeçalho para autenticação de usuários
+#include "manutencao.h"        // Inclui o cabeçalho para manutenção do sistema
 
 // -------------------------------------------------------------------------
-// Função para configurar a página do dashboard
+// Configura a rota para a página do dashboard
 // -------------------------------------------------------------------------
 
 /**
- * Configura a rota para a página do dashboard no servidor Web.
+ * Configura a rota para a página do dashboard e os endpoints relacionados.
  *
  * @param server A instância do servidor web assíncrono.
  */
 void setupDashboardPage(AsyncWebServer &server)
 {
-    // Configura o endpoint para a página do dashboard
+    // Define a rota para "/dashboard" e trata o pedido HTTP GET
     server.on("/dashboard", HTTP_GET, [](AsyncWebServerRequest *request)
               {
                   // Verifica se o usuário está autenticado
                   if (!isAuthenticated(request))
                   {
-                      redirectToAccessDenied(request); // Redireciona para a página de acesso negado se não estiver autenticado
+                      redirectToAccessDenied(request); // Redireciona para uma página de acesso negado se não estiver autenticado
                       return;
                   }
 
-                  // Define o conteúdo HTML da página do dashboard
+                  // HTML da página do dashboard
                   String html = R"rawliteral(
-<!DOCTYPE html>
-<html lang="pt-br">
+<!DOCTYPE html> <!-- Declara o tipo de documento como HTML5 -->
+<html lang="pt-br"> <!-- Define o idioma da página como português do Brasil -->
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
-    <!-- Inclui o Bootstrap para estilização -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <meta charset="UTF-8"> <!-- Define o conjunto de caracteres como UTF-8 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Ajusta a escala da página para dispositivos móveis -->
+    <title>Dashboard</title> <!-- Define o título da aba do navegador -->
     <style>
-        /* Estilo da página */
+        /* Estilo geral da página */
         body {
             font-family: Arial, sans-serif; /* Define a fonte padrão da página */
-            background-color: #f8f9fa; /* Cor de fundo da página */
-            height: 100%; /* Altura da página igual ao tamanho do conteúdo */
-            margin: 0; /* Remove margens padrão */
-            display: flex; /* Usa flexbox para centralizar o conteúdo */
-            justify-content: center; /* Alinha horizontalmente no centro */
-            align-items: center; /* Alinha verticalmente no centro */
-            flex-direction: column; /* Alinha os itens em coluna */
+            background-color: #f8f9fa; /* Define a cor de fundo da página */
+            margin: 0; /* Remove a margem padrão */
+            padding: 0; /* Remove o preenchimento padrão */
+            display: flex; /* Usa Flexbox para alinhamento */
+            justify-content: center; /* Alinha o conteúdo horizontalmente no centro */
+            align-items: center; /* Alinha o conteúdo verticalmente no centro */
+            height: 100vh; /* Define a altura da página como 100% da altura da viewport */
+            flex-direction: column; /* Organiza o layout na vertical */
         }
 
+        /* Estilo do container do dashboard */
         .dashboard-container {
-            background-color: #ffffff; /* Cor de fundo do container do dashboard */
-            padding: 20px; /* Espaçamento interno do container */
-            border-radius: 5px; /* Bordas arredondadas */
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Sombra ao redor do container */
-            width: 100%; /* Largura total do container */
-            max-width: 600px; /* Largura máxima do container */
-            text-align: center; /* Alinha o texto ao centro */
-            margin-top: 20px; /* Espaçamento acima do container */
+            background-color: #ffffff; /* Define a cor de fundo do container */
+            padding: 20px; /* Adiciona preenchimento interno ao container */
+            border-radius: 8px; /* Adiciona bordas arredondadas ao container */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Adiciona uma sombra leve ao container */
+            text-align: center; /* Centraliza o texto dentro do container */
+            width: 100%; /* Define a largura do container como 100% do pai */
+            max-width: 400px; /* Define a largura máxima do container */
         }
 
+        /* Estilo do título do dashboard */
         .dashboard-title {
-            font-size: 28px; /* Tamanho da fonte do título */
-            margin-bottom: 20px; /* Espaçamento abaixo do título */
-            color: #007bff; /* Cor do título */
+            font-size: 28px; /* Define o tamanho da fonte do título */
+            margin-bottom: 20px; /* Adiciona uma margem inferior ao título */
+            color: #004085; /* Define a cor do título */
         }
 
-        .btn-ligar {
-            background-color: #28a745; /* Cor de fundo do botão de ligar */
-            color: white; /* Cor do texto do botão */
+        /* Estilo geral dos botões */
+        .btn {
+            display: block; /* Define o botão como um bloco em linha */
+            width: calc(100% - 24px); /* Ajusta a largura do botão para 100% menos a margem */
+            padding: 12px; /* Adiciona preenchimento interno ao botão */
+            font-size: 16px; /* Define o tamanho da fonte do botão */
+            margin: 10px auto; /* Adiciona margem superior e inferior e centraliza o botão */
+            border: none; /* Remove a borda padrão do botão */
+            border-radius: 8px; /* Adiciona bordas arredondadas ao botão */
+            cursor: pointer; /* Define o cursor como ponteiro ao passar sobre o botão */
+            color: white; /* Define a cor do texto do botão como branca */
+            transition: background-color 0.3s, transform 0.3s; /* Adiciona uma transição suave para a cor de fundo e transformação */
         }
 
+        /* Estilo específico para os botões de motor */
+        .btn-motor1 {
+            background-color: #04997d; /* Define a cor de fundo para o botão do Motor1 */
+        }
+
+        .btn-motor2 {
+            background-color: #2ae6d4; /* Define a cor de fundo para o botão do Motor2 */
+        }
+
+        .btn-motor3 {
+            background-color: #18df94; /* Define a cor de fundo para o botão do Motor3 */
+        }
+
+        /* Estilo específico para o botão de desligar */
         .btn-desligar {
-            background-color: #dc3545; /* Cor de fundo do botão de desligar */
-            color: white; /* Cor do texto do botão */
+            background-color: #c82333; /* Define a cor de fundo para o botão de desligar */
         }
 
+        /* Estilo para botões desativados */
         .btn-disabled {
-            background-color: #ffa500; /* Cor de fundo do botão em manutenção */
-            color: white; /* Cor do texto do botão */
+            background-color: #6c757d; /* Define a cor de fundo para botões desativados */
+            cursor: not-allowed; /* Define o cursor como não permitido para botões desativados */
         }
 
+        /* Estilo geral dos links de botão */
+        .btn-link {
+            display: block; /* Define o link como um bloco em linha */
+            width: calc(100% - 24px); /* Ajusta a largura do link para 100% menos a margem */
+            padding: 12px; /* Adiciona preenchimento interno ao link */
+            font-size: 16px; /* Define o tamanho da fonte do link */
+            margin: 10px auto; /* Adiciona margem superior e inferior e centraliza o link */
+            border-radius: 8px; /* Adiciona bordas arredondadas ao link */
+            text-decoration: none; /* Remove o sublinhado padrão dos links */
+            cursor: pointer; /* Define o cursor como ponteiro ao passar sobre o link */
+            color: white; /* Define a cor do texto do link como branca */
+            transition: background-color 0.3s, transform 0.3s; /* Adiciona uma transição suave para a cor de fundo e transformação */
+        }
+
+        /* Estilos específicos para links de botão */
+        .btn-link-umidade {
+            background-color: #004085; /* Define a cor de fundo para o link de umidade */
+        }
+
+        .btn-link-pressao {
+            background-color: #343a40; /* Define a cor de fundo para o link de pressão */
+        }
+
+        .btn-link-logout {
+            background-color: #c82333; /* Define a cor de fundo para o link de logout */
+        }
+
+        /* Efeito de hover para links de botão */
+        .btn-link:hover {
+            opacity: 0.8; /* Adiciona um efeito de opacidade ao passar o mouse sobre o link */
+            transform: scale(1.02); /* Aplica um efeito de zoom ao passar o mouse sobre o link */
+        }
+
+        /* Estilo do rodapé */
         .footer {
-            width: 100%; /* Largura total do rodapé */
-            background-color: #007bff; /* Cor de fundo do rodapé */
-            color: white; /* Cor do texto do rodapé */
-            text-align: center; /* Alinha o texto ao centro */
-            padding: 10px 0; /* Espaçamento interno do rodapé */
-            position: fixed; /* Fixa o rodapé na parte inferior */
-            bottom: 0; /* Posiciona o rodapé na parte inferior */
-            font-size: 14px; /* Tamanho da fonte do rodapé */
+            width: 100%; /* Define a largura do rodapé como 100% da viewport */
+            background-color: #004085; /* Define a cor de fundo do rodapé */
+            color: white; /* Define a cor do texto do rodapé como branca */
+            text-align: center; /* Centraliza o texto dentro do rodapé */
+            padding: 10px 0; /* Adiciona preenchimento interno ao rodapé */
+            position: fixed; /* Fixar o rodapé na parte inferior da página */
+            bottom: 0; /* Alinha o rodapé na parte inferior da página */
+            font-size: 14px; /* Define o tamanho da fonte do rodapé */
+        }
+
+        /* Estilo da caixa de mensagens */
+        #messageBox {
+            margin-top: 15px; /* Adiciona uma margem superior à caixa de mensagens */
+            font-size: 16px; /* Define o tamanho da fonte da caixa de mensagens */
+            color: #c82333; /* Define a cor do texto da caixa de mensagens */
         }
     </style>
 </head>
 <body>
-    <!-- Container principal do dashboard -->
-    <div class="dashboard-container">
-        <h2 class="dashboard-title">Bem-vindo ao Dashboard</h2>
-        <!-- Botão para ligar/desligar o compressor -->
-        <a href="#" class="btn btn-block mb-2" id="toggleButton">Carregando...</a>
-        <!-- Links para outras páginas -->
-        <a href="/umidade" class="btn btn-secondary btn-block mb-2">Umidade</a>
-        <a href="/pressao" class="btn btn-secondary btn-block mb-2">Pressão</a>
-        <a href="/logout" class="btn btn-danger btn-block mt-3">Logout</a>
+    <div class="dashboard-container"> <!-- Container para o conteúdo do dashboard -->
+        <h2 class="dashboard-title">Bem-vindo ao Dashboard</h2> <!-- Título do dashboard -->
+        <button class="btn btn-motor1" id="toggleButtonMotor1">Carregando...</button> <!-- Botão para o Motor1 -->
+        <button class="btn btn-motor2" id="toggleButtonMotor2">Carregando...</button> <!-- Botão para o Motor2 -->
+        <button class="btn btn-motor3" id="toggleButtonMotor3">Carregando...</button> <!-- Botão para o Motor3 -->
+        <a href="/umidade" class="btn btn-link btn-link-umidade">Umidade</a> <!-- Link para a página de umidade -->
+        <a href="/pressao" class="btn btn-link btn-link-pressao">Pressão</a> <!-- Link para a página de pressão -->
+        <a href="/logout" class="btn btn-link btn-link-logout">Logout</a> <!-- Link para a página de logout -->
     </div>
-    <div id="messageBox" class="mt-3"></div>
-    <!-- Rodapé da página -->
-    <div class="footer">
-        <p>Aplicação desenvolvida pela Turma de Informática Para Internet Trilhas de Futuro 2024</p>
-        <p>Instrutor: Lenon Yuri</p>
+    <div id="messageBox"></div> <!-- Caixa para exibir mensagens de status -->
+    <div class="footer"> <!-- Rodapé da página -->
+        <p>Aplicação desenvolvida pela Turma de Informática Para Internet Trilhas de Futuro 2024</p> <!-- Mensagem do rodapé -->
+        <p>Instrutor: Lenon Yuri</p> <!-- Nome do instrutor -->
     </div>
-    <!-- Inclusão de jQuery e Bootstrap JavaScript -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
+        // -------------------------------------------------------------------------
+        // Script JavaScript para a interatividade da página
+        // -------------------------------------------------------------------------
+
         document.addEventListener('DOMContentLoaded', function() {
-            var toggleButton = document.getElementById('toggleButton'); // Botão para ligar/desligar o compressor
-            var messageBox = document.getElementById('messageBox');     // Caixa de mensagens
-            var previousMaintenanceState = null;                        // Variável para armazenar o estado anterior de manutenção
+            // Obtém referências aos elementos de botão e mensagem
+            var toggleButtonMotor1 = document.getElementById('toggleButtonMotor1');
+            var toggleButtonMotor2 = document.getElementById('toggleButtonMotor2');
+            var toggleButtonMotor3 = document.getElementById('toggleButtonMotor3');
+            var messageBox = document.getElementById('messageBox');
+            var previousMaintenanceState = null; // Armazena o estado de manutenção anterior para comparação
 
-            // Função para atualizar o estado do botão
-            function updateButtonState() {
-                fetch('/compressor-state') // Faz uma requisição para obter o estado do compressor
-                    .then(response => response.json())
+            /**
+             * Atualiza o estado do botão com base na resposta do servidor.
+             *
+             * @param button O botão a ser atualizado.
+             * @param motor O identificador do motor.
+             * @param buttonClass A classe do botão para aplicar o estilo.
+             */
+            function updateButtonState(button, motor, buttonClass) {
+                fetch('/compressor-state') // Faz uma requisição GET para obter o estado do compressor
+                    .then(response => response.json()) // Converte a resposta em JSON
                     .then(data => {
-                        var compressorLigado = data.compressorLigado; // Estado do compressor (ligado/desligado)
-                        var sistemaEmManutencao = data.sistemaEmManutencao; // Estado de manutenção do sistema
-                        var horaAtual = new Date().getHours() + (new Date().getMinutes() / 60); // Hora atual em formato decimal
+                        // Obtém o estado do compressor e do sistema de manutenção
+                        var compressorLigado = data['compressorLigado' + motor];
+                        var sistemaEmManutencao = data.sistemaEmManutencao;
+                        var horaAtual = new Date().getHours() + (new Date().getMinutes() / 60); // Calcula a hora atual em decimal
 
+                        // Atualiza o estado do botão com base no sistema de manutenção e no estado do compressor
                         if (sistemaEmManutencao) {
-                            toggleButton.innerHTML = 'Compressor em manutenção'; // Texto do botão
-                            toggleButton.classList.add('btn-disabled'); // Adiciona classe de botão desabilitado
-                            toggleButton.classList.remove('btn-ligar', 'btn-desligar'); // Remove outras classes de botão
-                            messageBox.innerHTML = ''; // Limpa mensagens anteriores
+                            button.innerHTML = 'Compressor ' + motor + ' em manutenção'; // Mensagem para manutenção
+                            button.classList.add('btn-disabled'); // Adiciona classe desativada
+                            button.classList.remove(buttonClass, 'btn-desligar'); // Remove classes de botão ativo e de desligar
+                            messageBox.innerHTML = ''; // Limpa a caixa de mensagem
                         } else {
                             if (compressorLigado) {
-                                toggleButton.innerHTML = 'Desligar'; // Texto do botão
-                                toggleButton.classList.add('btn-desligar'); // Adiciona classe de botão para desligar
-                                toggleButton.classList.remove('btn-ligar'); // Remove classe de botão para ligar
-                                messageBox.innerHTML = 'O compressor acabou de ser ligado, aguarde o tempo limite para desligar novamente.'; // Mensagem
+                                button.innerHTML = 'Desligar ' + motor; // Mensagem para desligar o compressor
+                                button.classList.add('btn-desligar'); // Adiciona classe de desligar
+                                button.classList.remove(buttonClass); // Remove a classe do botão ativo
+                                messageBox.innerHTML = 'O compressor ' + motor + ' acabou de ser ligado, aguarde o tempo limite para desligar novamente.';
                             } else {
-                                toggleButton.innerHTML = 'Ligar'; // Texto do botão
-                                toggleButton.classList.add('btn-ligar'); // Adiciona classe de botão para ligar
-                                toggleButton.classList.remove('btn-desligar'); // Remove classe de botão para desligar
-                                messageBox.innerHTML = ''; // Limpa mensagens anteriores
+                                button.innerHTML = 'Ligar ' + motor; // Mensagem para ligar o compressor
+                                button.classList.remove('btn-desligar'); // Remove a classe de desligar
+                                button.classList.add(buttonClass); // Adiciona a classe do botão ativo
+                                messageBox.innerHTML = ''; // Limpa a caixa de mensagem
                             }
 
-                            // Mensagens baseadas no horário atual
-                            if (horaAtual < 7.5 || horaAtual >= 22.5) { // Verifica se está fora do horário de funcionamento
-                                messageBox.innerHTML = 'Compressor desligado devido ao horário de funcionamento.';
-                            } else if (horaAtual >= 7.5 && horaAtual < 8) { // Verifica se está entre 7:30 e 8:00
-                                messageBox.innerHTML = 'Compressor Ligado após o horário de funcionamento, desligue após o uso.';
+                            // Adiciona mensagens de status baseadas no horário
+                            if (horaAtual < 7.5 || horaAtual >= 22.5) {
+                                messageBox.innerHTML = 'Compressor ' + motor + ' desligado devido ao horário de funcionamento.';
+                            } else if (horaAtual >= 7.5 && horaAtual < 8) {
+                                messageBox.innerHTML = 'Compressor ' + motor + ' ligado após o horário de funcionamento, desligue após o uso.';
                             }
                         }
 
-                        // Recarregar a página se o estado de manutenção mudar de true para false
+                        // Recarrega a página se o estado de manutenção mudou e o sistema não está mais em manutenção
                         if (previousMaintenanceState !== null && previousMaintenanceState !== sistemaEmManutencao && !sistemaEmManutencao) {
-                            location.reload(); // Recarrega a página
+                            location.reload(); // Recarrega a página para atualizar o estado dos botões
                         }
 
-                        // Atualizar o estado anterior de manutenção
-                        previousMaintenanceState = sistemaEmManutencao;
+                        previousMaintenanceState = sistemaEmManutencao; // Atualiza o estado de manutenção anterior
                     })
-                    .catch(error => console.error('Erro ao obter estado inicial do compressor:', error)); // Exibe erro no console se houver
+                    .catch(error => console.error('Erro ao obter estado inicial do compressor:', error)); // Loga o erro se ocorrer
             }
-                // Adiciona um evento de clique no botão para alternar o estado do compressor
-                toggleButton.addEventListener('click', function(event) {
-                    event.preventDefault(); // Previne o comportamento padrão do link
 
-                    // Verifica se o botão está desabilitado e retorna se estiver
-                    if (toggleButton.classList.contains('btn-disabled')) {
+            /**
+             * Configura o evento de clique para um botão específico.
+             *
+             * @param button O botão a ser configurado.
+             * @param motor O identificador do motor.
+             * @param buttonClass A classe do botão para aplicar o estilo.
+             */
+            function setupButtonClick(button, motor, buttonClass) {
+                button.addEventListener('click', function(event) {
+                    event.preventDefault(); // Previne o comportamento padrão do link
+                    if (button.classList.contains('btn-disabled')) {
                         return; // Não faz nada se o botão estiver desativado
                     }
 
-                    // Determina a ação com base no texto atual do botão
-                    var action = toggleButton.innerHTML === 'Desligar' ? 'desligar' : 'ligar';
+                    var action = button.innerHTML.includes('Desligar') ? 'desligar' : 'ligar'; // Define a ação com base no texto do botão
 
-                    // Faz uma requisição para alternar o estado do compressor
-                    fetch('/toggle?action=' + action)
-                        .then(response => response.text()) // Obtém a resposta como texto
+                    fetch('/toggle?action=' + action + '&motor=' + motor) // Faz uma requisição para alternar o estado do motor
+                        .then(response => response.text()) // Converte a resposta para texto
                         .then(data => {
-                            console.log('Resposta do servidor:', data); // Exibe a resposta do servidor no console
-                            updateButtonState(); // Atualiza o estado do botão após a ação
+                            console.log('Resposta do servidor:', data); // Loga a resposta do servidor
+                            updateButtonState(button, motor, buttonClass); // Atualiza o estado do botão após a ação
                         })
-                        .catch(error => console.error('Erro ao enviar requisição:', error)); // Exibe erro no console se houver
+                        .catch(error => console.error('Erro ao enviar requisição:', error)); // Loga o erro se ocorrer
                 });
+            }
 
-                // Atualiza o estado do botão a cada 5 segundos
-                setInterval(updateButtonState, 5000);
+            // Configura os eventos de clique para os botões dos motores
+            setupButtonClick(toggleButtonMotor1, 'Motor1', 'btn-motor1');
+            setupButtonClick(toggleButtonMotor2, 'Motor2', 'btn-motor2');
+            setupButtonClick(toggleButtonMotor3, 'Motor3', 'btn-motor3');
 
-                // Atualiza o estado do botão imediatamente ao carregar a página
-                updateButtonState();
-            });
-        </script>
-    </body>
+            // Atualiza o estado dos botões a cada 5 segundos
+            setInterval(() => {
+                updateButtonState(toggleButtonMotor1, 'Motor1', 'btn-motor1');
+                updateButtonState(toggleButtonMotor2, 'Motor2', 'btn-motor2');
+                updateButtonState(toggleButtonMotor3, 'Motor3', 'btn-motor3');
+            }, 5000);
+
+            // Atualiza o estado dos botões ao carregar a página
+            updateButtonState(toggleButtonMotor1, 'Motor1', 'btn-motor1');
+            updateButtonState(toggleButtonMotor2, 'Motor2', 'btn-motor2');
+            updateButtonState(toggleButtonMotor3, 'Motor3', 'btn-motor3');
+        });
+    </script>
+</body>
 </html>
         )rawliteral";
 
-        // Envia a resposta HTML ao cliente
-        request->send(200, "text/html", html); // Envia o conteúdo HTML como resposta ao cliente
-    });
+                  // Envia o HTML para o cliente com um status de resposta 200 (OK)
+                  request->send(200, "text/html", html); });
 
-    // Configura o endpoint para retornar o estado do compressor em formato JSON
+    // -------------------------------------------------------------------------
+    // Rota para obter o estado dos motores e do sistema de manutenção
+    // -------------------------------------------------------------------------
     server.on("/compressor-state", HTTP_GET, [](AsyncWebServerRequest *request)
               {
-        // Cria um JSON com o estado atual do compressor e do sistema de manutenção
-        String stateJson = "{\"compressorLigado\":" + String(compressorLigado) + ",\"sistemaEmManutencao\":" + String(sistemaEmManutencao) + "}";
-        // Envia o JSON como resposta
-        request->send(200, "application/json", stateJson); // Envia o JSON como resposta ao cliente
-    });
+        // Monta o JSON com o estado dos motores e do sistema de manutenção
+        String stateJson = "{\"compressorLigadoMotor1\":" + String(motoresLigados[0]) + 
+                            ",\"compressorLigadoMotor2\":" + String(motoresLigados[1]) + 
+                            ",\"compressorLigadoMotor3\":" + String(motoresLigados[2]) + 
+                              ",\"sistemaEmManutencao\":" + String(sistemaEmManutencao) + "}";
+        request->send(200, "application/json", stateJson); }); // Envia o JSON para o cliente com um status de resposta 200 (OK)
 }
