@@ -140,112 +140,208 @@ void setupDashboardPage(AsyncWebServer &server)
         <p>Instrutor: Lenon Yuri</p>  <!-- Texto do rodapé -->
     </div>
 <script>
-    // Este código é executado quando o conteúdo da página é totalmente carregado.
-    document.addEventListener('DOMContentLoaded', function() {
-        // Obtém referências aos botões de controle dos motores e à caixa de mensagem.
-        var toggleButtonMotor1 = document.getElementById('toggleButtonMotor1');
-        var toggleButtonMotor2 = document.getElementById('toggleButtonMotor2');
-        var toggleButtonMotor3 = document.getElementById('toggleButtonMotor3');
-        var messageBox = document.getElementById('messageBox');
-        // Inicializa a variável para armazenar o estado anterior de manutenção.
-        var previousMaintenanceState = null;
+// Adiciona um evento que será executado quando o conteúdo da página for totalmente carregado.
+document.addEventListener('DOMContentLoaded', function() {
 
-        // Função para atualizar o estado do botão com base nas informações do motor.
-        function updateButtonState(button, motor, buttonClass) {
-            // Faz uma requisição para obter o estado atual dos motores.
-            fetch('/motor-state')
-                .then(response => response.json())  // Converte a resposta da requisição para JSON.
-                .then(data => {
-                    // Obtém o estado do compressor e o estado de manutenção do sistema.
-                    var compressorLigado = data['compressorLigadoMotor' + motor];
-                    var sistemaEmManutencao = data.sistemaEmManutencao;
-                    // Obtém a hora atual em formato decimal.
-                    var horaAtual = new Date().getHours() + (new Date().getMinutes() / 60);
+    // Obtém referências aos botões de controle dos motores e à caixa de mensagem.
+    var toggleButtonMotor1 = document.getElementById('toggleButtonMotor1');
+    var toggleButtonMotor2 = document.getElementById('toggleButtonMotor2');
+    var toggleButtonMotor3 = document.getElementById('toggleButtonMotor3');
+    var messageBox = document.getElementById('messageBox');
 
-                    let message = ''; // Inicializa a mensagem a ser exibida na caixa de mensagem.
-                    if (sistemaEmManutencao) {
-                        // Se o sistema está em manutenção, atualiza o botão e a caixa de mensagem.
-                        button.innerHTML = 'Compressor ' + motor + ' em manutenção';
-                        button.classList.add('btn-disabled');  // Adiciona a classe que desativa o botão.
-                        button.classList.remove(buttonClass, 'btn-desligar');  // Remove as classes de motor e de desligar.
-                        messageBox.innerHTML = '';  // Limpa a caixa de mensagem.
-                    } else {
-                        // Se o sistema não está em manutenção, atualiza o botão com base no estado do compressor.
-                        if (compressorLigado) {
-                            button.innerHTML = 'Desligar ' + motor;
-                            button.classList.add('btn-desligar');  // Adiciona a classe que indica que o compressor está ligado.
-                            button.classList.remove(buttonClass);  // Remove a classe do motor.
-                            message = 'O compressor ' + motor + ' acabou de ser ligado, aguarde o tempo limite para desligar novamente.';
+    // Variável para armazenar o estado de manutenção anterior do sistema.
+    var previousMaintenanceState = null;
+
+    // Variáveis para armazenar o horário de ativação de cada motor.
+    var activationTimeMotor1 = null;
+    var activationTimeMotor2 = null;
+    var activationTimeMotor3 = null;
+
+    // Variáveis para armazenar o estado anterior dos botões antes da manutenção.
+    var previousButtonStateMotor1 = { enabled: true, text: '' };
+    var previousButtonStateMotor2 = { enabled: true, text: '' };
+    var previousButtonStateMotor3 = { enabled: true, text: '' };
+
+    // Função para atualizar o estado do botão (ativado/desativado) e a mensagem correspondente.
+    function updateButtonState(button, motor, buttonClass) {
+        // Faz uma requisição ao servidor para obter o estado atual dos motores e do sistema.
+        fetch('/motor-state')
+            .then(response => response.json())  // Converte a resposta do servidor para um objeto JSON.
+            .then(data => {
+                // Verifica se o motor específico está ligado e se o sistema está em manutenção.
+                var compressorLigado = data['compressorLigadoMotor' + motor];
+                var sistemaEmManutencao = data.sistemaEmManutencao;
+
+                // Calcula a hora atual em formato decimal (ex.: 14.5 para 14:30).
+                var horaAtual = new Date().getHours() + (new Date().getMinutes() / 60);
+
+                // Inicializa uma variável para a mensagem a ser exibida ao usuário.
+                let message = '';
+
+                // Verifica se o sistema está em manutenção.
+                if (sistemaEmManutencao) {
+                    // Salva o estado atual do botão antes de desabilitá-lo para manutenção.
+                    if (previousMaintenanceState === null || !previousMaintenanceState) {
+                        saveButtonState(button, motor, buttonClass);
+                    }
+                    // Se o sistema está em manutenção, desabilita o botão e atualiza o texto.
+                    button.innerHTML = 'Compressor ' + motor + ' em manutenção';
+                    button.classList.add('btn-disabled');
+                    button.classList.remove(buttonClass, 'btn-desligar');
+                    messageBox.innerHTML = '';  // Limpa a caixa de mensagem.
+                } else {
+                    // Se o sistema não está em manutenção, verifica se o motor está ligado.
+                    if (compressorLigado) {
+                        // Atualiza o botão para permitir desligar o motor e adiciona a classe 'btn-desligar'.
+                        button.innerHTML = 'Desligar ' + motor;
+                        button.classList.add('btn-desligar');
+                        button.classList.remove(buttonClass);
+
+                        // Obtém o tempo de ativação do motor.
+                        let activationTime = getActivationTime(motor);
+                        
+                        // Verifica se o motor foi ativado há menos de 1 hora.
+                        if (activationTime && (new Date() - activationTime < 3600000)) {
+                            // Se sim, desabilita o botão e exibe uma mensagem de espera.
+                            button.classList.add('btn-disabled');
+                            message = 'Desligue o motor quando o prazo de 1 hora estiver finalizado.';
                         } else {
-                            button.innerHTML = 'Ligar ' + motor;
-                            button.classList.remove('btn-desligar');  // Remove a classe de desligar.
-                            button.classList.add(buttonClass);  // Adiciona a classe do motor.
-                            message = '';  // Limpa a mensagem.
+                            // Caso contrário, habilita o botão e permite desligar o motor.
+                            button.classList.remove('btn-disabled');
+                            message = 'O compressor ' + motor + ' está ligado. Você pode desligá-lo quando o prazo de 1 hora estiver finalizado.';
                         }
-
-                        // Verifica o horário atual e define uma mensagem apropriada.
-                        if (horaAtual < 7.5 || horaAtual >= 22.5) {
-                            message = 'Compressor ' + motor + ' desligado devido ao horário de funcionamento.';
-                        } else if (horaAtual >= 7.5 && horaAtual < 8) {
-                            message = 'Compressor ' + motor + ' ligado após o horário de funcionamento, desligue após o uso.';
-                        }
+                    } else {
+                        // Se o motor não está ligado, atualiza o botão para permitir ligar o motor.
+                        button.innerHTML = 'Ligar ' + motor;
+                        button.classList.remove('btn-desligar', 'btn-disabled');
+                        button.classList.add(buttonClass);
+                        message = '';  // Limpa a mensagem.
                     }
 
-                    // Atualiza a caixa de mensagem apenas se a mensagem mudou.
-                    if (messageBox.innerHTML !== message) {
-                        messageBox.innerHTML = message;
+                    // Verifica se o horário atual está fora do horário de funcionamento.
+                    if (horaAtual < 7.5 || horaAtual >= 22.5) {
+                        // Se sim, exibe uma mensagem indicando que o compressor está desligado.
+                        message = 'Compressor ' + motor + ' desligado devido ao horário de funcionamento.';
+                    } else if (horaAtual >= 7.5 && horaAtual < 8) {
+                        // Exibe uma mensagem específica se o horário estiver no início do funcionamento.
+                        message = 'Compressor ' + motor + ' ligado após o horário de funcionamento, desligue após o uso.';
                     }
-
-                    // Verifica se o estado de manutenção mudou e recarrega a página quando o sistema sai de manutenção.
-                    if (previousMaintenanceState !== null && previousMaintenanceState !== sistemaEmManutencao && !sistemaEmManutencao) {
-                        location.reload();  // Recarrega a página
-                    }
-
-                    // Atualiza o estado anterior de manutenção.
-                    previousMaintenanceState = sistemaEmManutencao;
-                })
-                .catch(error => console.error('Erro ao obter estado inicial do compressor:', error));  // Captura e exibe erros.
-        }
-
-        // Função para configurar o evento de clique do botão.
-        function setupButtonClick(button, motor, buttonClass) {
-            button.addEventListener('click', function(event) {
-                event.preventDefault();  // Previne o comportamento padrão do botão, que é submeter um formulário ou seguir um link.
-                if (button.classList.contains('btn-disabled')) {
-                    return;  // Se o botão estiver desativado, não faz nada.
                 }
 
-                // Determina a ação a ser tomada com base no texto do botão.
-                var action = button.innerHTML.includes('Desligar') ? 'desligar' : 'ligar';
+                // Atualiza a caixa de mensagem apenas se a mensagem mudou.
+                if (messageBox.innerHTML !== message) {
+                    messageBox.innerHTML = message;
+                }
 
-                // Faz uma requisição para ligar ou desligar o motor.
-                fetch('/toggle?action=' + action + '&motor=' + motor)
-                    .then(response => response.text())  // Converte a resposta da requisição para texto.
-                    .then(data => {
-                        // Atualiza o estado do botão após a ação ser realizada.
-                        updateButtonState(button, motor, buttonClass);
-                    })
-                    .catch(error => console.error('Erro ao enviar requisição:', error));  // Captura e exibe erros.
-            });
+                // Verifica se o estado de manutenção mudou desde a última atualização.
+                if (previousMaintenanceState !== null && previousMaintenanceState !== sistemaEmManutencao) {
+                    if (!sistemaEmManutencao) {
+                        // Se o sistema saiu da manutenção, atualiza a página inteira.
+                        location.reload(); 
+                    }
+                }
+
+                // Atualiza o estado anterior de manutenção com o estado atual.
+                previousMaintenanceState = sistemaEmManutencao;
+            })
+            // Captura e exibe qualquer erro que ocorra ao tentar obter o estado do compressor.
+            .catch(error => console.error('Erro ao obter estado inicial do compressor:', error));
+    }
+
+    // Função para configurar o comportamento do botão ao ser clicado.
+    function setupButtonClick(button, motor, buttonClass) {
+        // Adiciona um evento de clique ao botão.
+        button.addEventListener('click', function(event) {
+            // Previne o comportamento padrão do botão (ex.: enviar um formulário).
+            event.preventDefault();
+
+            // Se o botão estiver desativado, não faz nada ao clicar.
+            if (button.classList.contains('btn-disabled')) {
+                return;
+            }
+
+            // Determina se a ação será ligar ou desligar o motor com base no texto do botão.
+            var action = button.innerHTML.includes('Desligar') ? 'desligar' : 'ligar';
+
+            // Envia uma requisição ao servidor para realizar a ação (ligar/desligar) no motor específico.
+            fetch('/toggle?action=' + action + '&motor=' + motor)
+                .then(response => response.text())  // Converte a resposta do servidor para texto.
+                .then(data => {
+                    // Se a ação for ligar, registra o horário de ativação do motor.
+                    if (action === 'ligar') {
+                        setActivationTime(motor);  // Chama a função para armazenar o horário atual.
+                        // Agenda uma atualização do estado do botão para daqui a 1 hora.
+                        setTimeout(() => {
+                            updateButtonState(button, motor, buttonClass);
+                        }, 3600000);  // 3600000 milissegundos = 1 hora.
+                    }
+                    // Atualiza o estado do botão imediatamente após a ação ser realizada.
+                    updateButtonState(button, motor, buttonClass);
+                })
+                // Captura e exibe qualquer erro que ocorra ao tentar realizar a ação no motor.
+                .catch(error => console.error('Erro ao enviar requisição:', error));
+        });
+    }
+
+    // Função para armazenar o horário de ativação do motor.
+    function setActivationTime(motor) {
+        let now = new Date();  // Obtém o horário atual.
+        // Armazena o horário atual na variável correspondente ao motor.
+        if (motor === '1') activationTimeMotor1 = now;
+        else if (motor === '2') activationTimeMotor2 = now;
+        else if (motor === '3') activationTimeMotor3 = now;
+    }
+
+    // Função para obter o horário de ativação do motor específico.
+    function getActivationTime(motor) {
+        // Retorna o horário de ativação correspondente ao motor solicitado.
+        if (motor === '1') return activationTimeMotor1;
+        else if (motor === '2') return activationTimeMotor2;
+        else if (motor === '3') return activationTimeMotor3;
+        return null;  // Retorna null se o motor não for válido.
+    }
+
+    // Função para salvar o estado do botão antes da manutenção.
+    function saveButtonState(button, motor, buttonClass) {
+        let state = { enabled: !button.classList.contains('btn-disabled'), text: button.innerHTML };
+        if (motor === '1') previousButtonStateMotor1 = state;
+        else if (motor === '2') previousButtonStateMotor2 = state;
+        else if (motor === '3') previousButtonStateMotor3 = state;
+    }
+
+    // Função para restaurar o estado do botão após a manutenção.
+    function restoreButtonState(button, motor, buttonClass) {
+        let state;
+        if (motor === '1') state = previousButtonStateMotor1;
+        else if (motor === '2') state = previousButtonStateMotor2;
+        else if (motor === '3') state = previousButtonStateMotor3;
+
+        if (state.enabled) {
+            button.classList.remove('btn-disabled');
+            button.classList.add(buttonClass);
+        } else {
+            button.classList.add('btn-disabled');
         }
+        button.innerHTML = state.text;
+    }
 
-        // Configura o evento de clique para cada botão de motor.
-        setupButtonClick(toggleButtonMotor1, '1', 'btn-motor1');
-        setupButtonClick(toggleButtonMotor2, '2', 'btn-motor2');
-        setupButtonClick(toggleButtonMotor3, '3', 'btn-motor3');
+    // Configura o comportamento dos botões ao serem clicados, associando cada botão ao respectivo motor.
+    setupButtonClick(toggleButtonMotor1, '1', 'btn-motor1');
+    setupButtonClick(toggleButtonMotor2, '2', 'btn-motor2');
+    setupButtonClick(toggleButtonMotor3, '3', 'btn-motor3');
 
-        // Atualiza o estado dos botões a cada 10 segundos.
-        setInterval(() => {
-            updateButtonState(toggleButtonMotor1, '1', 'btn-motor1');
-            updateButtonState(toggleButtonMotor2, '2', 'btn-motor2');
-            updateButtonState(toggleButtonMotor3, '3', 'btn-motor3');
-        }, 10000);
-
-        // Atualiza o estado dos botões ao carregar a página.
+    // Configura um intervalo para atualizar o estado dos botões a cada 10 segundos.
+    setInterval(() => {
         updateButtonState(toggleButtonMotor1, '1', 'btn-motor1');
         updateButtonState(toggleButtonMotor2, '2', 'btn-motor2');
         updateButtonState(toggleButtonMotor3, '3', 'btn-motor3');
-    });
+    }, 10000);  // 10000 milissegundos = 10 segundos.
+
+    // Atualiza o estado dos botões imediatamente ao carregar a página.
+    updateButtonState(toggleButtonMotor1, '1', 'btn-motor1');
+    updateButtonState(toggleButtonMotor2, '2', 'btn-motor2');
+    updateButtonState(toggleButtonMotor3, '3', 'btn-motor3');
+});
 </script>
 </body>
 </html>
