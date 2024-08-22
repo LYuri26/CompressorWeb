@@ -166,10 +166,12 @@ void setupLigaDesliga(AsyncWebServer &server)
             return;
         }
 
-        if (motoresLigados[motorIdx] && (currentMillis - lastToggleTime[motorIdx] < 30000)) {
-            request->send(200, "text/plain", "Comando ignorado. Aguarde 30 segundos entre as tentativas.");  // Responde com erro se a tentativa for muito próxima da anterior
-            Serial.println("Erro: Comando ignorado. Aguarde 30 segundos entre as tentativas.");
-            return;
+        if (motoresLigados[motorIdx]) {
+            if (currentMillis - lastToggleTime[motorIdx] < 3600000) {  // Verifica se já passou 1 hora desde a última mudança de estado
+                request->send(200, "text/plain", "Comando ignorado. Aguarde 1 hora entre as tentativas de desligar.");  // Responde com erro se a tentativa for muito próxima da anterior
+                Serial.println("Erro: Comando ignorado. Aguarde 1 hora entre as tentativas de desligar.");
+                return;
+            }
         }
 
         lastToggleTime[motorIdx] = currentMillis;  // Atualiza o tempo da última mudança de estado do motor
