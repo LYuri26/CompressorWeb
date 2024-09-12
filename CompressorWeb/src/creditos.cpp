@@ -105,11 +105,11 @@ void setupCreditosPage(AsyncWebServer &server)
                 <div class="credits-content">
                     <h3>Alunos</h3> <!-- Sub-título para a lista de alunos -->
                     <ul>
-                        <li><a href="#" target="_blank">Ali</a></li> <!-- Link para o nome do aluno, não tem URL definida -->
-                        <li><a href="#" target="_blank">Felipe</a></li>
-                        <li><a href="#" target="_blank">Paulo</a></li>
-                        <li><a href="#" target="_blank">Pietro</a></li>
-                        <li><a href="#" target="_blank">Yago</a></li>
+                        <li><a href="#" target="_blank">Benda Luiza</a></li> <!-- Link para o nome do aluno, não tem URL definida -->
+                        <li><a href="#" target="_blank">Davi Afonso</a></li>
+                        <li><a href="#" target="_blank">João Martins</a></li>
+                        <li><a href="#" target="_blank">Pedro Lucas</a></li>
+                        <li><a href="#" target="_blank">Sofia Tresse</a></li>
                     </ul>
                     <h3>Instrutores</h3> <!-- Sub-título para a lista de instrutores -->
                     <ul>
