@@ -22,20 +22,24 @@ void setupIndexPage(AsyncWebServer &server)
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+
     <title>Login</title>
     <style>
         /* Estilos gerais da página */
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f2f5;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin: 0;
-            padding: 60px; /* Remove o padding da página */
-            transition: background-color 0.3s, color 0.3s;
-        }
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f2f5;
+    display: flex; /* Usando flexbox */
+    justify-content: center; /* Centraliza horizontalmente */
+    align-items: center; /* Centraliza verticalmente */
+    height: 100vh; /* O corpo terá altura de 100% da viewport */
+    margin: 0;
+    padding: 0; /* Remove o padding da página */
+    transition: background-color 0.3s, color 0.3s;
+}
         .dark-mode {
             background-color: #181818;
             color: #f0f0f0;
@@ -62,8 +66,14 @@ void setupIndexPage(AsyncWebServer &server)
         }
         .login-title {
             font-size: 24px;
+            font-family: "Playfair Display", serif;
             margin-bottom: 20px;
-            color: #007bff;
+            background-image: linear-gradient(to bottom, rgb(255, 221, 0), rgba(246, 15, 15, 0.975), rgb(249, 216, 28));
+            background-clip: text;
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent;
+            color: rgb(242, 95, 22);
+            font-weight: bold;
         }
         .dark-mode .login-title, .high-contrast .login-title {
             color: #1e90ff;
@@ -96,13 +106,68 @@ void setupIndexPage(AsyncWebServer &server)
             width: 100%;
             margin: 5px 0;
         }
+        
         .btn-primary {
-            background-color: #007bff;
+            width: 100%;
+            height: 38px;
+            border: none;
+            outline: none;
+            color: #fff;
+            background: #111;
+            cursor: pointer;
+            position: relative;
+            z-index: 0;
+            border-radius: 5px;
         }
-        .btn-primary:hover {
-            background-color: #0056b3;
-            transform: scale(1.05);
+        
+        .btn-primary:before {
+            content: '';
+            background: linear-gradient(45deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000);
+            position: absolute;
+            top: -2px;
+            left:-2px;
+            background-size: 600%;
+            z-index: -1;
+            filter: blur(7px);
+            width: calc(100% + 4px);
+            height: calc(100% + 4px);
+            animation: glowing 20s linear infinite;
+            opacity: 0;
+            transition: opacity .3s ease-in-out;
+            border-radius: 10px;
         }
+        
+        .btn-primary:active {
+            color: #ffffff;
+            font-weight: bold;
+        }
+        
+        .btn-primary:active:after {
+            background: transparent;
+        }
+        
+        .btn-primary:hover:before {
+            opacity: 1;
+        }
+        
+        .btn-primary:after {
+            z-index: -1;
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: #111;
+            left: 0;
+            top: 0;
+            border-radius: 10px;
+        }
+        
+        @keyframes glowing {
+            0% { background-position: 0 0; }
+            50% { background-position: 400% 0; }
+            100% { background-position: 0 0; }
+        }
+        
         .btn-secondary {
             background-color: #6c757d;
         }
@@ -120,31 +185,31 @@ void setupIndexPage(AsyncWebServer &server)
         }
         /* Cores adicionais para garantir que cada botão tenha uma cor diferente */
         .btn-creditos {
-            background-color: #28a745; /* Verde */
+            background-color: #ea0b0b; /* Verde */
         }
         .btn-creditos:hover {
-            background-color: #218838;
+            background-color: #7d0909;
             transform: scale(1.05);
         }
         .btn-gerenciamento {
-            background-color: #17a2b8; /* Azul claro */
+            background-color: rgb(232, 106, 16); /* Azul claro */
         }
         .btn-gerenciamento:hover {
-            background-color: #138496;
+            background-color: rgb(149, 39, 5);
             transform: scale(1.05);
         }
         .btn-dark-mode {
-            background-color: #6f42c1; /* Roxo */
+            background-color: rgb(234, 161, 15); /* Roxo */
         }
         .btn-dark-mode:hover {
-            background-color: #5a3796;
+            background-color: #8e5204;
             transform: scale(1.05);
         }
         .btn-high-contrast {
-            background-color: #e83e8c; /* Rosa */
+            background-color: rgb(247, 214, 49); /* Rosa */
         }
         .btn-high-contrast:hover {
-            background-color: #c72571;
+            background-color: #8c7807;
             transform: scale(1.05);
         }
         .text-danger {
@@ -155,7 +220,7 @@ void setupIndexPage(AsyncWebServer &server)
             position: fixed;
             bottom: 0;
             width: 100%;
-            background-color: #007bff;
+            background-color: #ee641a;
             color: white;
             text-align: center;
             padding: 10px 0;
@@ -176,7 +241,7 @@ void setupIndexPage(AsyncWebServer &server)
             <div class="form-group">
                 <input type="password" name="password" class="form-control" placeholder="Senha" aria-label="Senha" required>
             </div>
-            <button type="submit" class="btn btn-primary" aria-label="Entrar no sistema">Entrar</button>
+            <button type="submit" class="btn btn-primary" type="button" aria-label="Entrar">Entrar</button>
             <div class="text-danger">%ERROR_MESSAGE%</div>
         </form>
         <button onclick="window.location.href='/creditos'" class="btn btn-creditos" aria-label="Ir para créditos">Créditos</button>

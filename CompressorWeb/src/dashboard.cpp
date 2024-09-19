@@ -69,7 +69,7 @@ body {
 /* Estilos para os botões */
 .btn {
     display: block; /* Define o botão como bloco para preencher a largura disponível */
-    width: calc(100% - 24px); /* Define a largura do botão, subtraindo 24px para margem */
+    width: 100%; /* Define a largura do botão, subtraindo 24px para margem */
     padding: 12px; /* Define o padding do botão */
     font-size: 16px; /* Define o tamanho da fonte do botão */
     margin: 10px auto; /* Define a margem do botão */
@@ -81,9 +81,53 @@ body {
 }
 
 /* Estilos para botões de motores específicos */
-.btn-motor1 { background-color: #1e90ff; } /* Cor de fundo do botão do motor 1 */
-.btn-motor2 { background-color: #32cd32; } /* Cor de fundo do botão do motor 2 */
-.btn-motor3 { background-color: #ff4500; } /* Cor de fundo do botão do motor 3 */
+.btn-motor1 {
+    position: relative;
+    display: inline-block;
+    color: #eee;
+    overflow: hidden;
+    text-decoration: none;
+    background-color: #1e90ff;  
+    transition: 0.2s;
+  }
+  .btn-motor1:active {
+    color: #fff;
+    background-color: #1e90ff;
+    text-shadow: 0px 0px 4px #ccc;
+    box-shadow: 0 0 10px #fff, 0 0 40px #fff, 0 0 80px #fff;
+  }
+  
+  .btn-motor2 {
+    position: relative;
+    display: inline-block;
+    color: #eee;
+    overflow: hidden;
+    text-decoration: none;
+    background-color: #32cd32; 
+    transition: 0.2s;
+  }
+  .btn-motor2:active {
+    color: #fff;
+    background-color: #32cd32; 
+    text-shadow: 0px 0px 4px #ccc;
+    box-shadow: 0 0 10px #fff, 0 0 40px #fff, 0 0 80px #fff;
+  }
+  
+.btn-motor3 {
+    position: relative;
+    display: inline-block;
+    color: #eee;
+    overflow: hidden;
+    text-decoration: none;
+    background-color: #ff4500;
+    transition: 0.2s;
+  }
+  .btn-motor3:active {
+    color: #fff;
+    background-color: #ff4500;
+    text-shadow: 0px 0px 4px #ccc;
+    box-shadow: 0 0 10px #fff, 0 0 40px #fff, 0 0 80px #fff;
+  }
 
 /* Estilos para o botão de desligar */
 .btn-desligar { background-color: #c82333; } /* Cor de fundo do botão de desligar */
@@ -203,11 +247,22 @@ body {
         <div class="dashboard-container">
             <h2 class="dashboard-title">Bem-vindo ao Dashboard</h2>
             <button class="btn btn-motor1" id="toggleButtonMotor1"
-                aria-label="Controle do motor 1">Carregando...</button>
+                aria-label="Controle do motor 1">Carregando...
+            </button>
             <button class="btn btn-motor2" id="toggleButtonMotor2"
-                aria-label="Controle do motor 2">Carregando...</button>
+                aria-label="Controle do motor 2">Carregando...
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
             <button class="btn btn-motor3" id="toggleButtonMotor3"
-                aria-label="Controle do motor 3">Carregando...</button>
+                aria-label="Controle do motor 3">Carregando...
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
             <a href="/umidade" class="btn btn-link btn-link-umidade"
                 aria-label="Página de umidade">Umidade</a>
             <a href="/pressao" class="btn btn-link btn-link-pressao"
