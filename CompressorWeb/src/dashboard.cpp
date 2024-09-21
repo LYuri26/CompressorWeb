@@ -26,25 +26,30 @@ void setupDashboardPage(AsyncWebServer &server)
         String html = R"rawliteral(
 <!DOCTYPE html>
 <html lang="pt-br">
-    <head>
-        <meta charset="UTF-8">
-        <!-- Define a codificação de caracteres como UTF-8 -->
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <!-- Configura a viewport para dispositivos móveis -->
-        <title>Dashboard</title> <!-- Define o título da página -->
-        <style>
+  <head>
+    <meta charset="UTF-8">
+    <!-- Define a codificação de caracteres como UTF-8 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Configura a viewport para dispositivos móveis -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap"
+      rel="stylesheet">
+
+    <title>Dashboard</title> <!-- Define o título da página -->
+    <style>
 /* Estilos gerais para o corpo da página */
 body {
-    font-family: Arial, sans-serif; /* Define a fonte da página */
-    background-color: #f8f9fa; /* Define a cor de fundo da página */
-    margin: 0; /* Remove a margem da página */
-    padding: 60px; /* Remove o padding da página */
-    display: flex; /* Usa flexbox para layout */
+    font-family: Arial, sans-serif;
+    background-color: #f0f2f5;
+    display: flex; /* Usando flexbox */
     justify-content: center; /* Centraliza horizontalmente */
     align-items: center; /* Centraliza verticalmente */
-    height: 100vh; /* Define a altura da página como 100% da altura da viewport */
-    flex-direction: column; /* Alinha os itens na vertical */
-    transition: background-color 0.3s, color 0.3s; /* Adiciona transições suaves */
+    height: 100vh; /* O corpo terá altura de 100% da viewport */
+    margin: 0;
+    padding: 0; /* Remove o padding da página */
+    transition: background-color 0.3s, color 0.3s;
 }
 
 /* Estilos para o container do dashboard */
@@ -61,9 +66,15 @@ body {
 
 /* Estilos para o título do dashboard */
 .dashboard-title {
-    font-size: 28px; /* Define o tamanho da fonte do título */
-    margin-bottom: 20px; /* Define a margem inferior do título */
-    color: #004085; /* Define a cor do texto do título */
+    font-size: 24px;
+    font-family: "Playfair Display", serif;
+    margin-bottom: 20px;
+    background-image: linear-gradient(to bottom, rgb(255, 221, 0), rgba(246, 15, 15, 0.975), rgb(249, 216, 28));
+    background-clip: text;
+    -webkit-background-clip: text; 
+    -webkit-text-fill-color: transparent;
+    color: rgb(242, 95, 22);
+    font-weight: bold;
 }
 
 /* Estilos para os botões */
@@ -164,14 +175,14 @@ body {
 
 /* Estilos para o rodapé da página */
 .footer {
-    width: 100%; /* Define a largura do rodapé como 100% */
-    background-color: #004085; /* Define a cor de fundo do rodapé */
-    color: white; /* Define a cor do texto do rodapé */
-    text-align: center; /* Alinha o texto ao centro */
-    padding: 10px 0; /* Define o padding do rodapé */
-    position: fixed; /* Fixa o rodapé na parte inferior da página */
-    bottom: 0; /* Define a posição do rodapé no fundo da página */
-    font-size: 14px; /* Define o tamanho da fonte do rodapé */
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background-color: #ee641a;
+    color: white;
+    text-align: center;
+    padding: 10px 0;
+    font-size: 14px;
 }
 
 /* Estilos para a caixa de mensagem */
@@ -197,18 +208,22 @@ body {
 
 /* Estilos específicos para o botão de modo noturno */
 #nightModeButton {
-    background-color: #6f42c1; /* Cor de fundo do botão de modo noturno */
+    background-color: rgb(234, 161, 15); /* Roxo */
+}
+#nightModeButton:hover {
+    background-color: #8e5204;
+    transform: scale(1.05);
 }
 
 /* Estilos específicos para o botão de alto contraste */
 #highContrastButton {
-    background-color: #e83e8c; /* Cor de fundo do botão de alto contraste */
+    background-color: rgb(247, 214, 49); /* Rosa */
 }
 
 /* Efeito de hover para os botões de alternância de temas */
-#nightModeButton:hover, #highContrastButton:hover {
-    opacity: 0.8; /* Define a opacidade dos botões ao passar o mouse */
-    transform: scale(1.02); /* Aplica uma leve transformação de escala aos botões ao passar o mouse */
+#highContrastButton:hover {
+    background-color: #8c7807;
+    transform: scale(1.05);
 }
 
 /* Modo noturno */
@@ -242,45 +257,45 @@ body {
 }
 
         </style>
-    </head>
-    <body>
-        <div class="dashboard-container">
-            <h2 class="dashboard-title">Bem-vindo ao Dashboard</h2>
-            <button class="btn btn-motor1" id="toggleButtonMotor1"
-                aria-label="Controle do motor 1">Carregando...
-            </button>
-            <button class="btn btn-motor2" id="toggleButtonMotor2"
-                aria-label="Controle do motor 2">Carregando...
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
-            </button>
-            <button class="btn btn-motor3" id="toggleButtonMotor3"
-                aria-label="Controle do motor 3">Carregando...
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
-            </button>
-            <a href="/umidade" class="btn btn-link btn-link-umidade"
-                aria-label="Página de umidade">Umidade</a>
-            <a href="/pressao" class="btn btn-link btn-link-pressao"
-                aria-label="Página de pressão">Pressão</a>
-            <a href="/logout" class="btn btn-link btn-link-logout"
-                aria-label="Logout">Logout</a>
-            <button id="nightModeButton" aria-label="Modo Noturno">Modo
-                Noturno</button>
-            <button id="highContrastButton" aria-label="Alto Contraste">Alto
-                Contraste</button>
-        </div>
-        <div id="messageBox" role="alert"></div>
-        <div class="footer">
-            <p>Aplicação desenvolvida pela Turma de Informática Para Internet
-                Trilhas de Futuro 2024</p>
-            <p>Instrutor: Lenon Yuri</p>
-        </div>
-        <script>
+  </head>
+  <body>
+    <div class="dashboard-container">
+      <h2 class="dashboard-title">Bem-vindo ao Dashboard</h2>
+      <button class="btn btn-motor1" id="toggleButtonMotor1"
+        aria-label="Controle do motor 1">Carregando...
+      </button>
+      <button class="btn btn-motor2" id="toggleButtonMotor2"
+        aria-label="Controle do motor 2">Carregando...
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <button class="btn btn-motor3" id="toggleButtonMotor3"
+        aria-label="Controle do motor 3">Carregando...
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <a href="/umidade" class="btn btn-link btn-link-umidade"
+        aria-label="Página de umidade">Umidade</a>
+      <a href="/pressao" class="btn btn-link btn-link-pressao"
+        aria-label="Página de pressão">Pressão</a>
+      <a href="/logout" class="btn btn-link btn-link-logout"
+        aria-label="Logout">Logout</a>
+      <button id="nightModeButton" aria-label="Modo Noturno">Modo
+        Noturno</button>
+      <button id="highContrastButton" aria-label="Alto Contraste">Alto
+        Contraste</button>
+    </div>
+    <div id="messageBox" role="alert"></div>
+    <div class="footer">
+      <p>Aplicação desenvolvida pela Turma de Informática Para Internet
+        Trilhas de Futuro 2024</p>
+      <p>Instrutor: Lenon Yuri</p>
+    </div>
+    <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Obtém referências aos botões de controle dos motores e à caixa de mensagem.
             var toggleButtonMotor1 = document.getElementById('toggleButtonMotor1');
@@ -476,7 +491,7 @@ body {
         });
         </script>
 
-    </body>
+  </body>
 </html>
         )rawliteral";
 

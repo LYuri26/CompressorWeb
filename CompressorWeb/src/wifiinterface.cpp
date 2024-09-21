@@ -12,24 +12,28 @@ const char *getWiFiManagementPage()
 <!DOCTYPE html>
 <html lang="pt-br">
 
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Gerenciamento Wi-Fi</title>
-        <style>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap"
+      rel="stylesheet">
+    <title>Gerenciamento Wi-Fi</title>
+    <style>
             /* Estilos gerais da página */
             body {
-                font-family: Arial, sans-serif;
-                background-color: #f4f4f4;
-                margin: 0;
-                padding: 0;
-                display: flex;
-                flex-direction: column;
-                min-height: 100vh;
-                color: #333;
-                justify-content: center;
-                align-items: center;
-            }
+              font-family: Arial, sans-serif;
+              background-color: #f0f2f5;
+              display: flex; /* Usando flexbox */
+              justify-content: center; /* Centraliza horizontalmente */
+              align-items: center; /* Centraliza verticalmente */
+              height: 100vh; /* O corpo terá altura de 100% da viewport */
+              margin: 0;
+              padding: 0; /* Remove o padding da página */
+              transition: background-color 0.3s, color 0.3s;
+                        }
     
             /* Modo noturno */
             body.night-mode {
@@ -44,16 +48,27 @@ const char *getWiFiManagementPage()
             }
     
             .container {
-                background-color: #ffffff;
-                padding: 20px;
-                border-radius: 8px;
-                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-                width: 100%;
-                max-width: 600px;
-                margin: 20px;
-                text-align: center;
-                flex-grow: 1;
-            }
+              background-color: #ffffff;
+              padding: 20px;
+              border-radius: 8px;
+              box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+              width: 100%;
+              max-width: 400px;
+              text-align: center;
+              transition: background-color 0.3s, color 0.3s;
+                }
+
+              .title-container{
+                font-size: 24px;
+                font-family: "Playfair Display", serif;
+                margin-bottom: 20px;
+                background-image: linear-gradient(to bottom, rgb(255, 221, 0), rgba(246, 15, 15, 0.975), rgb(249, 216, 28));
+                background-clip: text;
+                -webkit-background-clip: text; 
+                -webkit-text-fill-color: transparent;
+                color: rgb(242, 95, 22);
+                font-weight: bold;    
+              }
     
             /* Estilos para o container em modo noturno */
             body.night-mode .container {
@@ -68,28 +83,16 @@ const char *getWiFiManagementPage()
             }
     
             .footer {
-                background-color: #007bff;
-                color: white;
-                text-align: center;
-                padding: 10px 0;
-                font-size: 14px;
-                width: 100%;
-                margin-top: auto;
-            }
-    
-            /* Estilos para o footer em modo noturno */
-            body.night-mode .footer {
-                background-color: #1e1e1e;
-                color: #e0e0e0;
-            }
-    
-            /* Estilos para o footer em modo alto contraste */
-            body.high-contrast .footer {
-                background-color: #000;
-                color: #ffffff;
-            }
-    
-            /* Mensagens de status */
+              position: fixed;
+              bottom: 0;
+              width: 100%;
+              background-color: #ee641a;
+              color: white;
+              text-align: center;
+              padding: 10px 0;
+              font-size: 14px;
+              }    
+                /* Mensagens de status */
             #message {
                 margin: 10px 0;
                 font-size: 16px;
@@ -127,7 +130,7 @@ const char *getWiFiManagementPage()
             }
     
             .form-group input {
-                width: 96.5%;
+                width: 93%;
                 padding: 10px;
                 border: 1px solid #ddd;
                 border-radius: 4px;
@@ -143,7 +146,6 @@ const char *getWiFiManagementPage()
     
             /* Botões com cores diferenciadas */
             .btn {
-                display: inline-block;
                 padding: 10px 20px;
                 border: none;
                 border-radius: 4px;
@@ -151,20 +153,75 @@ const char *getWiFiManagementPage()
                 text-align: center;
                 font-size: 16px;
                 cursor: pointer;
-                margin: 5px;
                 text-decoration: none;
                 transition: background-color 0.3s, transform 0.3s;
+                display: block;  /* Altera para display em bloco */
+                width: 100%;     /* Ocupa 100% da largura */
+                margin-bottom: 10px;
             }
     
             /* Cores exclusivas para cada botão */
             .btn-success {
-                background-color: #28a745; /* Verde */
-            }
-    
-            .btn-success:hover {
-                background-color: #218838;
-            }
-    
+              width: 100%;
+              height: 38px;
+              border: none;
+              outline: none;
+              color: #fff;
+              background: #111;
+              cursor: pointer;
+              position: relative;
+              z-index: 0;
+              border-radius: 5px;
+          }
+          
+          .btn-success:before {
+              content: '';
+              background: linear-gradient(45deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000);
+              position: absolute;
+              top: -2px;
+              left:-2px;
+              background-size: 600%;
+              z-index: -1;
+              filter: blur(7px);
+              width: calc(100% + 4px);
+              height: calc(100% + 4px);
+              animation: glowing 20s linear infinite;
+              opacity: 0;
+              transition: opacity .3s ease-in-out;
+              border-radius: 10px;
+          }
+          
+          .btn-success:active {
+              color: #ffffff;
+              font-weight: bold;
+          }
+          
+          .btn-success:active:after {
+              background: transparent;
+          }
+          
+          .btn-success:hover:before {
+              opacity: 1;
+          }
+          
+          .btn-success:after {
+              z-index: -1;
+              content: '';
+              position: absolute;
+              width: 100%;
+              height: 100%;
+              background: #111;
+              left: 0;
+              top: 0;
+              border-radius: 10px;
+          }
+          
+          @keyframes glowing {
+              0% { background-position: 0 0; }
+              50% { background-position: 400% 0; }
+              100% { background-position: 0 0; }
+          }
+  
             .btn-blue {
                 background-color: #007bff; /* Azul */
             }
@@ -182,20 +239,22 @@ const char *getWiFiManagementPage()
             }
     
             .btn-night-mode {
-                background-color: #e83e8c; /* Rosa */
+              background-color: rgb(234, 161, 15); /* Roxo */
             }
     
             .btn-night-mode:hover {
-                background-color: #d6336c;
-            }
+              background-color: #8e5204;
+              transform: scale(1.05);
+              }
     
             .btn-contrast-mode {
-                background-color: #6f42c1; /* Roxo */
+              background-color: rgb(247, 214, 49); /* Rosa */
             }
     
             .btn-contrast-mode:hover {
-                background-color: #5a36a0;
-            }
+              background-color: #8c7807;
+              transform: scale(1.05);
+              }
     
             /* Grupo de inputs */
             .input-group {
@@ -228,62 +287,59 @@ const char *getWiFiManagementPage()
                 text-align: left;
             }
         </style>
-    </head>
+  </head>
 
-    <body>
-        <div class="container" aria-label="Gerenciamento de Redes Wi-Fi">
-            <h2>Gerenciamento de Redes Wi-Fi</h2>
-
-            <div id="message" class="alert" role="alert"></div>
-
-            <p id="connected-ip" aria-live="polite">Aguardando IP...</p>
-
-            <form id="save-form" action="/salvarwifi" method="post"
-                aria-label="Formulário de rede Wi-Fi">
-                <div class="form-group">
-                    <label for="ssid">SSID da Rede Wi-Fi:</label>
-                    <input type="text" id="ssid" name="ssid"
-                        placeholder="Digite o SSID" required
-                        aria-required="true">
-                </div>
-
-                <div class="form-group">
-                    <label for="password">Senha:</label>
-                    <div class="input-group">
-                        <input type="password" id="password" name="password"
-                            placeholder="Digite a senha" required
-                            aria-required="true">
-                        <div class="input-group-append">
-                            <button type="button" id="toggle-password"
-                                aria-label="Mostrar senha">Mostrar</button>
-                        </div>
-                    </div>
-                </div>
-
-                <button type="submit" class="btn btn-success"
-                    aria-label="Conectar">Conectar</button>
-                <button type="button" onclick="window.history.back()"
-                    class="btn btn-blue" aria-label="Voltar">Voltar</button>
-                <!-- Botões de alternância para modo noturno e alto contraste -->
-                <button id="toggle-night-mode" class="btn btn-night-mode"
-                    aria-label="Alternar modo noturno">Modo Noturno</button>
-                <button id="toggle-contrast-mode" class="btn btn-contrast-mode"
-                    aria-label="Alternar modo alto contraste">Modo Alto
-                    Contraste</button>
-            </form>
-
-            <hr>
-
-            <div id="saved-networks" aria-label="Redes Wi-Fi Salvas">Aguardando
-                redes salvas...</div>
+  <body>
+    <div class="container" aria-label="Gerenciamento de Redes Wi-Fi">
+      <h2 class="title-container">Gerenciamento de Redes Wi-Fi</h2>
+      <p id="connected-ip" aria-live="polite">Aguardando IP...</p>
+      <form id="save-form" action="/salvarwifi" method="post"
+        aria-label="Formulário de rede Wi-Fi">
+        <div class="form-group">
+          <label for="ssid">SSID da Rede Wi-Fi:</label>
+          <input type="text" id="ssid" name="ssid"
+            placeholder="Digite o SSID" required
+            aria-required="true">
         </div>
 
-        <div class="footer" aria-label="Rodapé">
-            <p>Aplicação desenvolvida pela Turma de Informática Para Internet
-                Trilhas de Futuro 2024</p>
-            <p>Instrutor: Lenon Yuri</p>
+        <div class="form-group">
+          <label for="password">Senha:</label>
+          <div class="input-group">
+            <input type="password" id="password" name="password"
+              placeholder="Digite a senha" required
+              aria-required="true">
+            <div class="input-group-append">
+              <button type="button" id="toggle-password"
+                aria-label="Mostrar senha">Mostrar</button>
+            </div>
+          </div>
         </div>
-        <script>
+
+        <button type="submit" class="btn btn-success"
+          aria-label="Conectar">Conectar</button>
+        <button type="button" onclick="window.history.back()"
+          class="btn btn-blue" aria-label="Voltar">Voltar</button>
+        <!-- Botões de alternância para modo noturno e alto contraste -->
+        <button id="toggle-night-mode" class="btn btn-night-mode"
+          aria-label="Alternar modo noturno">Modo Noturno</button>
+        <button id="toggle-contrast-mode" class="btn btn-contrast-mode"
+          aria-label="Alternar modo alto contraste">Modo Alto
+          Contraste</button>
+      </form>
+
+      <hr>
+
+      <div id="saved-networks" aria-label="Redes Wi-Fi Salvas">Aguardando
+        redes salvas...</div>
+    </div>
+    <div id="message" class="alert" role="alert"></div>
+
+    <div class="footer" aria-label="Rodapé">
+      <p>Aplicação desenvolvida pela Turma de Informática Para Internet
+        Trilhas de Futuro 2024</p>
+      <p>Instrutor: Lenon Yuri</p>
+    </div>
+    <script>
         // Função para buscar as redes Wi-Fi salvas e exibir na página
         function fetchSavedNetworks() {
             // Faz uma requisição para o servidor na rota /listadewifi
@@ -407,9 +463,9 @@ const char *getWiFiManagementPage()
         document.getElementById('toggle-contrast-mode').addEventListener('click', toggleHighContrastMode);
     
     </script>
-        <!-- Fim do código JavaScript -->
-    </body>
-    <!-- Fim do corpo do documento HTML -->
+    <!-- Fim do código JavaScript -->
+  </body>
+  <!-- Fim do corpo do documento HTML -->
 
 </html>
 <!-- Fim do documento HTML -->
