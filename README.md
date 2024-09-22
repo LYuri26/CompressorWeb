@@ -1,6 +1,3 @@
-Aqui está o README ajustado, incluindo a estrutura de diretórios detalhada e organizada como solicitado:
-
-```markdown
 # Sistema de Controle de Compressores via ESP32
 
 Este projeto foi desenvolvido para controlar o ligar e desligar de compressores utilizando um ESP32. O sistema possui uma interface web acessível via Wi-Fi, com autenticação e gerenciamento de usuários. Ele opera tanto em modo de **Access Point (AP)** quanto em modo de conexão a redes Wi-Fi locais.
@@ -140,5 +137,3 @@ Projeto desenvolvido como parte do curso de engenharia eletrônica pelos alunos:
 ## Licença
 
 Este projeto está licenciado sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
-
-```
