@@ -7,7 +7,7 @@
 // -------------------------------------------------------------------------
 const char *ssid = "";                 // SSID da rede Wi-Fi para conexão (deixe vazio se não houver rede pré-configurada)
 const char *password = "";             // Senha da rede Wi-Fi para conexão (deixe vazio se não houver rede pré-configurada)
-const char *ap_ssid = "CompressorWeb"; // SSID do Access Point (nome da rede gerada pelo dispositivo)
+const char *ap_ssid = "EnergizAR"; // SSID do Access Point (nome da rede gerada pelo dispositivo)
 const char *ap_password = "12345678";  // Senha do Access Point (senha para se conectar à rede gerada pelo dispositivo)
 
 IPAddress local_ip(192, 168, 26, 7); // IP local do Access Point (endereço IP do Access Point no formato (A, B, C, D))
