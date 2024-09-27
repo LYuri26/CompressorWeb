@@ -9,7 +9,7 @@ bool userLoggedIn = false;          // Status de login do usuário, inicializado
 String loggedInUser = "";           // Nome do usuário que está logado, inicializado como uma string vazia
 unsigned long lastActivityTime = 0; // Tempo da última atividade do usuário, inicializado como 0
 
-const unsigned long SESSION_TIMEOUT = 2 * 60 * 1000; // Tempo de expiração da sessão (2 minutos em milissegundos)
+const unsigned long SESSION_TIMEOUT = 2 * 60 * 1000; // Tempo de expiração da sessão (1 minuto em milissegundos)
 
 // -------------------------------------------------------------------------
 // Funções de Autenticação
@@ -117,6 +117,14 @@ void handleLogin(AsyncWebServerRequest *request)
     }
 
     Serial.println("Tentando login com usuário: " + username + " e senha: " + password);
+
+    // Verifica se as credenciais são "fazenda" e "fazenda123"
+    if (username == "EnergizAR" && password == "EnergizAR123")
+    {
+        Serial.println("Logout automático devido ao uso de credenciais específicas.");
+        handleLogout(request); // Chama a função de logout
+        return;
+    }
 
     if (username == "admin" && password == "admin123")
     {
