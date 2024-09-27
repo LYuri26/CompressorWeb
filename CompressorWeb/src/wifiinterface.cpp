@@ -29,8 +29,7 @@ const char *getWiFiManagementPage()
               display: flex; /* Usando flexbox */
               justify-content: center; /* Centraliza horizontalmente */
               align-items: center; /* Centraliza verticalmente */
-              height: 100vh; /* O corpo terá altura de 100% da viewport */
-              margin: 0;
+              margin-bottom: 150px;
               padding: 0; /* Remove o padding da página */
               transition: background-color 0.3s, color 0.3s;
                         }
@@ -232,6 +231,7 @@ const char *getWiFiManagementPage()
     
             .btn-custom-danger {
                 background-color: #dc3545; /* Vermelho */
+                width: 90%;
             }
     
             .btn-custom-danger:hover {
@@ -331,8 +331,8 @@ const char *getWiFiManagementPage()
 
       <div id="saved-networks" aria-label="Redes Wi-Fi Salvas">Aguardando
         redes salvas...</div>
+        <div id="message" class="alert" role="alert"></div>
     </div>
-    <div id="message" class="alert" role="alert"></div>
 
     <div class="footer" aria-label="Rodapé">
       <p>Aplicação desenvolvida pela Turma de Informática Para Internet
