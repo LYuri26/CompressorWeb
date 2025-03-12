@@ -5,14 +5,14 @@
 // -------------------------------------------------------------------------
 // Configurações Globais
 // -------------------------------------------------------------------------
-const char *ssid = "";                 // SSID da rede Wi-Fi para conexão (deixe vazio se não houver rede pré-configurada)
-const char *password = "";             // Senha da rede Wi-Fi para conexão (deixe vazio se não houver rede pré-configurada)
-const char *ap_ssid = "EnergizAR";     // SSID do Access Point (nome da rede gerada pelo dispositivo)
-const char *ap_password = "12345678";  // Senha do Access Point (senha para se conectar à rede gerada pelo dispositivo)
+const char *ssid = "";                // SSID da rede Wi-Fi para conexão (deixe vazio se não houver rede pré-configurada)
+const char *password = "";            // Senha da rede Wi-Fi para conexão (deixe vazio se não houver rede pré-configurada)
+const char *ap_ssid = "EnergizAR";    // SSID do Access Point (nome da rede gerada pelo dispositivo)
+const char *ap_password = "12345678"; // Senha do Access Point (senha para se conectar à rede gerada pelo dispositivo)
 
-IPAddress local_ip(192, 168, 26, 7);   // IP local do Access Point
-IPAddress gateway(192, 168, 26, 1);    // Gateway do Access Point
-IPAddress subnet(255, 255, 255, 0);    // Máscara de sub-rede do Access Point
+IPAddress local_ip(192, 168, 26, 7); // IP local do Access Point
+IPAddress gateway(192, 168, 26, 1);  // Gateway do Access Point
+IPAddress subnet(255, 255, 255, 0);  // Máscara de sub-rede do Access Point
 
 const unsigned long scanInterval = 5000; // Intervalo entre escaneamentos
 unsigned long lastScan = 0;              // Armazena o tempo do último escaneamento
@@ -59,7 +59,7 @@ void connectToWiFi(const char *ssid, const char *password)
     WiFi.begin(ssid, password);
 
     int attempts = 0;
-    const int maxAttempts = 15; // Tentativas aumentadas para melhor conectividade
+    const int maxAttempts = 20; // Aumente o número de tentativas para melhorar a conectividade
 
     while (WiFi.status() != WL_CONNECTED && attempts < maxAttempts)
     {
@@ -73,12 +73,13 @@ void connectToWiFi(const char *ssid, const char *password)
         Serial.println();
         Serial.print("Conexão feita! Endereço IP: ");
         Serial.println(WiFi.localIP());
+        isAPMode = false; // Desativa o modo AP após conectar-se com sucesso
     }
     else
     {
         Serial.println();
         Serial.println("Conexão falhou. Continuando no modo AP.");
-        setupAP();  // Se a conexão falhar, ativa o modo Access Point.
+        setupAP(); // Se a conexão falhar, ativa o modo Access Point.
     }
 }
 

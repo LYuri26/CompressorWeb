@@ -47,8 +47,8 @@ void atualizarEstadoManutencao();                            // Declara a funç�
 // -------------------------------------------------------------------------
 unsigned long lastReconnectAttempt = 0;        // Armazena o timestamp da última tentativa de reconexão Wi-Fi.
 int reconnectAttempts = 0;                     // Conta o número de tentativas de reconexão Wi-Fi.
-const int MAX_RECONNECT_ATTEMPTS = 10;         // Define o número máximo de tentativas de reconexão antes de entrar em modo AP.
-const unsigned long RECONNECT_INTERVAL = 1000; // Intervalo entre tentativas de reconexão (em milissegundos).
+const int MAX_RECONNECT_ATTEMPTS = 20;         // Aumente o número máximo de tentativas de reconexão.
+const unsigned long RECONNECT_INTERVAL = 5000; // Aumente o intervalo entre tentativas de reconexão (em milissegundos).
 const unsigned long UPDATE_INTERVAL = 300000;  // Intervalo para atualizar o tempo e status dos motores (em milissegundos).
 const unsigned long RESTART_TIME = 60000;      // Tempo para reiniciar o sistema em milissegundos.
 

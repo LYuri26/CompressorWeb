@@ -12,27 +12,28 @@ const char *getWiFiManagementPage()
 <!DOCTYPE html>
 <html lang="pt-br">
 
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap"
-      rel="stylesheet">
-    <title>Gerenciamento Wi-Fi</title>
-    <style>
-            /* Estilos gerais da página */
-            body {
-              font-family: Arial, sans-serif;
-              background-color: #f0f2f5;
-              display: flex; /* Usando flexbox */
-              justify-content: center; /* Centraliza horizontalmente */
-              align-items: center; /* Centraliza verticalmente */
-              margin-bottom: 150px;
-              padding: 0; /* Remove o padding da página */
-              transition: background-color 0.3s, color 0.3s;
-                        }
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap"
+            rel="stylesheet">
+        <title>Gerenciamento Wi-Fi</title>
+        <style>
+/* Estilos gerais para o corpo da página */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f2f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 100vh; /* Garante que o conteúdo ocupe pelo menos 100% da altura da viewport */
+    margin: 0;
+    padding: 0;
+}
     
             /* Modo noturno */
             body.night-mode {
@@ -47,15 +48,15 @@ const char *getWiFiManagementPage()
             }
     
             .container {
-              background-color: #ffffff;
-              padding: 20px;
-              border-radius: 8px;
-              box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-              width: 100%;
-              max-width: 400px;
-              text-align: center;
-              transition: background-color 0.3s, color 0.3s;
-                }
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 100%;
+    max-width: 400px;
+    margin: auto; /* Garante que o conteúdo fique centralizado */
+                    }
 
               .title-container{
                 font-size: 24px;
@@ -81,16 +82,17 @@ const char *getWiFiManagementPage()
                 color: #ffffff;
             }
     
-            .footer {
-              position: fixed;
-              bottom: 0;
-              width: 100%;
-              background-color: #ee641a;
-              color: white;
-              text-align: center;
-              padding: 10px 0;
-              font-size: 14px;
-              }    
+/* Estilos para o rodapé */
+.footer {
+    width: 100%;
+    background-color: #ee641a;
+    color: white;
+    text-align: center;
+    padding: 10px 0;
+    font-size: 14px;
+    margin-top: auto; /* Mantém o rodapé no final da página sem fixá-lo */
+}
+
                 /* Mensagens de status */
             #message {
                 margin: 10px 0;
@@ -287,59 +289,59 @@ const char *getWiFiManagementPage()
                 text-align: left;
             }
         </style>
-  </head>
+    </head>
 
-  <body>
-    <div class="container" aria-label="Gerenciamento de Redes Wi-Fi">
-      <h2 class="title-container">Gerenciamento de Redes Wi-Fi</h2>
-      <p id="connected-ip" aria-live="polite">Aguardando IP...</p>
-      <form id="save-form" action="/salvarwifi" method="post"
-        aria-label="Formulário de rede Wi-Fi">
-        <div class="form-group">
-          <label for="ssid">SSID da Rede Wi-Fi:</label>
-          <input type="text" id="ssid" name="ssid"
-            placeholder="Digite o SSID" required
-            aria-required="true">
+    <body>
+        <div class="container" aria-label="Gerenciamento de Redes Wi-Fi">
+            <h2 class="title-container">Gerenciamento de Redes Wi-Fi</h2>
+            <p id="connected-ip" aria-live="polite">Aguardando IP...</p>
+            <form id="save-form" action="/salvarwifi" method="post"
+                aria-label="Formulário de rede Wi-Fi">
+                <div class="form-group">
+                    <label for="ssid">SSID da Rede Wi-Fi:</label>
+                    <input type="text" id="ssid" name="ssid"
+                        placeholder="Digite o SSID" required
+                        aria-required="true">
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Senha:</label>
+                    <div class="input-group">
+                        <input type="password" id="password" name="password"
+                            placeholder="Digite a senha" required
+                            aria-required="true">
+                        <div class="input-group-append">
+                            <button type="button" id="toggle-password"
+                                aria-label="Mostrar senha">Mostrar</button>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-success"
+                    aria-label="Conectar">Conectar</button>
+                <button type="button" onclick="window.history.back()"
+                    class="btn btn-blue" aria-label="Voltar">Voltar</button>
+                <!-- Botões de alternância para modo noturno e alto contraste -->
+                <button id="toggle-night-mode" class="btn btn-night-mode"
+                    aria-label="Alternar modo noturno">Modo Noturno</button>
+                <button id="toggle-contrast-mode" class="btn btn-contrast-mode"
+                    aria-label="Alternar modo alto contraste">Modo Alto
+                    Contraste</button>
+            </form>
+
+            <hr>
+
+            <div id="saved-networks" aria-label="Redes Wi-Fi Salvas">Aguardando
+                redes salvas...</div>
+            <div id="message" class="alert" role="alert"></div>
         </div>
 
-        <div class="form-group">
-          <label for="password">Senha:</label>
-          <div class="input-group">
-            <input type="password" id="password" name="password"
-              placeholder="Digite a senha" required
-              aria-required="true">
-            <div class="input-group-append">
-              <button type="button" id="toggle-password"
-                aria-label="Mostrar senha">Mostrar</button>
-            </div>
-          </div>
+        <div class="footer" aria-label="Rodapé">
+            <p>Aplicação desenvolvida pela Turma de Informática Para Internet
+                Trilhas de Futuro 2024</p>
+            <p>Instrutor: Lenon Yuri</p>
         </div>
-
-        <button type="submit" class="btn btn-success"
-          aria-label="Conectar">Conectar</button>
-        <button type="button" onclick="window.history.back()"
-          class="btn btn-blue" aria-label="Voltar">Voltar</button>
-        <!-- Botões de alternância para modo noturno e alto contraste -->
-        <button id="toggle-night-mode" class="btn btn-night-mode"
-          aria-label="Alternar modo noturno">Modo Noturno</button>
-        <button id="toggle-contrast-mode" class="btn btn-contrast-mode"
-          aria-label="Alternar modo alto contraste">Modo Alto
-          Contraste</button>
-      </form>
-
-      <hr>
-
-      <div id="saved-networks" aria-label="Redes Wi-Fi Salvas">Aguardando
-        redes salvas...</div>
-        <div id="message" class="alert" role="alert"></div>
-    </div>
-
-    <div class="footer" aria-label="Rodapé">
-      <p>Aplicação desenvolvida pela Turma de Informática Para Internet
-        Trilhas de Futuro 2024</p>
-      <p>Instrutor: Lenon Yuri</p>
-    </div>
-    <script>
+        <script>
         // Função para buscar as redes Wi-Fi salvas e exibir na página
         function fetchSavedNetworks() {
             // Faz uma requisição para o servidor na rota /listadewifi
@@ -463,10 +465,9 @@ const char *getWiFiManagementPage()
         document.getElementById('toggle-contrast-mode').addEventListener('click', toggleHighContrastMode);
     
     </script>
-    <!-- Fim do código JavaScript -->
-  </body>
-  <!-- Fim do corpo do documento HTML -->
-
+        <!-- Fim do código JavaScript -->
+    </body>
+    <!-- Fim do corpo do documento HTML -->
 </html>
 <!-- Fim do documento HTML -->
     )rawliteral";

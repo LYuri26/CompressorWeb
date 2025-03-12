@@ -26,42 +26,42 @@ void setupDashboardPage(AsyncWebServer &server)
         String html = R"rawliteral(
 <!DOCTYPE html>
 <html lang="pt-br">
-  <head>
-    <meta charset="UTF-8">
-    <!-- Define a codificação de caracteres como UTF-8 -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Configura a viewport para dispositivos móveis -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap"
-      rel="stylesheet">
+    <head>
+        <meta charset="UTF-8">
+        <!-- Define a codificação de caracteres como UTF-8 -->
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <!-- Configura a viewport para dispositivos móveis -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap"
+            rel="stylesheet">
 
-    <title>Dashboard</title> <!-- Define o título da página -->
-    <style>
+        <title>Dashboard</title> <!-- Define o título da página -->
+        <style>
 /* Estilos gerais para o corpo da página */
 body {
     font-family: Arial, sans-serif;
     background-color: #f0f2f5;
-    display: flex; /* Usando flexbox */
-    justify-content: center; /* Centraliza horizontalmente */
-    align-items: center; /* Centraliza verticalmente */
-    height: 100vh; /* O corpo terá altura de 100% da viewport */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 100vh; /* Garante que o conteúdo ocupe pelo menos 100% da altura da viewport */
     margin: 0;
-    padding: 0; /* Remove o padding da página */
-    transition: background-color 0.3s, color 0.3s;
+    padding: 0;
 }
 
 /* Estilos para o container do dashboard */
 .dashboard-container {
-    background-color: #ffffff; /* Define a cor de fundo do container do dashboard */
-    padding: 20px; /* Define o padding do container */
-    border-radius: 8px; /* Adiciona bordas arredondadas */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Adiciona sombra ao container */
-    text-align: center; /* Alinha o texto ao centro */
-    width: 100%; /* Define a largura como 100% */
-    max-width: 400px; /* Define a largura máxima do container */
-    transition: background-color 0.3s, color 0.3s; /* Adiciona transições suaves */
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 100%;
+    max-width: 400px;
+    margin: auto; /* Garante que o conteúdo fique centralizado */
 }
 
 /* Estilos para o título do dashboard */
@@ -173,16 +173,15 @@ body {
     transform: scale(1.02); /* Aplica uma leve transformação de escala ao link ao passar o mouse */
 }
 
-/* Estilos para o rodapé da página */
+/* Estilos para o rodapé */
 .footer {
-    position: fixed;
-    bottom: 0;
     width: 100%;
     background-color: #ee641a;
     color: white;
     text-align: center;
     padding: 10px 0;
     font-size: 14px;
+    margin-top: auto; /* Mantém o rodapé no final da página sem fixá-lo */
 }
 
 /* Estilos para a caixa de mensagem */
@@ -257,45 +256,45 @@ body {
 }
 
         </style>
-  </head>
-  <body>
-    <div class="dashboard-container">
-      <h2 class="dashboard-title">Bem-vindo ao Dashboard</h2>
-      <button class="btn btn-motor1" id="toggleButtonMotor1"
-        aria-label="Controle do motor 1">Carregando...
-      </button>
-      <button class="btn btn-motor2" id="toggleButtonMotor2"
-        aria-label="Controle do motor 2">Carregando...
-        <span></span>
-        <span></span>
-        <span></span>
-        <span></span>
-      </button>
-      <button class="btn btn-motor3" id="toggleButtonMotor3"
-        aria-label="Controle do motor 3">Carregando...
-        <span></span>
-        <span></span>
-        <span></span>
-        <span></span>
-      </button>
-      <a href="/umidade" class="btn btn-link btn-link-umidade"
-        aria-label="Página de umidade">Umidade</a>
-      <a href="/pressao" class="btn btn-link btn-link-pressao"
-        aria-label="Página de pressão">Pressão</a>
-      <a href="/logout" class="btn btn-link btn-link-logout"
-        aria-label="Logout">Logout</a>
-      <button id="nightModeButton" aria-label="Modo Noturno">Modo
-        Noturno</button>
-      <button id="highContrastButton" aria-label="Alto Contraste">Alto
-        Contraste</button>
-    </div>
-    <div id="messageBox" role="alert"></div>
-    <div class="footer">
-      <p>Aplicação desenvolvida pela Turma de Informática Para Internet
-        Trilhas de Futuro 2024</p>
-      <p>Instrutor: Lenon Yuri</p>
-    </div>
-    <script>
+    </head>
+    <body>
+        <div class="dashboard-container">
+            <h2 class="dashboard-title">Bem-vindo ao Dashboard</h2>
+            <button class="btn btn-motor1" id="toggleButtonMotor1"
+                aria-label="Controle do motor 1">Carregando...
+            </button>
+            <button class="btn btn-motor2" id="toggleButtonMotor2"
+                aria-label="Controle do motor 2">Carregando...
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <button class="btn btn-motor3" id="toggleButtonMotor3"
+                aria-label="Controle do motor 3">Carregando...
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <a href="/umidade" class="btn btn-link btn-link-umidade"
+                aria-label="Página de umidade">Umidade</a>
+            <a href="/pressao" class="btn btn-link btn-link-pressao"
+                aria-label="Página de pressão">Pressão</a>
+            <a href="/logout" class="btn btn-link btn-link-logout"
+                aria-label="Logout">Logout</a>
+            <button id="nightModeButton" aria-label="Modo Noturno">Modo
+                Noturno</button>
+            <button id="highContrastButton" aria-label="Alto Contraste">Alto
+                Contraste</button>
+        </div>
+        <div id="messageBox" role="alert"></div>
+        <div class="footer">
+            <p>Aplicação desenvolvida pela Turma de Informática Para Internet
+                Trilhas de Futuro 2024</p>
+            <p>Instrutor: Lenon Yuri</p>
+        </div>
+        <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Obtém referências aos botões de controle dos motores e à caixa de mensagem.
             var toggleButtonMotor1 = document.getElementById('toggleButtonMotor1');
@@ -491,7 +490,7 @@ body {
         });
         </script>
 
-  </body>
+    </body>
 </html>
         )rawliteral";
 

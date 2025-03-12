@@ -19,26 +19,29 @@ void setupIndexPage(AsyncWebServer &server)
         String html = R"rawliteral(
 <!DOCTYPE html>
 <html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap"
+            rel="stylesheet">
 
-    <title>Login</title>
-    <style>
+        <title>Login</title>
+        <style>
         /* Estilos gerais da página */
+/* Estilos gerais para o corpo da página */
 body {
     font-family: Arial, sans-serif;
     background-color: #f0f2f5;
-    display: flex; /* Usando flexbox */
-    justify-content: center; /* Centraliza horizontalmente */
-    align-items: center; /* Centraliza verticalmente */
-    height: 100vh; /* O corpo terá altura de 100% da viewport */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 100vh; /* Garante que o conteúdo ocupe pelo menos 100% da altura da viewport */
     margin: 0;
-    padding: 0; /* Remove o padding da página */
-    transition: background-color 0.3s, color 0.3s;
+    padding: 0;
 }
         .dark-mode {
             background-color: #181818;
@@ -49,15 +52,15 @@ body {
             color: #fff;
         }
         .login-container {
-            background-color: #ffffff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
-            transition: background-color 0.3s, color 0.3s;
-        }
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 100%;
+    max-width: 400px;
+    margin: auto; /* Garante que o conteúdo fique centralizado */
+            }
         .dark-mode .login-container {
             background-color: #2a2a2a;
         }
@@ -216,48 +219,62 @@ body {
             color: #dc3545;
             margin-top: 10px;
         }
-        .footer {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            background-color: #ee641a;
-            color: white;
-            text-align: center;
-            padding: 10px 0;
-            font-size: 14px;
-        }
-        .theme-toggle {
+/* Estilos para o rodapé */
+.footer {
+    width: 100%;
+    background-color: #ee641a;
+    color: white;
+    text-align: center;
+    padding: 10px 0;
+    font-size: 14px;
+    margin-top: auto; /* Mantém o rodapé no final da página sem fixá-lo */
+}
+            .theme-toggle {
             margin: 10px 0;
         }
     </style>
-</head>
-<body>
-    <div class="login-container" role="form" aria-labelledby="loginTitle">
-        <h2 id="loginTitle" class="login-title">Faça o Login</h2>
-        <form action="/login" method="post" onsubmit="storeLoginData(event)">
-            <div class="form-group">
-                <input type="text" name="username" class="form-control" placeholder="Usuário" aria-label="Usuário" required>
-            </div>
-            <div class="form-group">
-                <input type="password" name="password" class="form-control" placeholder="Senha" aria-label="Senha" required>
-            </div>
-            <button type="submit" class="btn btn-primary" type="button" aria-label="Entrar">Entrar</button>
-            <div class="text-danger">%ERROR_MESSAGE%</div>
-        </form>
-        <button onclick="window.location.href='/creditos'" class="btn btn-creditos" aria-label="Ir para créditos">Créditos</button>
-        <button onclick="window.location.href='/wifigerenciamento'" class="btn btn-gerenciamento" aria-label="Ir para gerenciamento Wi-Fi">Gerenciamento Wi-Fi</button>
-        
-        <div class="theme-toggle">
-            <button onclick="toggleDarkMode()" class="btn btn-dark-mode" aria-label="Ativar modo noturno">Modo Noturno</button>
-            <button onclick="toggleHighContrast()" class="btn btn-high-contrast" aria-label="Ativar modo alto contraste">Alto Contraste</button>
-        </div>
-    </div>
-    <div class="footer" role="contentinfo">
-        <p>Aplicação desenvolvida pela Turma de Informática Para Internet Trilhas de Futuro 2024</p>
-        <p>Instrutor: Lenon Yuri</p>
-    </div>
+    </head>
+    <body>
+        <div class="login-container" role="form" aria-labelledby="loginTitle">
+            <h2 id="loginTitle" class="login-title">Faça o Login</h2>
+            <form action="/login" method="post"
+                onsubmit="storeLoginData(event)">
+                <div class="form-group">
+                    <input type="text" name="username" class="form-control"
+                        placeholder="Usuário" aria-label="Usuário" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" name="password" class="form-control"
+                        placeholder="Senha" aria-label="Senha" required>
+                </div>
+                <button type="submit" class="btn btn-primary" type="button"
+                    aria-label="Entrar">Entrar</button>
+                <div class="text-danger">%ERROR_MESSAGE%</div>
+            </form>
+            <button onclick="window.location.href='/creditos'"
+                class="btn btn-creditos"
+                aria-label="Ir para créditos">Créditos</button>
+            <button onclick="window.location.href='/wifigerenciamento'"
+                class="btn btn-gerenciamento"
+                aria-label="Ir para gerenciamento Wi-Fi">Gerenciamento
+                Wi-Fi</button>
 
-    <script>
+            <div class="theme-toggle">
+                <button onclick="toggleDarkMode()" class="btn btn-dark-mode"
+                    aria-label="Ativar modo noturno">Modo Noturno</button>
+                <button onclick="toggleHighContrast()"
+                    class="btn btn-high-contrast"
+                    aria-label="Ativar modo alto contraste">Alto
+                    Contraste</button>
+            </div>
+        </div>
+        <div class="footer" role="contentinfo">
+            <p>Aplicação desenvolvida pela Turma de Informática Para Internet
+                Trilhas de Futuro 2024</p>
+            <p>Instrutor: Lenon Yuri</p>
+        </div>
+
+        <script>
         function storeLoginData(event) {
             event.preventDefault();
             var username = document.querySelector('input[name="username"]').value;
@@ -274,7 +291,7 @@ body {
             document.body.classList.toggle('high-contrast');
         }
     </script>
-</body>
+    </body>
 </html>
         )rawliteral";
 
