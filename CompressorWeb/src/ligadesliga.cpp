@@ -18,12 +18,92 @@ bool timersAtivos[] = {false, false, false};
 unsigned long previousMillis[] = {0, 0, 0};
 unsigned long lastToggleTime[] = {0, 0, 0};
 
+// -------------------------------------------------------------------------
+// Função para extrair as horas de uma string de horário
+// -------------------------------------------------------------------------
+int getHoursFromTime(const String &time)
+{
+    return time.substring(11, 13).toInt(); // Extrai e retorna as horas da string de horário
+}
+
+// -------------------------------------------------------------------------
+// Função para extrair os minutos de uma string de horário
+// -------------------------------------------------------------------------
+int getMinutesFromTime(const String &time)
+{
+    return time.substring(14, 16).toInt(); // Extrai e retorna os minutos da string de horário
+}
+
+// -------------------------------------------------------------------------
+// Função para verificar se o horário atual é após o horário de fechamento
+// -------------------------------------------------------------------------
+bool isAfterClosingTime()
+{
+    updateTime();                                      // Atualiza o horário atual
+    int hour = getHoursFromTime(getTimeClient());      // Obtém a hora atual
+    int minute = getMinutesFromTime(getTimeClient());  // Obtém os minutos atuais
+    return (hour > 22) || (hour == 22 && minute >= 0); // Retorna verdadeiro se for após 22:00
+}
+
+// -------------------------------------------------------------------------
+// Função para verificar se o horário atual é antes do horário de abertura
+// -------------------------------------------------------------------------
+bool isBeforeOpeningTime()
+{
+    updateTime();                                     // Atualiza o horário atual
+    int hour = getHoursFromTime(getTimeClient());     // Obtém a hora atual
+    int minute = getMinutesFromTime(getTimeClient()); // Obtém os minutos atuais
+    return (hour < 8) || (hour == 8 && minute < 0);   // Retorna verdadeiro se for antes de 08:00
+}
+
+// -------------------------------------------------------------------------
+// Função para desligar todos os motores e bloqueá-los
+// -------------------------------------------------------------------------
+void desligarTodosMotores()
+{
+    for (int i = 0; i < 3; i++)
+    {
+        digitalWrite(pinosMotores[i], HIGH);
+        delay(500); // Mantém o pulso por 500ms
+        digitalWrite(pinosMotores[i], LOW);
+        motoresLigados[i] = false;
+        saveMotorState(arquivosEstados[i], false);
+    }
+}
+
+// -------------------------------------------------------------------------
+// Função para verificar se o sistema deve estar bloqueado (fora do horário de funcionamento ou em manutenção)
+// -------------------------------------------------------------------------
+bool sistemaDeveEstarBloqueado()
+{
+    return sistemaEmManutencao || isAfterClosingTime() || isBeforeOpeningTime();
+}
+
+// -------------------------------------------------------------------------
+// Função para atualizar o estado dos motores com base no horário e estado de manutenção
+// -------------------------------------------------------------------------
+void atualizarEstadoMotores()
+{
+    if (sistemaDeveEstarBloqueado())
+    {
+        desligarTodosMotores();
+    }
+}
+
+// -------------------------------------------------------------------------
+// Função para configurar a página de login e o controle dos motores
+// -------------------------------------------------------------------------
 void handleToggleAction(AsyncWebServer &server)
 {
     server.on("/toggle", HTTP_ANY, [](AsyncWebServerRequest *request)
               {
         if (!isAuthenticated(request)) {
             redirectToAccessDenied(request);
+            return;
+        }
+
+        if (sistemaDeveEstarBloqueado()) {
+            request->send(200, "text/plain", "Sistema bloqueado. Operação não permitida.");
             return;
         }
 
@@ -36,6 +116,11 @@ void handleToggleAction(AsyncWebServer &server)
         }
 
         if (action == "ligar") {
+            if (isAfterClosingTime() || isBeforeOpeningTime()) {
+                request->send(200, "text/plain", "Não é permitido ligar o motor fora do horário de funcionamento.");
+                return;
+            }
+
             // Envia um pulso rápido
             digitalWrite(pinosMotores[motorIdx], HIGH);
             delay(500); // Mantém o pulso por 500ms
@@ -64,6 +149,9 @@ void handleToggleAction(AsyncWebServer &server)
         saveMotorState(arquivosEstados[motorIdx], motoresLigados[motorIdx]); });
 }
 
+// -------------------------------------------------------------------------
+// Função para monitorar o status dos compressores
+// -------------------------------------------------------------------------
 void monitorarStatusCompressores()
 {
     for (int i = 0; i < 3; i++)
@@ -84,6 +172,9 @@ void monitorarStatusCompressores()
     }
 }
 
+// -------------------------------------------------------------------------
+// Função para inicializar o SPIFFS
+// -------------------------------------------------------------------------
 void initSPIFFS()
 {
     if (!SPIFFS.begin(true))
@@ -96,6 +187,9 @@ void initSPIFFS()
     }
 }
 
+// -------------------------------------------------------------------------
+// Função para ler o estado do motor a partir de um arquivo SPIFFS
+// -------------------------------------------------------------------------
 bool readMotorState(const String &arquivoEstado)
 {
     File file = SPIFFS.open(arquivoEstado, "r");
@@ -111,6 +205,9 @@ bool readMotorState(const String &arquivoEstado)
     return state.toInt() == 1;
 }
 
+// -------------------------------------------------------------------------
+// Função para salvar o estado do motor em um arquivo SPIFFS
+// -------------------------------------------------------------------------
 void saveMotorState(const String &arquivoEstado, bool state)
 {
     File file = SPIFFS.open(arquivoEstado, "w");
@@ -125,7 +222,9 @@ void saveMotorState(const String &arquivoEstado, bool state)
     Serial.println("Estado salvo no arquivo " + arquivoEstado + ": " + (state ? "Ligado" : "Desligado"));
 }
 
+// -------------------------------------------------------------------------
 // Função para salvar o estado dos pinos de status
+// -------------------------------------------------------------------------
 void saveStatusState(int pin, bool state)
 {
     String arquivoEstado;
@@ -139,6 +238,9 @@ void saveStatusState(int pin, bool state)
     saveMotorState(arquivoEstado, state);
 }
 
+// -------------------------------------------------------------------------
+// Função para configurar o sistema de ligar/desligar motores
+// -------------------------------------------------------------------------
 void setupLigaDesliga(AsyncWebServer &server)
 {
     initSPIFFS();
@@ -156,26 +258,16 @@ void setupLigaDesliga(AsyncWebServer &server)
         pinMode(pinosStatus[i], INPUT); // Esses pinos irão ler o status do compressor
     }
 
-    server.on("/toggle", HTTP_GET, [](AsyncWebServerRequest *request)
-              {
-        int motorIdx = request->getParam("motor")->value().toInt() - 1;
-
-        if (motorIdx < 0 || motorIdx > 2) {
-            request->send(400, "text/plain", "Motor inválido!");
-            return;
-        }
-
-        // Envia um pulso rápido
-        digitalWrite(pinosMotores[motorIdx], HIGH);
-        delay(500); // Mantém o pulso por 500ms
-        digitalWrite(pinosMotores[motorIdx], LOW);
-
-        String message = "Pulso enviado para o Motor " + String(motorIdx + 1);
-        request->send(200, "text/plain", message); });
-
+    handleToggleAction(server);
     setupTimeClient();
+
+    // Atualiza o estado dos motores no início
+    atualizarEstadoMotores();
 }
 
+// -------------------------------------------------------------------------
+// Função para atualizar o estado dos motores
+// -------------------------------------------------------------------------
 void updateMotorStatus()
 {
     Serial.println("Atualizando status dos motores...");

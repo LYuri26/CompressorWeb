@@ -16,62 +16,79 @@
 
 AsyncWebServer server(80);
 
-void setupSPIFFS();
+// Declarações das funções
 void setupServer();
 void configureRoutes();
-bool isAuthenticated(AsyncWebServerRequest *request);
 void redirectToAccessDenied(AsyncWebServerRequest *request);
-void updateTime();
-void setupTimeClient();
-void setupManutencao();
-void connectToWiFi(const char *ssid, const char *password);
-void setupAP();
-void loadSavedWiFiNetworks();
-void atualizarEstadoManutencao();
 
+// Variáveis globais para controle de reconexão Wi-Fi
 unsigned long lastReconnectAttempt = 0;
 int reconnectAttempts = 0;
 const int MAX_RECONNECT_ATTEMPTS = 20;
 const unsigned long RECONNECT_INTERVAL = 5000;
-const unsigned long UPDATE_INTERVAL = 300000;
-const unsigned long RESTART_TIME = 60000;
+const unsigned long UPDATE_INTERVAL = 300000; // Intervalo de atualização do tempo e status dos motores
+const unsigned long RESTART_TIME = 60000;     // Tempo para reinicialização em caso de falha
 
-unsigned long lastUpdate = 0;
-unsigned long lastCompressorUpdate = 0;
+unsigned long lastUpdate = 0;           // Última vez que o tempo foi atualizado
+unsigned long lastCompressorUpdate = 0; // Última vez que o status dos compressores foi atualizado
 
 void setup()
 {
-    Serial.begin(115200);
-    SPIFFS.begin(true);
+    Serial.begin(115200); // Inicializa a comunicação serial
+
+    // Inicializa o sistema de arquivos SPIFFS
+    if (!SPIFFS.begin(true))
+    {
+        Serial.println("Falha ao iniciar o sistema de arquivos SPIFFS");
+        return;
+    }
+    Serial.println("SPIFFS inicializado com sucesso.");
+
+    // Configura o modo AP (Access Point) e carrega redes Wi-Fi salvas
     setupAP();
     loadSavedWiFiNetworks();
+
+    // Configura o servidor web e as rotas
     setupServer();
+
+    // Configura o cliente de tempo
     setupTimeClient();
+
+    // Configura o botão de manutenção
     setupManutencao();
+
+    // Configura o sistema de ligar/desligar motores
+    setupLigaDesliga(server);
+
+    // Configura a página do dashboard
+    setupDashboardPage(server);
+
+    Serial.println("Sistema inicializado com sucesso.");
 }
 
 void loop()
 {
     unsigned long currentMillis = millis();
 
-    // Atualiza o tempo
+    // Atualiza o tempo a cada intervalo definido
     if (currentMillis - lastUpdate >= UPDATE_INTERVAL)
     {
         updateTime();
         lastUpdate = currentMillis;
     }
 
-    // Atualiza o status dos motores
+    // Atualiza o status dos motores a cada intervalo definido
     if (currentMillis - lastCompressorUpdate >= UPDATE_INTERVAL)
     {
-        updateMotorStatus();
+        updateMotorStatus();      // Atualiza o status dos motores
+        atualizarEstadoMotores(); // Verifica se os motores devem ser desligados (manutenção ou horário)
         lastCompressorUpdate = currentMillis;
     }
 
     // Atualiza o estado de manutenção
     atualizarEstadoManutencao();
 
-    // Verifica os status dos compressores e atualiza automaticamente os arquivos
+    // Verifica o status dos compressores e atualiza automaticamente os arquivos
     monitorarStatusCompressores();
 
     // Verifica a conexão Wi-Fi e tenta reconectar, se necessário
@@ -96,23 +113,15 @@ void loop()
         reconnectAttempts = 0;
     }
 
-    // Restante do loop (conexão Wi-Fi, reinicialização, etc.)
-}
-
-void setupSPIFFS()
-{
-    if (!SPIFFS.begin(true))
-    {
-        Serial.println("Falha ao iniciar o sistema de arquivos SPIFFS");
-        return;
-    }
-    Serial.println("SPIFFS inicializado com sucesso.");
+    // Pequeno delay para evitar leituras excessivas
+    delay(100);
 }
 
 void setupServer()
 {
     Serial.println("Configurando o servidor...");
 
+    // Configura as páginas do servidor
     setupIndexPage(server);
     setupCreditosPage(server);
     setupDashboardPage(server);
@@ -125,19 +134,25 @@ void setupServer()
     setupCredenciaisInvalidasPage(server);
     setupWiFiGerenciadorPage(server);
 
+    // Configura as rotas do servidor
     configureRoutes();
+
+    // Inicia o servidor
     server.begin();
     Serial.println("Servidor iniciado");
 }
 
 void configureRoutes()
 {
+    // Rota para o login
     server.on("/login", HTTP_POST, [](AsyncWebServerRequest *request)
               { handleLogin(request); });
 
+    // Rota para o logout
     server.on("/logout", HTTP_GET, [](AsyncWebServerRequest *request)
               { handleLogout(request); });
 
+    // Rota para o dashboard
     server.on("/dashboard", HTTP_GET, [](AsyncWebServerRequest *request)
               {
         if (isAuthenticated(request))
@@ -149,6 +164,7 @@ void configureRoutes()
             redirectToAccessDenied(request);
         } });
 
+    // Rota para alternar o estado dos motores
     server.on("/toggle", HTTP_ANY, [](AsyncWebServerRequest *request)
               {
         if (isAuthenticated(request))
@@ -160,6 +176,7 @@ void configureRoutes()
             redirectToAccessDenied(request);
         } });
 
+    // Rota para verificar autenticação
     server.on("/check-auth", HTTP_GET, [](AsyncWebServerRequest *request)
               {
         if (isAuthenticated(request))

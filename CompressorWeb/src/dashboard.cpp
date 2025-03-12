@@ -207,21 +207,21 @@ body {
 
 /* Estilos específicos para o botão de modo noturno */
 #nightModeButton {
-    background-color: rgb(121, 7, 173); /* Roxo */
+    background-color: rgb(234, 161, 15); /* Roxo */
 }
 #nightModeButton:hover {
-    background-color:rgb(63, 3, 112);
+    background-color: #8e5204;
     transform: scale(1.05);
 }
 
 /* Estilos específicos para o botão de alto contraste */
 #highContrastButton {
-    background-color: rgb(190, 10, 115); /* Rosa */
+    background-color: rgb(247, 214, 49); /* Rosa */
 }
 
 /* Efeito de hover para os botões de alternância de temas */
 #highContrastButton:hover {
-    background-color:rgb(140, 7, 89);
+    background-color: #8c7807;
     transform: scale(1.05);
 }
 
@@ -302,168 +302,123 @@ body {
             <p>Instrutor: Lenon Yuri</p>
         </div>
         <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Obtém referências aos botões de controle dos motores e à caixa de mensagem.
-            var toggleButtonMotor1 = document.getElementById('toggleButtonMotor1');
-            var toggleButtonMotor2 = document.getElementById('toggleButtonMotor2');
-            var toggleButtonMotor3 = document.getElementById('toggleButtonMotor3');
-            var messageBox = document.getElementById('messageBox');
-        
-            // Variável para armazenar o estado de manutenção anterior do sistema.
-            var previousMaintenanceState = null;
-        
-            // Variáveis para armazenar o horário de ativação de cada motor.
-            var activationTimeMotor1 = null;
-            var activationTimeMotor2 = null;
-            var activationTimeMotor3 = null;
-        
-            // Variáveis para armazenar o estado anterior dos botões antes da manutenção.
-            var previousButtonStateMotor1 = { enabled: true, text: '' };
-            var previousButtonStateMotor2 = { enabled: true, text: '' };
-            var previousButtonStateMotor3 = { enabled: true, text: '' };
-        
-            // Função para atualizar o estado do botão (ativado/desativado) e a mensagem correspondente.
-function updateButtonState(button, motor, buttonClass) {
-    fetch('/motor-state')
-        .then(response => response.json())
-        .then(data => {
-            var compressorLigado = data['compressorLigadoMotor' + motor];
-            var sistemaEmManutencao = data.sistemaEmManutencao;
+document.addEventListener('DOMContentLoaded', function () {
+    // Obtém referências aos botões de controle dos motores e à caixa de mensagem.
+    var toggleButtonMotor1 = document.getElementById('toggleButtonMotor1');
+    var toggleButtonMotor2 = document.getElementById('toggleButtonMotor2');
+    var toggleButtonMotor3 = document.getElementById('toggleButtonMotor3');
+    var messageBox = document.getElementById('messageBox');
 
-            if (sistemaEmManutencao) {
-                button.innerHTML = 'Motor em manutenção';
-                button.classList.add('btn-disabled');
-                button.classList.remove(buttonClass, 'btn-desligar');
-            } else {
-                if (compressorLigado) {
-                    button.innerHTML = 'Desligar Motor';
-                    button.classList.add('btn-desligar');
-                    button.classList.remove(buttonClass);
-                } else {
-                    button.innerHTML = 'Ligar Motor';
-                    button.classList.remove('btn-desligar', 'btn-disabled');
-                    button.classList.add(buttonClass);
-                }
-            }
-        })
-        .catch(error => console.error('Erro ao obter estado do motor:', error));
-}
-        
-function setupButtonClick(button, motor, buttonClass) {
-    button.addEventListener('click', function(event) {
-        event.preventDefault();
+    // Variável para armazenar o estado de manutenção anterior do sistema.
+    var previousMaintenanceState = null;
 
-        if (button.classList.contains('btn-disabled')) {
-            return;
-        }
-
-        var action = button.innerHTML.includes('Desligar') ? 'desligar' : 'ligar';
-
-        fetch('/toggle?action=' + action + '&motor=' + motor)
-            .then(response => response.text())
+    // Função para atualizar o estado do botão (ativado/desativado) e a mensagem correspondente.
+    function updateButtonState(button, motor, buttonClass) {
+        fetch('/motor-state')
+            .then(response => response.json())
             .then(data => {
-                // Alterna o estado visual do botão
-                if (action === 'ligar') {
-                    button.innerHTML = 'Desligar Motor';
-                    button.classList.add('btn-desligar');
-                    button.classList.remove(buttonClass);
-                } else {
-                    button.innerHTML = 'Ligar Motor';
-                    button.classList.remove('btn-desligar', 'btn-disabled');
-                    button.classList.add(buttonClass);
+                var compressorLigado = data['compressorLigadoMotor' + motor];
+                var sistemaEmManutencao = data.sistemaEmManutencao;
+
+                // Obtém a hora atual
+                var now = new Date();
+                var horaAtual = now.getHours() + (now.getMinutes() / 60);
+
+                // Verifica se o sistema está em manutenção
+                if (sistemaEmManutencao) {
+                    if (motor === '1') {
+                        button.innerHTML = 'Motor Compressor em manutenção';
+                    } else if (motor === '2') {
+                        button.innerHTML = 'Motor Ventilador em manutenção';
+                    } else if (motor === '3') {
+                        button.innerHTML = 'Motor Secador em manutenção';
+                    }
+                    button.classList.add('btn-disabled');
+                    button.classList.remove(buttonClass, 'btn-desligar');
+                    messageBox.innerHTML = 'Sistema em manutenção. Motores desativados.';
+                }
+                // Verifica se está fora do horário de funcionamento
+                else if (horaAtual < 8 || horaAtual >= 22) {
+                    if (motor === '1') {
+                        button.innerHTML = 'Motor Compressor fora do horário';
+                    } else if (motor === '2') {
+                        button.innerHTML = 'Motor Ventilador fora do horário';
+                    } else if (motor === '3') {
+                        button.innerHTML = 'Motor Secador fora do horário';
+                    }
+                    button.classList.add('btn-disabled');
+                    button.classList.remove(buttonClass, 'btn-desligar');
+                    messageBox.innerHTML = 'Fora do horário de funcionamento (08:00 - 22:00). Motores desativados.';
+                }
+                // Dentro do horário de funcionamento
+                else {
+                    if (compressorLigado) {
+                        if (motor === '1') {
+                            button.innerHTML = 'Desligar Motor Compressor';
+                        } else if (motor === '2') {
+                            button.innerHTML = 'Desligar Motor Ventilador';
+                        } else if (motor === '3') {
+                            button.innerHTML = 'Desligar Motor Secador';
+                        }
+                        button.classList.add('btn-desligar');
+                        button.classList.remove(buttonClass);
+                        messageBox.innerHTML = 'Motor ' + motor + ' está ligado.';
+                    } else {
+                        if (motor === '1') {
+                            button.innerHTML = 'Ligar Motor Compressor';
+                        } else if (motor === '2') {
+                            button.innerHTML = 'Ligar Motor Ventilador';
+                        } else if (motor === '3') {
+                            button.innerHTML = 'Ligar Motor Secador';
+                        }
+                        button.classList.remove('btn-desligar', 'btn-disabled');
+                        button.classList.add(buttonClass);
+                        messageBox.innerHTML = 'Motor ' + motor + ' está desligado.';
+                    }
                 }
             })
-            .catch(error => console.error('Erro ao enviar comando para o motor:', error));
-    });
-}
-        
-            function setActivationTime(motor) {
-                let now = new Date();
-                if (motor === '1') activationTimeMotor1 = now;
-                else if (motor === '2') activationTimeMotor2 = now;
-                else if (motor === '3') activationTimeMotor3 = now;
-                localStorage.setItem('activationTimeMotor' + motor, now.toISOString());
+            .catch(error => console.error('Erro ao obter estado do motor:', error));
+    }
+
+    // Função para configurar o clique nos botões
+    function setupButtonClick(button, motor, buttonClass) {
+        button.addEventListener('click', function (event) {
+            event.preventDefault();
+
+            // Verifica se o botão está desabilitado (manutenção ou fora do horário)
+            if (button.classList.contains('btn-disabled')) {
+                return;
             }
-        
-            function getActivationTime(motor) {
-                var activationTimes = {
-                    1: localStorage.getItem('activationTimeMotor1'),
-                    2: localStorage.getItem('activationTimeMotor2'),
-                    3: localStorage.getItem('activationTimeMotor3')
-                };
-                return activationTimes[motor] ? new Date(activationTimes[motor]) : null;
-            }
-        
-            function saveButtonState(button, motor, buttonClass) {
-                let state = { enabled: !button.classList.contains('btn-disabled'), text: button.innerHTML };
-                if (motor === '1') previousButtonStateMotor1 = state;
-                else if (motor === '2') previousButtonStateMotor2 = state;
-                else if (motor === '3') previousButtonStateMotor3 = state;
-            }
-        
-            function restoreButtonState(button, motor, buttonClass) {
-                let state;
-                if (motor === '1') state = previousButtonStateMotor1;
-                else if (motor === '2') state = previousButtonStateMotor2;
-                else if (motor === '3') state = previousButtonStateMotor3;
-        
-                if (state.enabled) {
-                    button.classList.remove('btn-disabled');
-                    button.classList.add(buttonClass);
-                } else {
-                    button.classList.add('btn-disabled');
-                }
-                button.innerHTML = state.text;
-            }
-        
-            // Configura o comportamento dos botões de tema.
-            function setupThemeButtons() {
-                const nightModeButton = document.getElementById('nightModeButton');
-                const highContrastButton = document.getElementById('highContrastButton');
-        
-                if (nightModeButton) {
-                    nightModeButton.addEventListener('click', function() {
-                        toggleTheme('night');
-                    });
-                }
-        
-                if (highContrastButton) {
-                    highContrastButton.addEventListener('click', function() {
-                        toggleTheme('high-contrast');
-                    });
-                }
-            }
-        
-            function toggleTheme(theme) {
-                if (theme === 'night') {
-                    document.body.classList.toggle('night-mode');
-                    document.body.classList.remove('high-contrast');
-                } else if (theme === 'high-contrast') {
-                    document.body.classList.toggle('high-contrast');
-                    document.body.classList.remove('night-mode');
-                }
-            }
-        
-            // Configura o comportamento dos botões ao serem clicados.
-            setupButtonClick(toggleButtonMotor1, '1', 'btn-motor1');
-            setupButtonClick(toggleButtonMotor2, '2', 'btn-motor2');
-            setupButtonClick(toggleButtonMotor3, '3', 'btn-motor3');
-        
-            // Configura os botões de tema.
-            setupThemeButtons();
-        
-            // Configura um intervalo para atualizar o estado dos botões a cada 10 segundos.
-            setInterval(() => {
-                updateButtonState(toggleButtonMotor1, '1', 'btn-motor1');
-                updateButtonState(toggleButtonMotor2, '2', 'btn-motor2');
-                updateButtonState(toggleButtonMotor3, '3', 'btn-motor3');
-            }, 10000);
-        
-            // Atualiza o estado dos botões imediatamente ao carregar a página.
-            updateButtonState(toggleButtonMotor1, '1', 'btn-motor1');
-            updateButtonState(toggleButtonMotor2, '2', 'btn-motor2');
-            updateButtonState(toggleButtonMotor3, '3', 'btn-motor3');
+
+            var action = button.innerHTML.includes('Desligar') ? 'desligar' : 'ligar';
+
+            fetch('/toggle?action=' + action + '&motor=' + motor)
+                .then(response => response.text())
+                .then(data => {
+                    // Atualiza o estado do botão após a ação
+                    updateButtonState(button, motor, buttonClass);
+                })
+                .catch(error => console.error('Erro ao enviar comando para o motor:', error));
         });
+    }
+
+    // Configura o comportamento dos botões ao serem clicados.
+    setupButtonClick(toggleButtonMotor1, '1', 'btn-motor1');
+    setupButtonClick(toggleButtonMotor2, '2', 'btn-motor2');
+    setupButtonClick(toggleButtonMotor3, '3', 'btn-motor3');
+
+    // Configura um intervalo para atualizar o estado dos botões a cada 10 segundos.
+    setInterval(() => {
+        updateButtonState(toggleButtonMotor1, '1', 'btn-motor1');
+        updateButtonState(toggleButtonMotor2, '2', 'btn-motor2');
+        updateButtonState(toggleButtonMotor3, '3', 'btn-motor3');
+    }, 10000);
+
+    // Atualiza o estado dos botões imediatamente ao carregar a página.
+    updateButtonState(toggleButtonMotor1, '1', 'btn-motor1');
+    updateButtonState(toggleButtonMotor2, '2', 'btn-motor2');
+    updateButtonState(toggleButtonMotor3, '3', 'btn-motor3');
+});
         </script>
 
     </body>

@@ -16,6 +16,9 @@ extern void saveMotorState(const String &arquivoEstado, bool state);
 extern void updateMotorStatus();
 extern void monitorarStatusCompressores();
 extern void saveStatusState(int pin, bool state);
+extern void desligarTodosMotores();
+extern bool sistemaDeveEstarBloqueado();
+extern void atualizarEstadoMotores();
 
 // Declaração de Funções
 void setupLigaDesliga(AsyncWebServer &server);
