@@ -161,6 +161,28 @@ void configureRoutes()
         {
             request->send(200, "application/json", "{\"authenticated\":false}");
         } });
+
+    // Rota para obter o status dos motores
+    server.on("/status", HTTP_GET, [](AsyncWebServerRequest *request)
+              {
+        String statusJSON = "{";
+        for (int i = 0; i < 3; i++)
+        {
+            String arquivoEstado = "/status" + String(i + 1) + ".txt";
+            File file = SPIFFS.open(arquivoEstado, "r");
+
+            String status = "OFF";
+            if (file) {
+                status = file.readStringUntil('\n');
+                file.close();
+            }
+
+            statusJSON += "\"motor" + String(i + 1) + "\": \"" + status + "\"";
+            if (i < 2) statusJSON += ", ";
+        }
+        statusJSON += "}";
+
+        request->send(200, "application/json", statusJSON); });
 }
 
 void redirectToAccessDenied(AsyncWebServerRequest *request)

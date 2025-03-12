@@ -11,6 +11,7 @@ extern bool timersAtivos[];      // Declaração da variável global para os tim
 
 // Declaração das variáveis e funções usadas em outros arquivos
 extern const String arquivosEstados[];
+
 extern void saveMotorState(const String &arquivoEstado, bool state);
 void updateMotorStatus();
 // Declaração de Funções

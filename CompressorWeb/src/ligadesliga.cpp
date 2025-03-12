@@ -6,9 +6,13 @@
 #include "tempo.h"
 #include "manutencao.h"
 
-int pinosMotores[] = {26, 27, 12};
-const long intervalo = 300000;
-const String arquivosEstados[] = {"/motor1.txt", "/motor2.txt", "/motor3.txt"};
+// Pinos de controle de motores e pinos adicionais para status
+int pinosMotores[] = {26, 27, 12}; // Para gerar pulsos rápidos
+int pinosStatus[] = {32, 33, 35};  // Para indicar estado do compressor
+
+const long intervalo = 300000; // Intervalo para gravação de estado
+const String arquivosEstados[] = {"/motor1.txt", "/motor2.txt", "/motor3.txt", "/status1.txt", "/status2.txt", "/status3.txt"};
+
 bool motoresLigados[] = {false, false, false};
 bool timersAtivos[] = {false, false, false};
 unsigned long previousMillis[] = {0, 0, 0};
@@ -33,8 +37,19 @@ void handleToggleAction(AsyncWebServer &server)
         }
 
         if (action == "ligar") {
-            motoresLigados[motorIdx] = true;
-            request->send(200, "text/plain", "Motor " + String(motorIdx + 1) + " ligado!");
+            // Envia um pulso rápido para ligar o motor
+            digitalWrite(pinosMotores[motorIdx], HIGH);
+            delay(500); // Mantém o pulso por 500ms
+            digitalWrite(pinosMotores[motorIdx], LOW);
+
+            // Verifica se o motor foi energizado
+            if (digitalRead(pinosStatus[motorIdx]) == HIGH) {
+                motoresLigados[motorIdx] = true;
+                request->send(200, "text/plain", "Motor " + String(motorIdx + 1) + " ligado!");
+            } else {
+                request->send(400, "text/plain", "Falha ao ligar o motor " + String(motorIdx + 1));
+                Serial.println("Erro: Motor " + String(motorIdx + 1) + " não energizado.");
+            }
         } else if (action == "desligar") {
             motoresLigados[motorIdx] = false;
             request->send(200, "text/plain", "Motor " + String(motorIdx + 1) + " desligado!");
@@ -85,41 +100,36 @@ void saveMotorState(const String &arquivoEstado, bool state)
     Serial.println("Estado salvo no arquivo " + arquivoEstado + ": " + (state ? "Ligado" : "Desligado"));
 }
 
-int getHoursFromTime(const String &time)
+// Função para salvar o estado dos pinos de status
+void saveStatusState(int pin, bool state)
 {
-    return time.substring(11, 13).toInt();
-}
+    String arquivoEstado;
+    if (pin == 32)
+        arquivoEstado = "/status1.txt";
+    else if (pin == 33)
+        arquivoEstado = "/status2.txt";
+    else if (pin == 35)
+        arquivoEstado = "/status3.txt";
 
-int getMinutesFromTime(const String &time)
-{
-    return time.substring(14, 16).toInt();
-}
-
-bool isAfterClosingTime()
-{
-    updateTime();
-    int hour = getHoursFromTime(getTimeClient());
-    int minute = getMinutesFromTime(getTimeClient());
-    return (hour > 22) || (hour == 22 && minute >= 30);
-}
-
-bool isBeforeOpeningTime()
-{
-    updateTime();
-    int hour = getHoursFromTime(getTimeClient());
-    int minute = getMinutesFromTime(getTimeClient());
-    return (hour < 7) || (hour == 7 && minute < 30);
+    saveMotorState(arquivoEstado, state);
 }
 
 void setupLigaDesliga(AsyncWebServer &server)
 {
     initSPIFFS();
 
+    // Configura os pinos de controle dos motores
     for (int i = 0; i < 3; i++)
     {
         pinMode(pinosMotores[i], OUTPUT);
         motoresLigados[i] = readMotorState(arquivosEstados[i]);
-        digitalWrite(pinosMotores[i], motoresLigados[i] ? HIGH : LOW);
+        digitalWrite(pinosMotores[i], LOW); // Garante que os motores comecem desligados
+    }
+
+    // Configura os pinos de status para os compressores
+    for (int i = 0; i < 3; i++)
+    {
+        pinMode(pinosStatus[i], INPUT); // Esses pinos irão ler o status do compressor
     }
 
     server.on("/toggle", HTTP_GET, [](AsyncWebServerRequest *request)
@@ -134,7 +144,7 @@ void setupLigaDesliga(AsyncWebServer &server)
         }
 
         if (motoresLigados[motorIdx]) {
-            if (currentMillis - lastToggleTime[motorIdx] < 3600000) {
+            if (currentMillis - lastToggleTime[motorIdx] < 0) {
                 request->send(200, "text/plain", "Comando ignorado. Aguarde 1 hora entre as tentativas de desligar.");
                 Serial.println("Erro: Comando ignorado. Aguarde 1 hora entre as tentativas de desligar.");
                 return;
@@ -146,11 +156,6 @@ void setupLigaDesliga(AsyncWebServer &server)
         digitalWrite(pinosMotores[motorIdx], motoresLigados[motorIdx] ? HIGH : LOW);
 
         String message = motoresLigados[motorIdx] ? "Motor " + String(motorIdx + 1) + " ligado!" : "Motor " + String(motorIdx + 1) + " desligado!";
-
-        if (motoresLigados[motorIdx] && (isAfterClosingTime() || isBeforeOpeningTime())) {
-            message += " Alerta! Atente-se para desligar o motor " + String(motorIdx + 1) + " após o uso.";
-        }
-
         request->send(200, "text/plain", message);
         saveMotorState(arquivosEstados[motorIdx], motoresLigados[motorIdx]);
 
@@ -160,29 +165,31 @@ void setupLigaDesliga(AsyncWebServer &server)
         } });
 
     setupTimeClient();
-
-    if (isAfterClosingTime() || isBeforeOpeningTime())
-    {
-        for (int i = 0; i < 3; i++)
-        {
-            motoresLigados[i] = false;
-            digitalWrite(pinosMotores[i], LOW);
-            saveMotorState(arquivosEstados[i], motoresLigados[i]);
-        }
-        Serial.println("Motores desligados devido ao horário na inicialização.");
-    }
 }
 
 void updateMotorStatus()
 {
-    unsigned long currentMillis = millis();
+    Serial.println("Atualizando status dos motores...");
 
     for (int i = 0; i < 3; i++)
     {
-        if (motoresLigados[i] && (currentMillis - previousMillis[i] >= intervalo))
+        bool motorLigado = digitalRead(pinosStatus[i]); // Lê o status real do motor
+
+        // Define o nome do arquivo correto para cada motor
+        String arquivoEstado = "/status" + String(i + 1) + ".txt";
+
+        // Abre o arquivo para escrita
+        File file = SPIFFS.open(arquivoEstado, "w");
+        if (!file)
         {
-            previousMillis[i] = currentMillis;
-            saveMotorState(arquivosEstados[i], motoresLigados[i]);
+            Serial.println("Erro ao abrir " + arquivoEstado + " para escrita!");
+            continue;
         }
+
+        // Escreve o status no arquivo (ON/OFF)
+        file.print(motorLigado ? "ON" : "OFF");
+        file.close();
+
+        Serial.println("Status do Motor " + String(i + 1) + " atualizado: " + (motorLigado ? "ON" : "OFF"));
     }
 }

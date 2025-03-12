@@ -340,7 +340,7 @@ body {
                                 button.classList.remove(buttonClass);
                                 let activationTime = getActivationTime(motor);
         
-                                if (activationTime && (new Date() - activationTime < 3600000)) {
+                                if (activationTime && (new Date() - activationTime < 0)) {
                                     button.classList.add('btn-disabled');
                                     message = 'Desligue o motor quando o prazo de 1 hora estiver finalizado.';
                                 } else {
