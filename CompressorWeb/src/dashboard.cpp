@@ -261,17 +261,24 @@ body {
         <div class="dashboard-container">
             <h2 class="dashboard-title">Bem-vindo ao Dashboard</h2>
             <button class="btn btn-motor1" id="toggleButtonMotor1"
-                aria-label="Controle do motor 1">Carregando...
+                aria-label="Controle do motor compressor">
+                Carregando...
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
             </button>
             <button class="btn btn-motor2" id="toggleButtonMotor2"
-                aria-label="Controle do motor 2">Carregando...
+                aria-label="Controle do motor ventilador">
+                Carregando...
                 <span></span>
                 <span></span>
                 <span></span>
                 <span></span>
             </button>
             <button class="btn btn-motor3" id="toggleButtonMotor3"
-                aria-label="Controle do motor 3">Carregando...
+                aria-label="Controle do motor secador">
+                Carregando...
                 <span></span>
                 <span></span>
                 <span></span>
@@ -324,53 +331,95 @@ body {
                         var sistemaEmManutencao = data.sistemaEmManutencao;
                         var horaAtual = new Date().getHours() + (new Date().getMinutes() / 60);
                         let message = '';
-        
+            
                         if (sistemaEmManutencao) {
                             if (previousMaintenanceState === null || !previousMaintenanceState) {
                                 saveButtonState(button, motor, buttonClass);
                             }
-                            button.innerHTML = 'Compressor ' + motor + ' em manutenção';
+                            if (motor === '1') {
+                                button.innerHTML = 'Motor Compressor em manutenção';
+                            } else if (motor === '2') {
+                                button.innerHTML = 'Motor Ventilador em manutenção';
+                            } else if (motor === '3') {
+                                button.innerHTML = 'Motor Secador em manutenção';
+                            }
                             button.classList.add('btn-disabled');
                             button.classList.remove(buttonClass, 'btn-desligar');
                             messageBox.innerHTML = '';
                         } else {
                             if (compressorLigado) {
-                                button.innerHTML = 'Desligar ' + motor;
+                                if (motor === '1') {
+                                    button.innerHTML = 'Desligar Motor Compressor';
+                                } else if (motor === '2') {
+                                    button.innerHTML = 'Desligar Motor Ventilador';
+                                } else if (motor === '3') {
+                                    button.innerHTML = 'Desligar Motor Secador';
+                                }
                                 button.classList.add('btn-desligar');
                                 button.classList.remove(buttonClass);
                                 let activationTime = getActivationTime(motor);
-        
+            
                                 if (activationTime && (new Date() - activationTime < 0)) {
                                     button.classList.add('btn-disabled');
-                                    message = 'Desligue o motor quando o prazo de 1 hora estiver finalizado.';
+                                    if (motor === '1') {
+                                        message = 'Desligue o Motor Compressor quando o prazo de 1 hora estiver finalizado.';
+                                    } else if (motor === '2') {
+                                        message = 'Desligue o Motor Ventilador quando o prazo de 1 hora estiver finalizado.';
+                                    } else if (motor === '3') {
+                                        message = 'Desligue o Motor Secador quando o prazo de 1 hora estiver finalizado.';
+                                    }
                                 } else {
                                     button.classList.remove('btn-disabled');
-                                    message = 'O compressor ' + motor + ' está ligado. Você pode desligá-lo quando o prazo de 1 hora estiver finalizado.';
+                                    if (motor === '1') {
+                                        message = 'O Motor Compressor está ligado. Você pode desligá-lo quando o prazo de 1 hora estiver finalizado.';
+                                    } else if (motor === '2') {
+                                        message = 'O Motor Ventilador está ligado. Você pode desligá-lo quando o prazo de 1 hora estiver finalizado.';
+                                    } else if (motor === '3') {
+                                        message = 'O Motor Secador está ligado. Você pode desligá-lo quando o prazo de 1 hora estiver finalizado.';
+                                    }
                                 }
                             } else {
-                                button.innerHTML = 'Ligar ' + motor;
+                                if (motor === '1') {
+                                    button.innerHTML = 'Ligar Motor Compressor';
+                                } else if (motor === '2') {
+                                    button.innerHTML = 'Ligar Motor Ventilador';
+                                } else if (motor === '3') {
+                                    button.innerHTML = 'Ligar Motor Secador';
+                                }
                                 button.classList.remove('btn-desligar', 'btn-disabled');
                                 button.classList.add(buttonClass);
                                 message = '';
                             }
-        
+            
                             if (horaAtual < 7.5 || horaAtual >= 22.5) {
-                                message = 'Compressor ' + motor + ' desligado devido ao horário de funcionamento.';
+                                if (motor === '1') {
+                                    message = 'Motor Compressor desligado devido ao horário de funcionamento.';
+                                } else if (motor === '2') {
+                                    message = 'Motor Ventilador desligado devido ao horário de funcionamento.';
+                                } else if (motor === '3') {
+                                    message = 'Motor Secador desligado devido ao horário de funcionamento.';
+                                }
                             } else if (horaAtual >= 7.5 && horaAtual < 8) {
-                                message = 'Compressor ' + motor + ' ligado após o horário de funcionamento, desligue após o uso.';
+                                if (motor === '1') {
+                                    message = 'Motor Compressor ligado após o horário de funcionamento, desligue após o uso.';
+                                } else if (motor === '2') {
+                                    message = 'Motor Ventilador ligado após o horário de funcionamento, desligue após o uso.';
+                                } else if (motor === '3') {
+                                    message = 'Motor Secador ligado após o horário de funcionamento, desligue após o uso.';
+                                }
                             }
                         }
-        
+            
                         if (messageBox.innerHTML !== message) {
                             messageBox.innerHTML = message;
                         }
-        
+            
                         if (previousMaintenanceState !== null && previousMaintenanceState !== sistemaEmManutencao) {
                             if (!sistemaEmManutencao) {
                                 location.reload();
                             }
                         }
-        
+            
                         previousMaintenanceState = sistemaEmManutencao;
                     })
                     .catch(error => console.error('Erro ao obter estado inicial do compressor:', error));
