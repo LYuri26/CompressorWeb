@@ -13,7 +13,10 @@ extern bool timersAtivos[];      // Declaração da variável global para os tim
 extern const String arquivosEstados[];
 
 extern void saveMotorState(const String &arquivoEstado, bool state);
-void updateMotorStatus();
+extern void updateMotorStatus();
+extern void monitorarStatusCompressores();
+extern void saveStatusState(int pin, bool state);
+
 // Declaração de Funções
 void setupLigaDesliga(AsyncWebServer &server);
 

@@ -54,20 +54,27 @@ void loop()
 {
     unsigned long currentMillis = millis();
 
+    // Atualiza o tempo
     if (currentMillis - lastUpdate >= UPDATE_INTERVAL)
     {
         updateTime();
         lastUpdate = currentMillis;
     }
 
+    // Atualiza o status dos motores
     if (currentMillis - lastCompressorUpdate >= UPDATE_INTERVAL)
     {
         updateMotorStatus();
         lastCompressorUpdate = currentMillis;
     }
 
+    // Atualiza o estado de manutenção
     atualizarEstadoManutencao();
 
+    // Verifica os status dos compressores e atualiza automaticamente os arquivos
+    monitorarStatusCompressores();
+
+    // Verifica a conexão Wi-Fi e tenta reconectar, se necessário
     if (!isAPMode && WiFi.status() != WL_CONNECTED)
     {
         if (currentMillis - lastReconnectAttempt >= RECONNECT_INTERVAL)
@@ -88,6 +95,8 @@ void loop()
     {
         reconnectAttempts = 0;
     }
+
+    // Restante do loop (conexão Wi-Fi, reinicialização, etc.)
 }
 
 void setupSPIFFS()

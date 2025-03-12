@@ -207,21 +207,21 @@ body {
 
 /* Estilos específicos para o botão de modo noturno */
 #nightModeButton {
-    background-color: rgb(234, 161, 15); /* Roxo */
+    background-color: rgb(121, 7, 173); /* Roxo */
 }
 #nightModeButton:hover {
-    background-color: #8e5204;
+    background-color:rgb(63, 3, 112);
     transform: scale(1.05);
 }
 
 /* Estilos específicos para o botão de alto contraste */
 #highContrastButton {
-    background-color: rgb(247, 214, 49); /* Rosa */
+    background-color: rgb(190, 10, 115); /* Rosa */
 }
 
 /* Efeito de hover para os botões de alternância de temas */
 #highContrastButton:hover {
-    background-color: #8c7807;
+    background-color:rgb(140, 7, 89);
     transform: scale(1.05);
 }
 

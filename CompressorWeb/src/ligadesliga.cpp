@@ -10,7 +10,7 @@
 int pinosMotores[] = {26, 27, 12}; // Para gerar pulsos rápidos
 int pinosStatus[] = {32, 33, 35};  // Para indicar estado do compressor
 
-const long intervalo = 300000; // Intervalo para gravação de estado
+const long intervalo = 1000; // Intervalo para gravação de estado
 const String arquivosEstados[] = {"/motor1.txt", "/motor2.txt", "/motor3.txt", "/status1.txt", "/status2.txt", "/status3.txt"};
 
 bool motoresLigados[] = {false, false, false};
@@ -32,31 +32,48 @@ void handleToggleAction(AsyncWebServer &server)
 
         if (motorIdx < 0 || motorIdx > 2) {
             request->send(400, "text/plain", "Motor inválido!");
-            Serial.println("Erro: Motor inválido! (Índice fora do intervalo)");
             return;
         }
 
         if (action == "ligar") {
-            // Envia um pulso rápido para ligar o motor
             digitalWrite(pinosMotores[motorIdx], HIGH);
-            delay(500); // Mantém o pulso por 500ms
+            delay(500);
             digitalWrite(pinosMotores[motorIdx], LOW);
 
-            // Verifica se o motor foi energizado
             if (digitalRead(pinosStatus[motorIdx]) == HIGH) {
                 motoresLigados[motorIdx] = true;
                 request->send(200, "text/plain", "Motor " + String(motorIdx + 1) + " ligado!");
             } else {
-                request->send(400, "text/plain", "Falha ao ligar o motor " + String(motorIdx + 1));
-                Serial.println("Erro: Motor " + String(motorIdx + 1) + " não energizado.");
+                request->send(400, "text/plain", "Falha ao ligar o motor.");
             }
         } else if (action == "desligar") {
             motoresLigados[motorIdx] = false;
             request->send(200, "text/plain", "Motor " + String(motorIdx + 1) + " desligado!");
         } else {
             request->send(400, "text/plain", "Ação inválida!");
-            Serial.println("Erro: Ação inválida!");
-        } });
+        }
+
+        // Atualizar estado imediatamente após a ação
+        saveMotorState(arquivosEstados[motorIdx], motoresLigados[motorIdx]); });
+}
+void monitorarStatusCompressores()
+{
+    for (int i = 0; i < 3; i++)
+    {
+        bool estadoAtual = digitalRead(pinosStatus[i]) == HIGH; // Lê o status atual do compressor
+
+        // Verifica se o estado mudou desde a última verificação
+        if (estadoAtual != motoresLigados[i])
+        {
+            motoresLigados[i] = estadoAtual; // Atualiza o estado do motor
+
+            // Salva o estado no arquivo correspondente
+            saveStatusState(pinosStatus[i], estadoAtual);
+
+            // Exibe a atualização no console
+            Serial.println("Compressor " + String(i + 1) + " " + (estadoAtual ? "ligado" : "desligado"));
+        }
+    }
 }
 
 void initSPIFFS()
