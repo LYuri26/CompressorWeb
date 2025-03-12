@@ -323,132 +323,59 @@ body {
             var previousButtonStateMotor3 = { enabled: true, text: '' };
         
             // Função para atualizar o estado do botão (ativado/desativado) e a mensagem correspondente.
-            function updateButtonState(button, motor, buttonClass) {
-                fetch('/motor-state')
-                    .then(response => response.json())
-                    .then(data => {
-                        var compressorLigado = data['compressorLigadoMotor' + motor];
-                        var sistemaEmManutencao = data.sistemaEmManutencao;
-                        var horaAtual = new Date().getHours() + (new Date().getMinutes() / 60);
-                        let message = '';
-            
-                        if (sistemaEmManutencao) {
-                            if (previousMaintenanceState === null || !previousMaintenanceState) {
-                                saveButtonState(button, motor, buttonClass);
-                            }
-                            if (motor === '1') {
-                                button.innerHTML = 'Motor Compressor em manutenção';
-                            } else if (motor === '2') {
-                                button.innerHTML = 'Motor Ventilador em manutenção';
-                            } else if (motor === '3') {
-                                button.innerHTML = 'Motor Secador em manutenção';
-                            }
-                            button.classList.add('btn-disabled');
-                            button.classList.remove(buttonClass, 'btn-desligar');
-                            messageBox.innerHTML = '';
-                        } else {
-                            if (compressorLigado) {
-                                if (motor === '1') {
-                                    button.innerHTML = 'Desligar Motor Compressor';
-                                } else if (motor === '2') {
-                                    button.innerHTML = 'Desligar Motor Ventilador';
-                                } else if (motor === '3') {
-                                    button.innerHTML = 'Desligar Motor Secador';
-                                }
-                                button.classList.add('btn-desligar');
-                                button.classList.remove(buttonClass);
-                                let activationTime = getActivationTime(motor);
-            
-                                if (activationTime && (new Date() - activationTime < 0)) {
-                                    button.classList.add('btn-disabled');
-                                    if (motor === '1') {
-                                        message = 'Desligue o Motor Compressor quando o prazo de 1 hora estiver finalizado.';
-                                    } else if (motor === '2') {
-                                        message = 'Desligue o Motor Ventilador quando o prazo de 1 hora estiver finalizado.';
-                                    } else if (motor === '3') {
-                                        message = 'Desligue o Motor Secador quando o prazo de 1 hora estiver finalizado.';
-                                    }
-                                } else {
-                                    button.classList.remove('btn-disabled');
-                                    if (motor === '1') {
-                                        message = 'O Motor Compressor está ligado. Você pode desligá-lo quando o prazo de 1 hora estiver finalizado.';
-                                    } else if (motor === '2') {
-                                        message = 'O Motor Ventilador está ligado. Você pode desligá-lo quando o prazo de 1 hora estiver finalizado.';
-                                    } else if (motor === '3') {
-                                        message = 'O Motor Secador está ligado. Você pode desligá-lo quando o prazo de 1 hora estiver finalizado.';
-                                    }
-                                }
-                            } else {
-                                if (motor === '1') {
-                                    button.innerHTML = 'Ligar Motor Compressor';
-                                } else if (motor === '2') {
-                                    button.innerHTML = 'Ligar Motor Ventilador';
-                                } else if (motor === '3') {
-                                    button.innerHTML = 'Ligar Motor Secador';
-                                }
-                                button.classList.remove('btn-desligar', 'btn-disabled');
-                                button.classList.add(buttonClass);
-                                message = '';
-                            }
-            
-                            if (horaAtual < 7.5 || horaAtual >= 22.5) {
-                                if (motor === '1') {
-                                    message = 'Motor Compressor desligado devido ao horário de funcionamento.';
-                                } else if (motor === '2') {
-                                    message = 'Motor Ventilador desligado devido ao horário de funcionamento.';
-                                } else if (motor === '3') {
-                                    message = 'Motor Secador desligado devido ao horário de funcionamento.';
-                                }
-                            } else if (horaAtual >= 7.5 && horaAtual < 8) {
-                                if (motor === '1') {
-                                    message = 'Motor Compressor ligado após o horário de funcionamento, desligue após o uso.';
-                                } else if (motor === '2') {
-                                    message = 'Motor Ventilador ligado após o horário de funcionamento, desligue após o uso.';
-                                } else if (motor === '3') {
-                                    message = 'Motor Secador ligado após o horário de funcionamento, desligue após o uso.';
-                                }
-                            }
-                        }
-            
-                        if (messageBox.innerHTML !== message) {
-                            messageBox.innerHTML = message;
-                        }
-            
-                        if (previousMaintenanceState !== null && previousMaintenanceState !== sistemaEmManutencao) {
-                            if (!sistemaEmManutencao) {
-                                location.reload();
-                            }
-                        }
-            
-                        previousMaintenanceState = sistemaEmManutencao;
-                    })
-                    .catch(error => console.error('Erro ao obter estado inicial do compressor:', error));
+function updateButtonState(button, motor, buttonClass) {
+    fetch('/motor-state')
+        .then(response => response.json())
+        .then(data => {
+            var compressorLigado = data['compressorLigadoMotor' + motor];
+            var sistemaEmManutencao = data.sistemaEmManutencao;
+
+            if (sistemaEmManutencao) {
+                button.innerHTML = 'Motor em manutenção';
+                button.classList.add('btn-disabled');
+                button.classList.remove(buttonClass, 'btn-desligar');
+            } else {
+                if (compressorLigado) {
+                    button.innerHTML = 'Desligar Motor';
+                    button.classList.add('btn-desligar');
+                    button.classList.remove(buttonClass);
+                } else {
+                    button.innerHTML = 'Ligar Motor';
+                    button.classList.remove('btn-desligar', 'btn-disabled');
+                    button.classList.add(buttonClass);
+                }
             }
+        })
+        .catch(error => console.error('Erro ao obter estado do motor:', error));
+}
         
-            function setupButtonClick(button, motor, buttonClass) {
-                button.addEventListener('click', function(event) {
-                    event.preventDefault();
-        
-                    if (button.classList.contains('btn-disabled')) {
-                        return;
-                    }
-        
-                    var action = button.innerHTML.includes('Desligar') ? 'desligar' : 'ligar';
-        
-                    fetch('/toggle?action=' + action + '&motor=' + motor)
-                        .then(response => response.text())
-                        .then(data => {
-                            if (action === 'ligar') {
-                                setActivationTime(motor);
-                                setTimeout(() => {
-                                    updateButtonState(button, motor, buttonClass);
-                                }, 3600000);
-                            }
-                            updateButtonState(button, motor, buttonClass);
-                        })
-                        .catch(error => console.error('Erro ao enviar comando para o compressor:', error));
-                });
-            }
+function setupButtonClick(button, motor, buttonClass) {
+    button.addEventListener('click', function(event) {
+        event.preventDefault();
+
+        if (button.classList.contains('btn-disabled')) {
+            return;
+        }
+
+        var action = button.innerHTML.includes('Desligar') ? 'desligar' : 'ligar';
+
+        fetch('/toggle?action=' + action + '&motor=' + motor)
+            .then(response => response.text())
+            .then(data => {
+                // Alterna o estado visual do botão
+                if (action === 'ligar') {
+                    button.innerHTML = 'Desligar Motor';
+                    button.classList.add('btn-desligar');
+                    button.classList.remove(buttonClass);
+                } else {
+                    button.innerHTML = 'Ligar Motor';
+                    button.classList.remove('btn-desligar', 'btn-disabled');
+                    button.classList.add(buttonClass);
+                }
+            })
+            .catch(error => console.error('Erro ao enviar comando para o motor:', error));
+    });
+}
         
             function setActivationTime(motor) {
                 let now = new Date();

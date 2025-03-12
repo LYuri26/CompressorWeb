@@ -36,10 +36,12 @@ void handleToggleAction(AsyncWebServer &server)
         }
 
         if (action == "ligar") {
+            // Envia um pulso rápido
             digitalWrite(pinosMotores[motorIdx], HIGH);
-            delay(500);
+            delay(500); // Mantém o pulso por 500ms
             digitalWrite(pinosMotores[motorIdx], LOW);
 
+            // Verifica o status do motor após o pulso
             if (digitalRead(pinosStatus[motorIdx]) == HIGH) {
                 motoresLigados[motorIdx] = true;
                 request->send(200, "text/plain", "Motor " + String(motorIdx + 1) + " ligado!");
@@ -47,6 +49,11 @@ void handleToggleAction(AsyncWebServer &server)
                 request->send(400, "text/plain", "Falha ao ligar o motor.");
             }
         } else if (action == "desligar") {
+            // Envia um pulso rápido
+            digitalWrite(pinosMotores[motorIdx], HIGH);
+            delay(500); // Mantém o pulso por 500ms
+            digitalWrite(pinosMotores[motorIdx], LOW);
+
             motoresLigados[motorIdx] = false;
             request->send(200, "text/plain", "Motor " + String(motorIdx + 1) + " desligado!");
         } else {
@@ -56,6 +63,7 @@ void handleToggleAction(AsyncWebServer &server)
         // Atualizar estado imediatamente após a ação
         saveMotorState(arquivosEstados[motorIdx], motoresLigados[motorIdx]); });
 }
+
 void monitorarStatusCompressores()
 {
     for (int i = 0; i < 3; i++)
@@ -139,7 +147,6 @@ void setupLigaDesliga(AsyncWebServer &server)
     for (int i = 0; i < 3; i++)
     {
         pinMode(pinosMotores[i], OUTPUT);
-        motoresLigados[i] = readMotorState(arquivosEstados[i]);
         digitalWrite(pinosMotores[i], LOW); // Garante que os motores comecem desligados
     }
 
@@ -151,35 +158,20 @@ void setupLigaDesliga(AsyncWebServer &server)
 
     server.on("/toggle", HTTP_GET, [](AsyncWebServerRequest *request)
               {
-        unsigned long currentMillis = millis();
         int motorIdx = request->getParam("motor")->value().toInt() - 1;
 
         if (motorIdx < 0 || motorIdx > 2) {
             request->send(400, "text/plain", "Motor inválido!");
-            Serial.println("Erro: Motor inválido! (Índice fora do intervalo)");
             return;
         }
 
-        if (motoresLigados[motorIdx]) {
-            if (currentMillis - lastToggleTime[motorIdx] < 0) {
-                request->send(200, "text/plain", "Comando ignorado. Aguarde 1 hora entre as tentativas de desligar.");
-                Serial.println("Erro: Comando ignorado. Aguarde 1 hora entre as tentativas de desligar.");
-                return;
-            }
-        }
+        // Envia um pulso rápido
+        digitalWrite(pinosMotores[motorIdx], HIGH);
+        delay(500); // Mantém o pulso por 500ms
+        digitalWrite(pinosMotores[motorIdx], LOW);
 
-        lastToggleTime[motorIdx] = currentMillis;
-        motoresLigados[motorIdx] = !motoresLigados[motorIdx];
-        digitalWrite(pinosMotores[motorIdx], motoresLigados[motorIdx] ? HIGH : LOW);
-
-        String message = motoresLigados[motorIdx] ? "Motor " + String(motorIdx + 1) + " ligado!" : "Motor " + String(motorIdx + 1) + " desligado!";
-        request->send(200, "text/plain", message);
-        saveMotorState(arquivosEstados[motorIdx], motoresLigados[motorIdx]);
-
-        if (motoresLigados[motorIdx]) {
-            previousMillis[motorIdx] = millis();
-            timersAtivos[motorIdx] = true;
-        } });
+        String message = "Pulso enviado para o Motor " + String(motorIdx + 1);
+        request->send(200, "text/plain", message); });
 
     setupTimeClient();
 }
