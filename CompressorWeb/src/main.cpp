@@ -13,6 +13,7 @@
 #include "tempo.h"
 #include "wifigerenciador.h"
 #include "manutencao.h"
+#include "sobrecarga.h"
 
 AsyncWebServer server(80);
 
@@ -63,6 +64,9 @@ void setup()
     // Configura a página do dashboard
     setupDashboardPage(server);
 
+    // Configura o sistema de sobrecarga
+    setupSobrecarga();
+
     Serial.println("Sistema inicializado com sucesso.");
 }
 
@@ -90,6 +94,9 @@ void loop()
 
     // Verifica o status dos compressores e atualiza automaticamente os arquivos
     monitorarStatusCompressores();
+
+    // Monitora as entradas de sobrecarga
+    monitorarSobrecarga();
 
     // Verifica a conexão Wi-Fi e tenta reconectar, se necessário
     if (!isAPMode && WiFi.status() != WL_CONNECTED)

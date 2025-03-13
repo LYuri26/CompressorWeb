@@ -1,0 +1,76 @@
+#include "sobrecarga.h"
+#include "ligadesliga.h"
+
+// Pinos de entrada para monitorar a sobrecarga
+const int pinosSobrecarga[] = {16, 17, 18};
+
+void setupSobrecarga()
+{
+    // Inicializa os pinos de entrada para sobrecarga
+    for (int i = 0; i < 3; i++)
+    {
+        pinMode(pinosSobrecarga[i], INPUT);
+    }
+
+    // Inicializa o SPIFFS
+    if (!SPIFFS.begin(true))
+    {
+        Serial.println("Erro ao iniciar SPIFFS.");
+    }
+    else
+    {
+        Serial.println("SPIFFS inicializado.");
+    }
+
+    // Restaura o estado dos motores
+    restaurarEstadoMotores();
+}
+
+void monitorarSobrecarga()
+{
+    for (int i = 0; i < 3; i++)
+    {
+        bool sobrecargaDetectada = digitalRead(pinosSobrecarga[i]) == HIGH;
+
+        if (sobrecargaDetectada)
+        {
+            // Se houver sobrecarga, desativa o motor correspondente
+            digitalWrite(pinosMotores[i], LOW);
+            saveMotorState(arquivosEstados[i], false);
+            Serial.println("Sobrecarga detectada no pino " + String(pinosSobrecarga[i]) + ". Motor " + String(i + 1) + " desativado.");
+        }
+        else
+        {
+            // Se não houver sobrecarga, restaura o estado salvo
+            bool estadoSalvo = readMotorState(arquivosEstados[i]);
+            digitalWrite(pinosMotores[i], estadoSalvo ? HIGH : LOW);
+        }
+    }
+}
+
+void desativarMotores()
+{
+    for (int i = 0; i < 3; i++)
+    {
+        digitalWrite(pinosMotores[i], LOW);
+        saveMotorState(arquivosEstados[i], false);
+    }
+    Serial.println("Todos os motores desativados devido à sobrecarga.");
+}
+
+void restaurarEstadoMotores()
+{
+    for (int i = 0; i < 3; i++)
+    {
+        bool estadoSalvo = readMotorState(arquivosEstados[i]);
+        digitalWrite(pinosMotores[i], estadoSalvo ? HIGH : LOW);
+        Serial.println("Estado do motor " + String(i + 1) + " restaurado: " + (estadoSalvo ? "Ligado" : "Desligado"));
+    }
+}
+
+
+
+
+
+
+

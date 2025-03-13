@@ -4,23 +4,23 @@
 #include <ESPAsyncWebServer.h>
 
 // Declaração de Variáveis Globais
-extern int pinosMotores[];       // Declaração da variável global para armazenar o estado dos motores
-extern bool motoresLigados[];    // Declaração da variável global para armazenar o estado dos motores
-extern bool sistemaEmManutencao; // Declaração da variável global para o estado de manutenção
-extern bool timersAtivos[];      // Declaração da variável global para os timers dos motores
+extern int pinosMotores[];       // Pinos de controle dos motores
+extern int pinosStatus[];        // Pinos de status dos compressores
+extern bool motoresLigados[];    // Estado dos motores
+extern bool sistemaEmManutencao; // Estado de manutenção
+extern bool timersAtivos[];      // Timers dos motores
 
-// Declaração das variáveis e funções usadas em outros arquivos
+// Arquivos para salvar o estado dos motores
 extern const String arquivosEstados[];
 
-extern void saveMotorState(const String &arquivoEstado, bool state);
-extern void updateMotorStatus();
-extern void monitorarStatusCompressores();
-extern void saveStatusState(int pin, bool state);
-extern void desligarTodosMotores();
-extern bool sistemaDeveEstarBloqueado();
-extern void atualizarEstadoMotores();
-
-// Declaração de Funções
+// Funções
 void setupLigaDesliga(AsyncWebServer &server);
+void saveMotorState(const String &arquivoEstado, bool state);
+void updateMotorStatus();
+void monitorarStatusCompressores();
+void saveStatusState(int pin, bool state);
+void desligarTodosMotores();
+bool sistemaDeveEstarBloqueado();
+void atualizarEstadoMotores();
 
 #endif // LIGADESLIGA_H
