@@ -418,6 +418,47 @@ document.addEventListener('DOMContentLoaded', function () {
     updateButtonState(toggleButtonMotor1, '1', 'btn-motor1');
     updateButtonState(toggleButtonMotor2, '2', 'btn-motor2');
     updateButtonState(toggleButtonMotor3, '3', 'btn-motor3');
+
+    // Configura o comportamento dos botões de tema.
+    const nightModeButton = document.getElementById('nightModeButton');
+    const highContrastButton = document.getElementById('highContrastButton');
+
+    // Função para alternar entre os temas
+    function toggleTheme(theme) {
+        // Verifica se o tema já está ativo
+        const isThemeActive = document.body.classList.contains(theme);
+
+        // Remove todos os temas primeiro
+        document.body.classList.remove('night-mode', 'high-contrast');
+
+        // Se o tema já estiver ativo, desativa
+        if (isThemeActive) {
+            localStorage.removeItem('theme');
+        } else {
+            // Ativa o tema selecionado
+            document.body.classList.add(theme);
+            localStorage.setItem('theme', theme);
+        }
+    }
+
+    // Verifica o tema salvo no localStorage e aplica ao carregar a página
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+        document.body.classList.add(savedTheme);
+    }
+
+    // Configura os eventos de clique para os botões de tema
+    if (nightModeButton) {
+        nightModeButton.addEventListener('click', function () {
+            toggleTheme('night-mode');
+        });
+    }
+
+    if (highContrastButton) {
+        highContrastButton.addEventListener('click', function () {
+            toggleTheme('high-contrast');
+        });
+    }
 });
         </script>
 
