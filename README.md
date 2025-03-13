@@ -1,3 +1,6 @@
+Aqui está o conteúdo do `README.md` que integra todas as informações fornecidas, incluindo as imagens e o fluxograma:
+
+```markdown
 # Sistema de Controle de Compressores via ESP32
 
 Este projeto foi desenvolvido para controlar o ligar e desligar de compressores utilizando um ESP32. O sistema possui uma interface web acessível via Wi-Fi, com autenticação e gerenciamento de usuários. Ele opera tanto em modo de **Access Point (AP)** quanto em modo de conexão a redes Wi-Fi locais.
@@ -124,9 +127,54 @@ Contém a lógica que lida com os comandos para ligar ou desligar os compressore
 
 Responsáveis pela configuração de rede e gerenciamento das conexões Wi-Fi. Definem o comportamento tanto para o modo **Access Point** quanto para a conexão a redes Wi-Fi externas.
 
+## Fluxograma do Sistema
+
+![Fluxograma do Sistema](Fluxograma_hanibal.png)
+
+## ESP32-WROOM-32 - Descrição e Pinagem
+
+Este documento contém informações sobre o módulo **ESP32-WROOM-32**, incluindo suas características, especificações e pinagem.
+
+### Vista do Módulo ESP32-WROOM-32  
+![ESP32-WROOM-32](placa.jpg)  
+
+### Pinagem do ESP32-WROOM-32  
+![Pinagem ESP32](Pinagem.jpg)  
+
+### Fluxograma do ESP32-WROOM-32  
+![Pinagem ESP32](Fluxograma.png)  
+
+### **Características Principais**
+- **Wi-Fi 802.11 b/g/n** e **Bluetooth 4.2 (Classic e BLE)**.
+- **Processador Dual-Core Xtensa LX6** com clock de até **240 MHz**.
+- **Memória RAM de 520 KB** e suporte a **Flash de 4 MB ou mais**.
+- **Baixo consumo de energia**, ideal para dispositivos móveis e aplicações IoT.
+- **Suporte para múltiplos protocolos de comunicação**, incluindo UART, I2C, SPI, PWM, ADC e DAC.
+
+### **📍 Pinos superiores da placa**
+| Pino  | Função |
+|-------|--------|
+| **V5**  | Alimentação 5V |
+| **CMD, SD3, SD2** | Interface SPI/SD |
+| **G13 a G14** | GPIOs gerais |
+| **G27 a G34** | GPIOs, ADCs, I2C, PWM |
+| **SM, SP** | SPI/UART |
+| **EN** | Enable (ativação do ESP32) |
+| **3V3** | Alimentação 3.3V |
+
+### **📍 Pinos inferiores da placa**
+| Pino  | Função |
+|-------|--------|
+| **GND** | Terra |
+| **C0, C2** | GPIOs gerais |
+| **G4, G5, G16** | GPIOs, PWM, ADC |
+| **G17 a G19** | UART, SPI |
+| **G21, G22** | I2C (SDA/SCL) |
+| **RX0, TX0** | Comunicação serial (UART) |
+
 ## Créditos
 
-Projeto desenvolvido como parte do curso de engenharia eletrônica pelos alunos:
+Projeto desenvolvido como parte do curso Técnico de Informática Para Internet pelos alunos:
 
 - **Brenda**
 - **Davi**
@@ -137,3 +185,8 @@ Projeto desenvolvido como parte do curso de engenharia eletrônica pelos alunos:
 ## Licença
 
 Este projeto está licenciado sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+```
+
+### Notas:
+- Substitua `Fluxograma_hanibal.png`, `placa.jpg` e `Pinagem.jpg` pelos caminhos corretos das imagens no repositório.
+- Certifique-se de que as imagens estejam no diretório correto para que sejam exibidas corretamente no `README.md`.
