@@ -102,6 +102,7 @@ void handleToggleAction(AsyncWebServer &server)
             return;
         }
 
+        // Verifica se o sistema está bloqueado (em manutenção ou fora do horário)
         if (sistemaDeveEstarBloqueado()) {
             request->send(200, "text/plain", "Sistema bloqueado. Operação não permitida.");
             return;
@@ -154,14 +155,17 @@ void handleToggleAction(AsyncWebServer &server)
 // -------------------------------------------------------------------------
 void monitorarStatusCompressores()
 {
+    static bool ultimoEstadoMotores[3] = {false, false, false}; // Armazena o último estado dos motores
+
     for (int i = 0; i < 3; i++)
     {
         bool estadoAtual = digitalRead(pinosStatus[i]) == HIGH; // Lê o status atual do compressor
 
         // Verifica se o estado mudou desde a última verificação
-        if (estadoAtual != motoresLigados[i])
+        if (estadoAtual != ultimoEstadoMotores[i])
         {
-            motoresLigados[i] = estadoAtual; // Atualiza o estado do motor
+            ultimoEstadoMotores[i] = estadoAtual; // Atualiza o último estado
+            motoresLigados[i] = estadoAtual;      // Atualiza o estado do motor
 
             // Salva o estado no arquivo correspondente
             saveStatusState(pinosStatus[i], estadoAtual);

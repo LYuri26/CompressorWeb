@@ -5,6 +5,7 @@
 #include "ligadesliga.h"       // Inclui o cabeçalho para as funções de ligar/desligar motores
 #include "autenticador.h"      // Inclui o cabeçalho para funções de autenticação
 #include "manutencao.h"        // Inclui o cabeçalho para funções de manutenção
+#include "sobrecarga.h"
 
 // -------------------------------------------------------------------------
 // Função para configurar a página do dashboard e os endpoints relacionados
@@ -311,74 +312,86 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Variável para armazenar o estado de manutenção anterior do sistema.
     var previousMaintenanceState = null;
+function updateButtonState(button, motor, buttonClass) {
+    fetch('/motor-state')
+        .then(response => response.json())
+        .then(data => {
+            var compressorLigado = data['compressorLigadoMotor' + motor];
+            var sistemaEmManutencao = data.sistemaEmManutencao;
+            var sobrecarga = data['sobrecargaMotor' + motor];
 
-    // Função para atualizar o estado do botão (ativado/desativado) e a mensagem correspondente.
-    function updateButtonState(button, motor, buttonClass) {
-        fetch('/motor-state')
-            .then(response => response.json())
-            .then(data => {
-                var compressorLigado = data['compressorLigadoMotor' + motor];
-                var sistemaEmManutencao = data.sistemaEmManutencao;
+            // Obtém a hora atual
+            var now = new Date();
+            var horaAtual = now.getHours() + (now.getMinutes() / 60);
 
-                // Obtém a hora atual
-                var now = new Date();
-                var horaAtual = now.getHours() + (now.getMinutes() / 60);
-
-                // Verifica se o sistema está em manutenção
-                if (sistemaEmManutencao) {
+            // Verifica se há sobrecarga
+            if (sobrecarga) {
+                if (motor === '1') {
+                    button.innerHTML = 'Sobrecarga no Motor Compressor';
+                } else if (motor === '2') {
+                    button.innerHTML = 'Sobrecarga no Motor Ventilador';
+                } else if (motor === '3') {
+                    button.innerHTML = 'Sobrecarga no Motor Secador';
+                }
+                button.classList.add('btn-disabled');
+                button.classList.remove(buttonClass, 'btn-desligar');
+                messageBox.innerHTML = 'Sobrecarga detectada no Motor ' + motor + '. Motor desativado.';
+            }
+            // Verifica se o sistema está em manutenção
+            else if (sistemaEmManutencao) {
+                if (motor === '1') {
+                    button.innerHTML = 'Motor Compressor em manutenção';
+                } else if (motor === '2') {
+                    button.innerHTML = 'Motor Ventilador em manutenção';
+                } else if (motor === '3') {
+                    button.innerHTML = 'Motor Secador em manutenção';
+                }
+                button.classList.add('btn-disabled');
+                button.classList.remove(buttonClass, 'btn-desligar');
+                messageBox.innerHTML = 'Sistema em manutenção. Motores desativados.';
+            }
+            // Verifica se está fora do horário de funcionamento
+            else if (horaAtual < 8 || horaAtual >= 22) {
+                if (motor === '1') {
+                    button.innerHTML = 'Motor Compressor fora do horário';
+                } else if (motor === '2') {
+                    button.innerHTML = 'Motor Ventilador fora do horário';
+                } else if (motor === '3') {
+                    button.innerHTML = 'Motor Secador fora do horário';
+                }
+                button.classList.add('btn-disabled');
+                button.classList.remove(buttonClass, 'btn-desligar');
+                messageBox.innerHTML = 'Fora do horário de funcionamento (08:00 - 22:00). Motores desativados.';
+            }
+            // Dentro do horário de funcionamento
+            else {
+                if (compressorLigado) {
                     if (motor === '1') {
-                        button.innerHTML = 'Motor Compressor em manutenção';
+                        button.innerHTML = 'Desligar Motor Compressor';
                     } else if (motor === '2') {
-                        button.innerHTML = 'Motor Ventilador em manutenção';
+                        button.innerHTML = 'Desligar Motor Ventilador';
                     } else if (motor === '3') {
-                        button.innerHTML = 'Motor Secador em manutenção';
+                        button.innerHTML = 'Desligar Motor Secador';
                     }
-                    button.classList.add('btn-disabled');
-                    button.classList.remove(buttonClass, 'btn-desligar');
-                    messageBox.innerHTML = 'Sistema em manutenção. Motores desativados.';
-                }
-                // Verifica se está fora do horário de funcionamento
-                else if (horaAtual < 8 || horaAtual >= 22) {
+                    button.classList.add('btn-desligar');
+                    button.classList.remove(buttonClass);
+                    messageBox.innerHTML = 'Motor ' + motor + ' está ligado.';
+                } else {
                     if (motor === '1') {
-                        button.innerHTML = 'Motor Compressor fora do horário';
+                        button.innerHTML = 'Ligar Motor Compressor';
                     } else if (motor === '2') {
-                        button.innerHTML = 'Motor Ventilador fora do horário';
+                        button.innerHTML = 'Ligar Motor Ventilador';
                     } else if (motor === '3') {
-                        button.innerHTML = 'Motor Secador fora do horário';
+                        button.innerHTML = 'Ligar Motor Secador';
                     }
-                    button.classList.add('btn-disabled');
-                    button.classList.remove(buttonClass, 'btn-desligar');
-                    messageBox.innerHTML = 'Fora do horário de funcionamento (08:00 - 22:00). Motores desativados.';
+                    button.classList.remove('btn-desligar', 'btn-disabled');
+                    button.classList.add(buttonClass);
+                    messageBox.innerHTML = 'Motor ' + motor + ' está desligado.';
                 }
-                // Dentro do horário de funcionamento
-                else {
-                    if (compressorLigado) {
-                        if (motor === '1') {
-                            button.innerHTML = 'Desligar Motor Compressor';
-                        } else if (motor === '2') {
-                            button.innerHTML = 'Desligar Motor Ventilador';
-                        } else if (motor === '3') {
-                            button.innerHTML = 'Desligar Motor Secador';
-                        }
-                        button.classList.add('btn-desligar');
-                        button.classList.remove(buttonClass);
-                        messageBox.innerHTML = 'Motor ' + motor + ' está ligado.';
-                    } else {
-                        if (motor === '1') {
-                            button.innerHTML = 'Ligar Motor Compressor';
-                        } else if (motor === '2') {
-                            button.innerHTML = 'Ligar Motor Ventilador';
-                        } else if (motor === '3') {
-                            button.innerHTML = 'Ligar Motor Secador';
-                        }
-                        button.classList.remove('btn-desligar', 'btn-disabled');
-                        button.classList.add(buttonClass);
-                        messageBox.innerHTML = 'Motor ' + motor + ' está desligado.';
-                    }
-                }
-            })
-            .catch(error => console.error('Erro ao obter estado do motor:', error));
-    }
+            }
+        })
+        .catch(error => console.error('Erro ao obter estado do motor:', error));
+}
 
     // Função para configurar o clique nos botões
     function setupButtonClick(button, motor, buttonClass) {
@@ -412,7 +425,7 @@ document.addEventListener('DOMContentLoaded', function () {
         updateButtonState(toggleButtonMotor1, '1', 'btn-motor1');
         updateButtonState(toggleButtonMotor2, '2', 'btn-motor2');
         updateButtonState(toggleButtonMotor3, '3', 'btn-motor3');
-    }, 10000);
+    }, 5000);
 
     // Atualiza o estado dos botões imediatamente ao carregar a página.
     updateButtonState(toggleButtonMotor1, '1', 'btn-motor1');
@@ -472,11 +485,14 @@ document.addEventListener('DOMContentLoaded', function () {
     // Configura a rota para obter o estado dos motores
     server.on("/motor-state", HTTP_GET, [](AsyncWebServerRequest *request)
               {
-        // Cria um JSON com o estado dos motores e manutenção
-        String stateJson = "{\"compressorLigadoMotor1\":" + String(motoresLigados[0]) +
-                            ",\"compressorLigadoMotor2\":" + String(motoresLigados[1]) +
-                            ",\"compressorLigadoMotor3\":" + String(motoresLigados[2]) +
-                            ",\"sistemaEmManutencao\":" + String(sistemaEmManutencao) + "}";
-        // Envia o JSON em resposta a uma requisição GET
-        request->send(200, "application/json", stateJson); });
+// Cria um JSON com o estado dos motores, manutenção e sobrecarga
+String stateJson = "{\"compressorLigadoMotor1\":" + String(motoresLigados[0]) +
+                  ",\"compressorLigadoMotor2\":" + String(motoresLigados[1]) +
+                  ",\"compressorLigadoMotor3\":" + String(motoresLigados[2]) +
+                  ",\"sistemaEmManutencao\":" + String(sistemaEmManutencao) +
+                  ",\"sobrecargaMotor1\":" + String(sobrecargaDetectada[0]) +
+                  ",\"sobrecargaMotor2\":" + String(sobrecargaDetectada[1]) +
+                  ",\"sobrecargaMotor3\":" + String(sobrecargaDetectada[2]) + "}";
+// Envia o JSON em resposta a uma requisição GET
+request->send(200, "application/json", stateJson); });
 }

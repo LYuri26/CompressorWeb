@@ -10,6 +10,7 @@ extern const int pinosSobrecarga[];
 
 // Arquivos para salvar o estado dos motores
 extern const String arquivosEstados[];
+extern bool sobrecargaDetectada[];
 
 // Funções
 void setupSobrecarga();

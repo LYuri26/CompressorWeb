@@ -3,6 +3,7 @@
 
 // Pinos de entrada para monitorar a sobrecarga
 const int pinosSobrecarga[] = {16, 17, 18};
+bool sobrecargaDetectada[] = {false, false, false}; // Estado de sobrecarga para cada motor
 
 void setupSobrecarga()
 {
@@ -28,22 +29,32 @@ void setupSobrecarga()
 
 void monitorarSobrecarga()
 {
+    static bool ultimoEstadoSobrecarga[] = {false, false, false}; // Armazena o último estado de sobrecarga
+
     for (int i = 0; i < 3; i++)
     {
-        bool sobrecargaDetectada = digitalRead(pinosSobrecarga[i]) == HIGH;
+        bool sobrecargaAtual = digitalRead(pinosSobrecarga[i]) == HIGH;
 
-        if (sobrecargaDetectada)
+        // Verifica se houve mudança no estado de sobrecarga
+        if (sobrecargaAtual != ultimoEstadoSobrecarga[i])
         {
-            // Se houver sobrecarga, desativa o motor correspondente
-            digitalWrite(pinosMotores[i], LOW);
-            saveMotorState(arquivosEstados[i], false);
-            Serial.println("Sobrecarga detectada no pino " + String(pinosSobrecarga[i]) + ". Motor " + String(i + 1) + " desativado.");
-        }
-        else
-        {
-            // Se não houver sobrecarga, restaura o estado salvo
-            bool estadoSalvo = readMotorState(arquivosEstados[i]);
-            digitalWrite(pinosMotores[i], estadoSalvo ? HIGH : LOW);
+            ultimoEstadoSobrecarga[i] = sobrecargaAtual; // Atualiza o último estado
+            sobrecargaDetectada[i] = sobrecargaAtual;    // Atualiza o estado de sobrecarga
+
+            if (sobrecargaAtual)
+            {
+                // Se houver sobrecarga, desativa o motor correspondente
+                digitalWrite(pinosMotores[i], LOW);
+                saveMotorState(arquivosEstados[i], false);
+                Serial.println("Sobrecarga detectada no pino " + String(pinosSobrecarga[i]) + ". Motor " + String(i + 1) + " desativado.");
+            }
+            else
+            {
+                // Se não houver sobrecarga, restaura o estado salvo
+                bool estadoSalvo = readMotorState(arquivosEstados[i]);
+                digitalWrite(pinosMotores[i], estadoSalvo ? HIGH : LOW);
+                Serial.println("Sobrecarga resolvida no pino " + String(pinosSobrecarga[i]) + ". Motor " + String(i + 1) + " restaurado.");
+            }
         }
     }
 }
@@ -67,10 +78,3 @@ void restaurarEstadoMotores()
         Serial.println("Estado do motor " + String(i + 1) + " restaurado: " + (estadoSalvo ? "Ligado" : "Desligado"));
     }
 }
-
-
-
-
-
-
-

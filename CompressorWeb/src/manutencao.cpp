@@ -28,30 +28,30 @@ void setupManutencao()
 // -------------------------------------------------------------------------
 void atualizarEstadoManutencao()
 {
-    static unsigned long lastMaintenanceCheck = 0; // Variável estática para armazenar o último momento de verificação da manutenção
-    unsigned long currentMillis = millis();        // Obtém o tempo atual em milissegundos
+    static unsigned long lastMaintenanceCheck = 0;
+    unsigned long currentMillis = millis();
 
-    // Verifica o estado do botão de manutenção a cada 500 ms para evitar leituras excessivas
-    if (currentMillis - lastMaintenanceCheck >= 500) // Se passaram pelo menos 500 milissegundos desde a última verificação
+    // Verifica o estado do botão de manutenção a cada 500 ms
+    if (currentMillis - lastMaintenanceCheck >= 500)
     {
-        lastMaintenanceCheck = currentMillis; // Atualiza o tempo da última verificação para o tempo atual
+        lastMaintenanceCheck = currentMillis;
 
         // Verifica o estado do pino de manutenção
-        if (digitalRead(pinoManutencao) == LOW) // Se o botão estiver pressionado (nível baixo)
+        if (digitalRead(pinoManutencao) == LOW)
         {
-            if (!sistemaEmManutencao) // Se o sistema não está em manutenção
+            if (!sistemaEmManutencao)
             {
-                sistemaEmManutencao = true;                                    // Define o sistema como em manutenção
-                desligarTodosMotores();                                        // Desliga todos os motores
-                Serial.println("Sistema em manutenção. Motores desativados."); // Imprime uma mensagem para o console serial
+                sistemaEmManutencao = true;
+                desligarTodosMotores(); // Desliga todos os motores
+                Serial.println("Sistema em manutenção. Motores desativados.");
             }
         }
-        else // Se o botão não estiver pressionado
+        else
         {
-            if (sistemaEmManutencao) // Se o sistema está em manutenção
+            if (sistemaEmManutencao)
             {
-                sistemaEmManutencao = false;                     // Define o sistema como não em manutenção
-                Serial.println("Estado de manutenção: Inativo"); // Imprime uma mensagem para o console serial
+                sistemaEmManutencao = false;
+                Serial.println("Estado de manutenção: Inativo");
             }
         }
     }
