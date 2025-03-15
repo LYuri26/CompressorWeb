@@ -1,6 +1,7 @@
 #ifndef LIGADESLIGA_H
 #define LIGADESLIGA_H
 
+#include <Arduino.h>
 #include <ESPAsyncWebServer.h>
 
 // Declaração de Variáveis Globais
@@ -27,5 +28,6 @@ void desligarTodosMotores();
 bool sistemaDeveEstarBloqueado();
 void atualizarEstadoMotores();
 void desativarSistemaForaDoHorario();
+bool checkMotorStatusChange(); // Declaração da função
 
 #endif // LIGADESLIGA_H

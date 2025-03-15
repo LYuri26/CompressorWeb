@@ -19,7 +19,8 @@ bool timersAtivos[] = {false, false, false};
 bool motoresEstadoAnterior[3] = {false, false, false}; // Defina a variável aqui
 unsigned long previousMillis[] = {0, 0, 0};
 unsigned long lastToggleTime[] = {0, 0, 0};
-
+const int NUM_MOTORS = sizeof(pinosMotores) / sizeof(pinosMotores[0]); // Número de motores
+const int *motorPins = pinosMotores;                                   // Aponta para o array de pinos dos motores
 // -------------------------------------------------------------------------
 // Função para extrair as horas de uma string de horário
 // -------------------------------------------------------------------------
@@ -290,6 +291,31 @@ void setupLigaDesliga(AsyncWebServer &server)
 
     // Atualiza o estado dos motores no início
     atualizarEstadoMotores();
+}
+
+bool checkMotorStatusChange()
+{
+    static bool lastMotorState[NUM_MOTORS]; // Armazena o último estado conhecido dos motores
+    bool currentMotorState[NUM_MOTORS];
+
+    // Lê o estado atual dos motores
+    for (int i = 0; i < NUM_MOTORS; i++)
+    {
+        currentMotorState[i] = digitalRead(motorPins[i]);
+    }
+
+    // Compara com o último estado conhecido
+    for (int i = 0; i < NUM_MOTORS; i++)
+    {
+        if (currentMotorState[i] != lastMotorState[i])
+        {
+            // Atualiza o último estado conhecido
+            memcpy(lastMotorState, currentMotorState, sizeof(currentMotorState));
+            return true; // Houve mudança
+        }
+    }
+
+    return false; // Nenhuma mudança
 }
 
 // -------------------------------------------------------------------------

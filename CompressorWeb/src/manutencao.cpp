@@ -1,19 +1,19 @@
 #include <Arduino.h>
-#include <ESPAsyncWebServer.h>
 #include "manutencao.h"
 #include "ligadesliga.h"
 
-const int pinoManutencao = 25; // Pino do botão de manutenção
-bool sistemaEmManutencao = false;
+const int pinoManutencao = 25;    // Definição da variável global
+bool sistemaEmManutencao = false; // Definição da variável global
 
 void setupManutencao()
 {
     pinMode(pinoManutencao, INPUT_PULLUP); // Configura o pino do botão de manutenção
 }
 
-void atualizarEstadoManutencao()
+bool atualizarEstadoManutencao()
 {
     static unsigned long lastMaintenanceCheck = 0;
+    static bool lastMaintenanceState = false; // Último estado de manutenção conhecido
     unsigned long currentMillis = millis();
 
     // Verifica o estado do botão de manutenção a cada 500 ms
@@ -22,10 +22,17 @@ void atualizarEstadoManutencao()
         lastMaintenanceCheck = currentMillis;
 
         // Verifica o estado do pino de manutenção
-        if (digitalRead(pinoManutencao) == LOW)
+        bool currentMaintenanceState = (digitalRead(pinoManutencao) == LOW);
+
+        // Verifica se houve mudança no estado de manutenção
+        if (currentMaintenanceState != lastMaintenanceState)
         {
-            if (!sistemaEmManutencao)
+            lastMaintenanceState = currentMaintenanceState;
+
+            // Executa ações com base no novo estado de manutenção
+            if (currentMaintenanceState)
             {
+                // Entrou em modo de manutenção
                 sistemaEmManutencao = true;
 
                 // Salva o estado atual dos motores antes de desativá-los
@@ -37,11 +44,9 @@ void atualizarEstadoManutencao()
                 desligarTodosMotores(); // Desliga todos os motores
                 Serial.println("Sistema em manutenção. Motores desativados.");
             }
-        }
-        else
-        {
-            if (sistemaEmManutencao)
+            else
             {
+                // Saiu do modo de manutenção
                 sistemaEmManutencao = false;
 
                 // Restaura o estado dos motores ao estado anterior
@@ -59,6 +64,10 @@ void atualizarEstadoManutencao()
 
                 Serial.println("Estado de manutenção: Inativo. Motores restaurados.");
             }
+
+            return true; // Houve mudança
         }
     }
+
+    return false; // Nenhuma mudança
 }
