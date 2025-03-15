@@ -508,160 +508,158 @@ void setupDashboardPage(AsyncWebServer &server)
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // Seleciona os elementos do DOM
-            const toggleButtonMotor1 = document.getElementById('toggleButtonMotor1');
-            const toggleButtonMotor2 = document.getElementById('toggleButtonMotor2');
-            const toggleButtonMotor3 = document.getElementById('toggleButtonMotor3');
-            const countdownMotor1 = document.getElementById('countdownMotor1');
-            const countdownMotor2 = document.getElementById('countdownMotor2');
-            const countdownMotor3 = document.getElementById('countdownMotor3');
-            const nightModeButton = document.getElementById('nightModeButton');
+document.addEventListener('DOMContentLoaded', function () {
+    // Seleciona os elementos do DOM
+    const toggleButtons = [
+        document.getElementById('toggleButtonMotor1'),
+        document.getElementById('toggleButtonMotor2'),
+        document.getElementById('toggleButtonMotor3')
+    ];
+    const countdownElements = [
+        document.getElementById('countdownMotor1'),
+        document.getElementById('countdownMotor2'),
+        document.getElementById('countdownMotor3')
+    ];
+    const messageBoxes = [
+        document.getElementById('messageBoxMotor1'),
+        document.getElementById('messageBoxMotor2'),
+        document.getElementById('messageBoxMotor3')
+    ];
+    const nightModeButton = document.getElementById('nightModeButton');
 
-            // Variáveis para armazenar os timeouts (não utilizadas diretamente, mas podem ser úteis para futuras expansões)
-            let motor1Timeout = null;
-            let motor2Timeout = null;
-            let motor3Timeout = null;
+    // Função para iniciar a contagem regressiva
+    function startCountdown(motorIndex, duration) {
+        let timer = duration;
+        const interval = setInterval(() => {
+            const minutes = Math.floor(timer / 60);
+            const seconds = timer % 60;
+            countdownElements[motorIndex].textContent = `Aguardar: ${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 
-            // Função para iniciar a contagem regressiva
-            function startCountdown(motor, countdownElement, duration) {
-                let timer = duration;
-                let minutes, seconds;
-
-                const interval = setInterval(() => {
-                    minutes = parseInt(timer / 60, 10);
-                    seconds = parseInt(timer % 60, 10);
-
-                    minutes = minutes < 10 ? "0" + minutes : minutes;
-                    seconds = seconds < 10 ? "0" + seconds : seconds;
-
-                    countdownElement.textContent = `Aguardar: ${minutes}:${seconds}`;
-
-                    if (--timer < 0) {
-                        clearInterval(interval);
-                        countdownElement.textContent = '';
-                        document.getElementById(`toggleButtonMotor${motor}`).disabled = false;
-                    }
-                }, 1000);
+            if (--timer < 0) {
+                clearInterval(interval);
+                countdownElements[motorIndex].textContent = '';
+                toggleButtons[motorIndex].disabled = false;
             }
+        }, 1000);
+    }
 
-            // Função para atualizar o estado dos botões e mensagens
-            function updateButtonState() {
-                fetch('/motor-state')
-                    .then(response => response.json())
-                    .then(data => {
-                        for (let i = 1; i <= 3; i++) {
-                            const compressorLigado = data['compressorLigadoMotor' + i];
-                            const sistemaEmManutencao = data.sistemaEmManutencao;
-                            const sobrecarga = data['sobrecargaMotor' + i];
-                            const now = new Date();
-                            const horaAtual = now.getHours() + now.getMinutes() / 60;
+    // Função para atualizar o estado dos botões e mensagens
+    function updateButtonState() {
+        fetch('/motor-state')
+            .then(response => {
+                if (!response.ok) throw new Error('Erro na requisição');
+                return response.json();
+            })
+            .then(data => {
+                for (let i = 0; i < 3; i++) {
+                    const compressorLigado = data[`compressorLigadoMotor${i + 1}`];
+                    const sistemaEmManutencao = data.sistemaEmManutencao;
+                    const sobrecarga = data[`sobrecargaMotor${i + 1}`];
+                    const horaAtual = new Date().getHours() + new Date().getMinutes() / 60;
+                    const motorTimerActive = data[`motorTimerActive${i + 1}`];
 
-                            let estadoMotor = '';
-                            let button = document.getElementById(`toggleButtonMotor${i}`);
-                            let messageBox = document.getElementById(`messageBoxMotor${i}`);
-
-                            if (sobrecarga) {
-                                button.innerHTML = '<span>Sobrecarga</span>';
-                                button.classList.add('btn-overload', 'btn-disabled');
-                                button.classList.remove('btn-desligar', 'btn-ligar');
-                                estadoMotor = `Motor ${i} está com sobrecarga. Desativado.`;
-                                messageBox.className = 'error';
-                            } else if (sistemaEmManutencao) {
-                                button.innerHTML = '<span>Manutenção</span>';
-                                button.classList.add('btn-maintenance', 'btn-disabled');
-                                button.classList.remove('btn-desligar', 'btn-ligar');
-                                estadoMotor = `Motor ${i} está em manutenção. Desativado.`;
-                                messageBox.className = 'warning';
-                            } else if (horaAtual < 8 || horaAtual >= 22) {
-                                button.innerHTML = '<span>Fora do Horário</span>';
-                                button.classList.add('btn-out-of-hours', 'btn-disabled');
-                                button.classList.remove('btn-desligar', 'btn-ligar');
-                                estadoMotor = `Motor ${i} está fora do horário de funcionamento. Desativado.`;
-                                messageBox.className = 'alert';
-                            } else {
-                                if (compressorLigado) {
-                                    button.innerHTML = '<span>Desligar</span>';
-                                    button.classList.add('btn-desligar');
-                                    button.classList.remove('btn-ligar');
-                                    estadoMotor = `Motor ${i} está ligado.`;
-                                    messageBox.className = 'success';
-                                } else {
-                                    button.innerHTML = '<span>Ligar</span>';
-                                    button.classList.add('btn-ligar');
-                                    button.classList.remove('btn-desligar', 'btn-disabled');
-                                    estadoMotor = `Motor ${i} está desligado.`;
-                                    messageBox.className = 'info';
-                                }
-                            }
-
-                            messageBox.innerHTML = estadoMotor;
+                    // Atualiza o estado do botão
+                    if (sobrecarga) {
+                        toggleButtons[i].innerHTML = '<span>Sobrecarga</span>';
+                        toggleButtons[i].classList.add('btn-overload', 'btn-disabled');
+                        toggleButtons[i].classList.remove('btn-desligar', 'btn-ligar');
+                        messageBoxes[i].className = 'error';
+                        messageBoxes[i].textContent = `Motor ${i + 1} está com sobrecarga. Desativado.`;
+                    } else if (sistemaEmManutencao) {
+                        toggleButtons[i].innerHTML = '<span>Manutenção</span>';
+                        toggleButtons[i].classList.add('btn-maintenance', 'btn-disabled');
+                        toggleButtons[i].classList.remove('btn-desligar', 'btn-ligar');
+                        messageBoxes[i].className = 'warning';
+                        messageBoxes[i].textContent = `Motor ${i + 1} está em manutenção. Desativado.`;
+                    } else if (horaAtual < 8 || horaAtual >= 22) {
+                        toggleButtons[i].innerHTML = '<span>Fora do Horário</span>';
+                        toggleButtons[i].classList.add('btn-out-of-hours', 'btn-disabled');
+                        toggleButtons[i].classList.remove('btn-desligar', 'btn-ligar');
+                        messageBoxes[i].className = 'alert';
+                        messageBoxes[i].textContent = `Motor ${i + 1} está fora do horário de funcionamento. Desativado.`;
+                    } else {
+                        if (compressorLigado) {
+                            toggleButtons[i].innerHTML = '<span>Desligar</span>';
+                            toggleButtons[i].classList.add('btn-desligar');
+                            toggleButtons[i].classList.remove('btn-ligar');
+                            messageBoxes[i].className = 'success';
+                            messageBoxes[i].textContent = `Motor ${i + 1} está ligado.`;
+                        } else {
+                            toggleButtons[i].innerHTML = '<span>Ligar</span>';
+                            toggleButtons[i].classList.add('btn-ligar');
+                            toggleButtons[i].classList.remove('btn-desligar', 'btn-disabled');
+                            messageBoxes[i].className = 'info';
+                            messageBoxes[i].textContent = `Motor ${i + 1} está desligado.`;
                         }
-                    })
-                    .catch(error => {
-                        console.error('Erro ao obter estado do motor:', error);
-                        for (let i = 1; i <= 3; i++) {
-                            let messageBox = document.getElementById(`messageBoxMotor${i}`);
-                            messageBox.innerHTML = 'Erro ao carregar o estado do motor.';
-                            messageBox.className = 'error';
-                        }
-                    });
-            }
-
-            // Função para configurar o clique nos botões
-            function setupButtonClick(button, motor, countdownElement) {
-                button.addEventListener('click', function (event) {
-                    event.preventDefault();
-
-                    if (button.classList.contains('btn-disabled')) {
-                        return;
                     }
 
-                    button.disabled = true;
-
-                    const action = button.innerHTML.includes('Desligar') ? 'desligar' : 'ligar';
-                    const duration = action === 'ligar' ? 3600 : 600; // 10 minutos para ligar, 1 hora para desligar
-
-                    fetch(`/toggle?action=${action}&motor=${motor}`)
-                        .then(response => response.text())
-                        .then(() => {
-                            updateButtonState();
-                            startCountdown(motor, countdownElement, duration);
-                        })
-                        .catch(error => {
-                            console.error('Erro ao enviar comando para o motor:', error);
-                            button.disabled = false;
-                        });
+                    // Verifica se o cronômetro está ativo
+                    if (motorTimerActive) {
+                        toggleButtons[i].disabled = true;
+                        toggleButtons[i].classList.add('btn-disabled');
+                    } else {
+                        toggleButtons[i].disabled = false;
+                        toggleButtons[i].classList.remove('btn-disabled');
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao obter estado do motor:', error);
+                messageBoxes.forEach(box => {
+                    box.textContent = 'Erro ao carregar o estado do motor.';
+                    box.className = 'error';
                 });
-            }
+            });
+    }
 
-            // Configura os botões
-            setupButtonClick(toggleButtonMotor1, '1', countdownMotor1);
-            setupButtonClick(toggleButtonMotor2, '2', countdownMotor2);
-            setupButtonClick(toggleButtonMotor3, '3', countdownMotor3);
+    // Função para configurar o clique nos botões
+    function setupButtonClick(button, motorIndex) {
+        button.addEventListener('click', function (event) {
+            event.preventDefault();
 
-            // Atualiza o estado dos botões a cada segundo
-            setInterval(() => {
-                updateButtonState();
-            }, 1000);
+            if (button.classList.contains('btn-disabled')) return;
 
-            // Atualiza o estado dos botões ao carregar a página
-            updateButtonState();
+            button.disabled = true;
 
-            // Configura o botão de modo noturno
-            if (nightModeButton) {
-                nightModeButton.addEventListener('click', () => {
-                    document.body.classList.toggle('night-mode');
-                    localStorage.setItem('theme', document.body.classList.contains('night-mode') ? 'night-mode' : '');
+            const action = button.innerHTML.includes('Desligar') ? 'desligar' : 'ligar';
+            const duration = action === 'ligar' ? 3600 : 600; // 10 minutos para ligar, 1 hora para desligar
+
+            fetch(`/toggle?action=${action}&motor=${motorIndex + 1}`)
+                .then(response => {
+                    if (!response.ok) throw new Error('Erro ao enviar comando');
+                    updateButtonState();
+                    startCountdown(motorIndex, duration);
+                })
+                .catch(error => {
+                    console.error('Erro ao enviar comando para o motor:', error);
+                    button.disabled = false;
                 });
-            }
-
-            // Aplica o tema salvo (modo noturno) ao carregar a página
-            const savedTheme = localStorage.getItem('theme');
-            if (savedTheme) {
-                document.body.classList.add(savedTheme);
-            }
         });
+    }
+
+    // Configura os botões
+    toggleButtons.forEach((button, index) => setupButtonClick(button, index));
+
+    // Atualiza o estado dos botões a cada 2 segundos
+    setInterval(updateButtonState, 2000);
+
+    // Atualiza o estado dos botões ao carregar a página
+    updateButtonState();
+
+    // Configura o botão de modo noturno
+    if (nightModeButton) {
+        nightModeButton.addEventListener('click', () => {
+            document.body.classList.toggle('night-mode');
+            localStorage.setItem('theme', document.body.classList.contains('night-mode') ? 'night-mode' : '');
+        });
+    }
+
+    // Aplica o tema salvo (modo noturno) ao carregar a página
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+        document.body.classList.add(savedTheme);
+    }
+});
     </script>
 </body>
 
@@ -674,14 +672,15 @@ void setupDashboardPage(AsyncWebServer &server)
     // Configura a rota para obter o estado dos motores
     server.on("/motor-state", HTTP_GET, [](AsyncWebServerRequest *request)
               {
-// Cria um JSON com o estado dos motores, manutenção e sobrecarga
-String stateJson = "{\"compressorLigadoMotor1\":" + String(motoresLigados[0]) +
-                  ",\"compressorLigadoMotor2\":" + String(motoresLigados[1]) +
-                  ",\"compressorLigadoMotor3\":" + String(motoresLigados[2]) +
-                  ",\"sistemaEmManutencao\":" + String(sistemaEmManutencao) +
-                  ",\"sobrecargaMotor1\":" + String(sobrecargaDetectada[0]) +
-                  ",\"sobrecargaMotor2\":" + String(sobrecargaDetectada[1]) +
-                  ",\"sobrecargaMotor3\":" + String(sobrecargaDetectada[2]) + "}";
-// Envia o JSON em resposta a uma requisição GET
-request->send(200, "application/json", stateJson); });
+        String stateJson = "{\"compressorLigadoMotor1\":" + String(motoresLigados[0]) +
+                          ",\"compressorLigadoMotor2\":" + String(motoresLigados[1]) +
+                          ",\"compressorLigadoMotor3\":" + String(motoresLigados[2]) +
+                          ",\"sistemaEmManutencao\":" + String(sistemaEmManutencao) +
+                          ",\"sobrecargaMotor1\":" + String(sobrecargaDetectada[0]) +
+                          ",\"sobrecargaMotor2\":" + String(sobrecargaDetectada[1]) +
+                          ",\"sobrecargaMotor3\":" + String(sobrecargaDetectada[2]) +
+                          ",\"motorTimerActive1\":" + String(isMotorTimerActive(0)) +
+                          ",\"motorTimerActive2\":" + String(isMotorTimerActive(1)) +
+                          ",\"motorTimerActive3\":" + String(isMotorTimerActive(2)) + "}";
+        request->send(200, "application/json", stateJson); });
 }

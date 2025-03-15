@@ -13,6 +13,7 @@ extern bool timersAtivos[];          // Timers dos motores
 extern bool motoresEstadoAnterior[]; // Estado dos motores antes da manutenção ou sobrecarga
 extern bool isAfterClosingTime();
 extern bool isBeforeOpeningTime();
+extern const String arquivosTimers[];
 
 // Arquivos para salvar o estado dos motores
 extern const String arquivosMotores[];
@@ -29,5 +30,7 @@ bool sistemaDeveEstarBloqueado();
 void atualizarEstadoMotores();
 void desativarSistemaForaDoHorario();
 bool checkMotorStatusChange(); // Declaração da função
+bool isMotorTimerActive(int motorIdx);
+void updateTimers();
 
 #endif // LIGADESLIGA_H

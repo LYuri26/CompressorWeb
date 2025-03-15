@@ -74,14 +74,14 @@ void loop()
 {
     unsigned long currentMillis = millis();
 
-    // Atualiza o tempo a cada intervalo definido
+    // 1. Atualiza o tempo a cada intervalo definido
     if (currentMillis - lastUpdate >= UPDATE_INTERVAL)
     {
-        updateTime();
+        updateTime(); // Atualiza o horário atual
         lastUpdate = currentMillis;
     }
 
-    // Atualiza o status dos motores a cada intervalo definido
+    // 2. Atualiza o status dos motores a cada intervalo definido
     if (currentMillis - lastCompressorUpdate >= UPDATE_INTERVAL)
     {
         updateMotorStatus();      // Atualiza o status dos motores
@@ -89,13 +89,31 @@ void loop()
         lastCompressorUpdate = currentMillis;
     }
 
-    // Verifica o status dos compressores e atualiza automaticamente os arquivos
-    monitorarStatusCompressores();
+    // 3. Verifica o status dos compressores e atualiza automaticamente os arquivos (a cada 5 segundos)
+    static unsigned long lastCompressorCheck = 0;
+    if (currentMillis - lastCompressorCheck >= 5000) // 5 segundos
+    {
+        monitorarStatusCompressores();
+        lastCompressorCheck = currentMillis;
+    }
 
-    // Monitora as entradas de sobrecarga
-    monitorarSobrecarga();
+    // 4. Monitora as entradas de sobrecarga (a cada 5 segundos)
+    static unsigned long lastOverloadCheck = 0;
+    if (currentMillis - lastOverloadCheck >= 5000) // 5 segundos
+    {
+        monitorarSobrecarga();
+        lastOverloadCheck = currentMillis;
+    }
 
-    // Verifica a conexão Wi-Fi e tenta reconectar, se necessário
+    // 5. Atualiza o tempo restante dos cronômetros a cada 1 minuto
+    static unsigned long lastTimerUpdate = 0;
+    if (currentMillis - lastTimerUpdate >= 60000) // 1 minuto
+    {
+        updateTimers(); // Atualiza o tempo restante dos cronômetros
+        lastTimerUpdate = currentMillis;
+    }
+
+    // 6. Verifica a conexão Wi-Fi e tenta reconectar, se necessário
     if (!isAPMode && WiFi.status() != WL_CONNECTED)
     {
         if (currentMillis - lastReconnectAttempt >= RECONNECT_INTERVAL)
@@ -117,10 +135,10 @@ void loop()
         reconnectAttempts = 0;
     }
 
-    // Atualiza o estado de manutenção
+    // 7. Atualiza o estado de manutenção
     atualizarEstadoManutencao();
 
-    // Pequeno delay para evitar leituras excessivas
+    // 8. Pequeno delay para evitar leituras excessivas
     delay(100);
 }
 

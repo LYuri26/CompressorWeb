@@ -13,6 +13,7 @@ int pinosStatus[] = {32, 33, 35};  // Para indicar estado do compressor
 const long intervalo = 1000; // Intervalo para gravação de estado
 const String arquivosMotores[] = {"/motor1.txt", "/motor2.txt", "/motor3.txt"};
 const String arquivosStatus[] = {"/status1.txt", "/status2.txt", "/status3.txt"};
+const String arquivosTimers[] = {"/timer1.txt", "/timer2.txt", "/timer3.txt"};
 
 bool motoresLigados[] = {false, false, false};
 bool timersAtivos[] = {false, false, false};
@@ -21,6 +22,10 @@ unsigned long previousMillis[] = {0, 0, 0};
 unsigned long lastToggleTime[] = {0, 0, 0};
 const int NUM_MOTORS = sizeof(pinosMotores) / sizeof(pinosMotores[0]); // Número de motores
 const int *motorPins = pinosMotores;                                   // Aponta para o array de pinos dos motores
+unsigned long motorTimers[] = {0, 0, 0};                               // Armazena o tempo de espera para cada motor
+const unsigned long LIGAR_TIMEOUT = 60;                                // 60 segundos (1 minuto)
+const unsigned long DESLIGAR_TIMEOUT = 10;                             // 10 segundos
+
 // -------------------------------------------------------------------------
 // Função para extrair as horas de uma string de horário
 // -------------------------------------------------------------------------
@@ -105,6 +110,34 @@ void atualizarEstadoMotores()
     }
 }
 
+unsigned long readTimerState(const String &arquivoTimer)
+{
+    File file = SPIFFS.open(arquivoTimer, "r");
+    if (!file)
+    {
+        Serial.println("Arquivo de timer não encontrado: " + arquivoTimer + ". Assumindo tempo restante 0.");
+        return 0;
+    }
+
+    String remainingTime = file.readStringUntil('\n');
+    file.close();
+    return remainingTime.toInt();
+}
+
+void saveTimerState(const String &arquivoTimer, unsigned long remainingTime)
+{
+    File file = SPIFFS.open(arquivoTimer, "w");
+    if (!file)
+    {
+        Serial.println("Erro ao abrir o arquivo para escrita: " + arquivoTimer);
+        return;
+    }
+
+    file.println(remainingTime);
+    file.close();
+    Serial.println("Tempo restante salvo no arquivo " + arquivoTimer + ": " + String(remainingTime));
+}
+
 // -------------------------------------------------------------------------
 // Função para configurar a página de login e o controle dos motores
 // -------------------------------------------------------------------------
@@ -117,7 +150,6 @@ void handleToggleAction(AsyncWebServer &server)
             return;
         }
 
-        // Verifica se o sistema está bloqueado (em manutenção ou fora do horário)
         if (sistemaDeveEstarBloqueado()) {
             request->send(200, "text/plain", "Sistema bloqueado. Operação não permitida.");
             return;
@@ -128,6 +160,12 @@ void handleToggleAction(AsyncWebServer &server)
 
         if (motorIdx < 0 || motorIdx > 2) {
             request->send(400, "text/plain", "Motor inválido!");
+            return;
+        }
+
+        // Verifica se o cronômetro está ativo
+        if (isMotorTimerActive(motorIdx)) {
+            request->send(200, "text/plain", "Aguarde o término do cronômetro para realizar esta ação.");
             return;
         }
 
@@ -154,6 +192,8 @@ void handleToggleAction(AsyncWebServer &server)
             // Verifica o status do motor após o pulso
             if (digitalRead(pinosStatus[motorIdx]) == HIGH) {
                 motoresLigados[motorIdx] = true;
+                motorTimers[motorIdx] = millis() + (LIGAR_TIMEOUT * 1000); // Inicia o cronômetro de 60 segundos
+                saveTimerState(arquivosTimers[motorIdx], LIGAR_TIMEOUT * 1000); // Salva o tempo restante
                 request->send(200, "text/plain", "Motor " + String(motorIdx + 1) + " ligado!");
             } else {
                 request->send(400, "text/plain", "Falha ao ligar o motor.");
@@ -165,6 +205,8 @@ void handleToggleAction(AsyncWebServer &server)
             digitalWrite(pinosMotores[motorIdx], LOW);
 
             motoresLigados[motorIdx] = false;
+            motorTimers[motorIdx] = millis() + (DESLIGAR_TIMEOUT * 1000); // Inicia o cronômetro de 10 segundos
+            saveTimerState(arquivosTimers[motorIdx], DESLIGAR_TIMEOUT * 1000); // Salva o tempo restante
             request->send(200, "text/plain", "Motor " + String(motorIdx + 1) + " desligado!");
         } else {
             request->send(400, "text/plain", "Ação inválida!");
@@ -196,6 +238,33 @@ void monitorarStatusCompressores()
 
             // Exibe a atualização no console
             Serial.println("Compressor " + String(i + 1) + " " + (estadoAtual ? "ligado" : "desligado"));
+        }
+    }
+}
+
+bool isMotorTimerActive(int motorIdx)
+{
+    unsigned long remainingTime = readTimerState(arquivosTimers[motorIdx]);
+    if (remainingTime > 0)
+    {
+        motorTimers[motorIdx] = millis() + remainingTime; // Restaura o tempo restante
+        return true;
+    }
+    return false;
+}
+
+void updateTimers()
+{
+    for (int i = 0; i < NUM_MOTORS; i++)
+    {
+        if (motorTimers[i] > millis())
+        {
+            unsigned long remainingTime = motorTimers[i] - millis();
+            saveTimerState(arquivosTimers[i], remainingTime); // Atualiza o tempo restante no SPIFFS
+        }
+        else
+        {
+            saveTimerState(arquivosTimers[i], 0); // Zera o tempo restante no SPIFFS
         }
     }
 }

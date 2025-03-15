@@ -22,18 +22,7 @@ void setupSobrecarga()
         digitalWrite(pinosStatus[i], LOW);  // Garante que os status comecem desligados
     }
 
-    // Inicializa o SPIFFS
-    if (!SPIFFS.begin(true))
-    {
-        Serial.println("Erro ao iniciar SPIFFS.");
-    }
-    else
-    {
-        Serial.println("SPIFFS inicializado.");
-    }
-
-    // Restaura o estado dos motores
-    restaurarEstadoMotores();
+    Serial.println("Sistema de sobrecarga inicializado.");
 }
 
 void monitorarSobrecarga()
@@ -59,10 +48,9 @@ void monitorarSobrecarga()
             }
             else
             {
-                // Se não houver sobrecarga, restaura o estado salvo
-                bool estadoSalvo = readMotorState(arquivosMotores[i]);
-                digitalWrite(pinosMotores[i], estadoSalvo ? HIGH : LOW);
-                digitalWrite(pinosStatus[i], estadoSalvo ? HIGH : LOW);
+                // Se não houver sobrecarga, restaura o estado dos motores
+                digitalWrite(pinosMotores[i], LOW); // Mantém os motores desligados por padrão
+                digitalWrite(pinosStatus[i], LOW);  // Mantém os status desligados por padrão
                 Serial.println("Sobrecarga resolvida no pino " + String(pinosSobrecarga[i]) + ". Motor " + String(i + 1) + " restaurado.");
             }
         }
@@ -75,7 +63,6 @@ void desativarMotores()
     {
         digitalWrite(pinosMotores[i], LOW);
         digitalWrite(pinosStatus[i], LOW);
-        saveMotorState(arquivosMotores[i], false);
     }
     Serial.println("Todos os motores desativados e pinos bloqueados devido à sobrecarga.");
 }
@@ -84,9 +71,9 @@ void restaurarEstadoMotores()
 {
     for (int i = 0; i < 3; i++)
     {
-        bool estadoSalvo = readMotorState(arquivosMotores[i]);
-        digitalWrite(pinosMotores[i], estadoSalvo ? HIGH : LOW);
-        digitalWrite(pinosStatus[i], estadoSalvo ? HIGH : LOW);
-        Serial.println("Estado do motor " + String(i + 1) + " restaurado: " + (estadoSalvo ? "Ligado" : "Desligado"));
+        // Restaura o estado dos motores (desligados por padrão)
+        digitalWrite(pinosMotores[i], LOW);
+        digitalWrite(pinosStatus[i], LOW);
+        Serial.println("Estado do motor " + String(i + 1) + " restaurado: Desligado");
     }
 }
