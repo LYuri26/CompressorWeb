@@ -27,16 +27,14 @@ void setupDashboardPage(AsyncWebServer &server)
         String html = R"rawliteral(
 <!DOCTYPE html>
 <html lang="pt-br">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link
-            href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap"
-            rel="stylesheet">
-        <title>Dashboard</title>
-        <style>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+    <title>Dashboard</title>
+    <style>
         body {
             font-family: Arial, sans-serif;
             background-color: #f0f2f5;
@@ -56,7 +54,7 @@ void setupDashboardPage(AsyncWebServer &server)
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             text-align: center;
-            width: 100%;
+            width: 90%;
             max-width: 400px;
             margin: auto;
             transition: background-color 0.3s, color 0.3s;
@@ -103,7 +101,7 @@ void setupDashboardPage(AsyncWebServer &server)
             outline: none;
             position: relative;
             overflow: hidden;
-            white-space: nowrap;
+            white-space: normal; /* Permite que o texto quebre em várias linhas */
             padding: 10px;
         }
 
@@ -128,15 +126,15 @@ void setupDashboardPage(AsyncWebServer &server)
             background-color: #f8f9fa;
             color: #333;
             font-size: 16px;
-            text-align: left; /* Alinhamento à esquerda */
+            text-align: left;
             transition: background-color 0.3s, color 0.3s;
         }
 
-        #messageBox.alert { background-color: #fff3e0; color: #ef6c00; border: 2px solid #ef6c00; } /* Laranja */
-        #messageBox.error { background-color: #ffebee; color: #c62828; border: 2px solid #c62828; } /* Vermelho */
-        #messageBox.success { background-color: #e8f5e9; color: #2e7d32; border: 2px solid #2e7d32; } /* Verde */
-        #messageBox.info { background-color: #e3f2fd; color: #1565c0; border: 2px solid #1565c0; } /* Azul */
-        #messageBox.warning { background-color: #fff8e1; color: #ff8f00; border: 2px solid #ff8f00; } /* Amarelo */
+        #messageBox.alert { background-color: #fff3e0; color: #ef6c00; border: 2px solid #ef6c00; }
+        #messageBox.error { background-color: #ffebee; color: #c62828; border: 2px solid #c62828; }
+        #messageBox.success { background-color: #e8f5e9; color: #2e7d32; border: 2px solid #2e7d32; }
+        #messageBox.info { background-color: #e3f2fd; color: #1565c0; border: 2px solid #1565c0; }
+        #messageBox.warning { background-color: #fff8e1; color: #ff8f00; border: 2px solid #ff8f00; }
 
         .btn-link {
             display: block;
@@ -166,22 +164,21 @@ void setupDashboardPage(AsyncWebServer &server)
             font-size: 14px;
             margin-top: auto;
         }
-            /* Estilos para os botões de alternância de temas */
-            #nightModeButton {
-                width: 100%;
-                padding: 12px;
-                font-size: 16px;
-                margin: 10px auto;
-                border: none;
-                border-radius: 8px;
-                cursor: pointer;
-                color: white;
-                transition: background-color 0.3s, transform 0.3s;
-            }
-        
-            #nightModeButton { background-color: rgb(234, 161, 15); }
-        
-            #nightModeButton:hover { background-color: #8e5204; transform: scale(1.05); }
+
+        #nightModeButton {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            margin: 10px auto;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            color: white;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        #nightModeButton { background-color: rgb(234, 161, 15); }
+        #nightModeButton:hover { background-color: #8e5204; transform: scale(1.05); }
 
         /* Modo noturno */
         .night-mode {
@@ -207,198 +204,239 @@ void setupDashboardPage(AsyncWebServer &server)
         .night-mode .button-group p {
             color: white;
         }
+
+        /* Responsividade */
+        @media (max-width: 600px) {
+            .dashboard-container {
+                width: 95%;
+                padding: 15px;
+            }
+
+            .round-button {
+                width: 80px;
+                height: 80px;
+                font-size: 12px;
+            }
+
+            .button-group p {
+                font-size: 14px;
+            }
+
+            .btn-link {
+                font-size: 14px;
+                padding: 10px;
+            }
+
+            #nightModeButton {
+                font-size: 14px;
+                padding: 10px;
+            }
+
+            .footer {
+                font-size: 12px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .round-button {
+                width: 70px;
+                height: 70px;
+                font-size: 11px;
+            }
+
+            .button-group p {
+                font-size: 12px;
+            }
+
+            .btn-link {
+                font-size: 12px;
+                padding: 8px;
+            }
+
+            #nightModeButton {
+                font-size: 12px;
+                padding: 8px;
+            }
+
+            .footer {
+                font-size: 10px;
+            }
+        }
     </style>
-    </head>
-    <body>
-        <div class="dashboard-container">
-            <h2 class="dashboard-title">Bem-vindo ao Dashboard</h2>
+</head>
+<body>
+    <div class="dashboard-container">
+        <h2 class="dashboard-title">Bem-vindo ao Dashboard</h2>
 
-            <!-- Grupo de botão e etiqueta para o Motor Compressor -->
-            <div class="button-group">
-                <button class="btn btn-motor1 round-button"
-                    id="toggleButtonMotor1"
-                    aria-label="Controle do motor compressor">
-                    Carregando...
-                </button>
-                <p>Motor Compressor</p>
-            </div>
-
-            <!-- Grupo de botão e etiqueta para o Motor Ventilador -->
-            <div class="button-group">
-                <button class="btn btn-motor2 round-button"
-                    id="toggleButtonMotor2"
-                    aria-label="Controle do motor ventilador">
-                    Carregando...
-                </button>
-                <p>Motor Ventilador</p>
-            </div>
-
-            <!-- Grupo de botão e etiqueta para o Motor Secador -->
-            <div class="button-group">
-                <button class="btn btn-motor3 round-button"
-                    id="toggleButtonMotor3"
-                    aria-label="Controle do motor secador">
-                    Carregando...
-                </button>
-                <p>Motor Secador</p>
-            </div>
-
-            <div id="messageBox" role="alert"></div>
-
-            <a href="/umidade" class="btn btn-link btn-link-umidade"
-                aria-label="Página de umidade">Umidade</a>
-            <a href="/pressao" class="btn btn-link btn-link-pressao"
-                aria-label="Página de pressão">Pressão</a>
-            <a href="/logout" class="btn btn-link btn-link-logout"
-                aria-label="Logout">Logout</a>
-
-            <button id="nightModeButton" aria-label="Modo Noturno">Modo
-                Noturno</button>
+        <!-- Grupo de botão e etiqueta para o Motor Compressor -->
+        <div class="button-group">
+            <button class="btn btn-motor1 round-button" id="toggleButtonMotor1" aria-label="Controle do motor compressor">
+                Carregando...
+            </button>
+            <p>Motor Compressor</p>
         </div>
 
-        <div class="footer">
-            <p>Aplicação desenvolvida pela Turma de Informática Para Internet
-                Trilhas de Futuro 2024</p>
-            <p>Instrutor: Lenon Yuri</p>
+        <!-- Grupo de botão e etiqueta para o Motor Ventilador -->
+        <div class="button-group">
+            <button class="btn btn-motor2 round-button" id="toggleButtonMotor2" aria-label="Controle do motor ventilador">
+                Carregando...
+            </button>
+            <p>Motor Ventilador</p>
         </div>
 
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                const toggleButtonMotor1 = document.getElementById('toggleButtonMotor1');
-                const toggleButtonMotor2 = document.getElementById('toggleButtonMotor2');
-                const toggleButtonMotor3 = document.getElementById('toggleButtonMotor3');
-                const messageBox = document.getElementById('messageBox');
-                const nightModeButton = document.getElementById('nightModeButton');
-            
-                function updateButtonState() {
-                    fetch('/motor-state')
-                        .then(response => response.json())
-                        .then(data => {
-                            let mensagem = '';
-                            let mensagemTipo = '';
-            
-                            // Verifica o estado de cada motor e constrói a mensagem
-                            for (let i = 1; i <= 3; i++) {
-                                const compressorLigado = data['compressorLigadoMotor' + i];
-                                const sistemaEmManutencao = data.sistemaEmManutencao;
-                                const sobrecarga = data['sobrecargaMotor' + i];
-                                const now = new Date();
-                                const horaAtual = now.getHours() + (now.getMinutes() / 60);
-            
-                                let estadoMotor = '';
-                                let button = document.getElementById(`toggleButtonMotor${i}`);
-                                let buttonClass = `btn-motor${i}`;
-            
-                                if (sobrecarga) {
-                                    button.innerHTML = 'Sobrecarga';
-                                    button.classList.add('btn-overload', 'btn-disabled');
-                                    button.classList.remove(buttonClass, 'btn-desligar');
-                                    estadoMotor = `Motor ${i} está com sobrecarga. Desativado.`;
-                                    mensagemTipo = 'error';
-                                } else if (sistemaEmManutencao) {
-                                    button.innerHTML = 'Manutenção';
-                                    button.classList.add('btn-maintenance', 'btn-disabled');
-                                    button.classList.remove(buttonClass, 'btn-desligar');
-                                    estadoMotor = `Motor ${i} está em manutenção. Desativado.`;
-                                    mensagemTipo = 'warning';
-                                } else if (horaAtual < 8 || horaAtual >= 22) {
-                                    button.innerHTML = 'Fora do Horário';
-                                    button.classList.add('btn-out-of-hours', 'btn-disabled');
-                                    button.classList.remove(buttonClass, 'btn-desligar');
-                                    estadoMotor = `Motor ${i} está fora do horário de funcionamento. Desativado.`;
-                                    mensagemTipo = 'alert';
+        <!-- Grupo de botão e etiqueta para o Motor Secador -->
+        <div class="button-group">
+            <button class="btn btn-motor3 round-button" id="toggleButtonMotor3" aria-label="Controle do motor secador">
+                Carregando...
+            </button>
+            <p>Motor Secador</p>
+        </div>
+
+        <div id="messageBox" role="alert"></div>
+
+        <a href="/umidade" class="btn btn-link btn-link-umidade" aria-label="Página de umidade">Umidade</a>
+        <a href="/pressao" class="btn btn-link btn-link-pressao" aria-label="Página de pressão">Pressão</a>
+        <a href="/logout" class="btn btn-link btn-link-logout" aria-label="Logout">Logout</a>
+
+        <button id="nightModeButton" aria-label="Modo Noturno">Modo Noturno</button>
+    </div>
+
+    <div class="footer">
+        <p>Aplicação desenvolvida pela Turma de Informática Para Internet Trilhas de Futuro 2024</p>
+        <p>Instrutor: Lenon Yuri</p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const toggleButtonMotor1 = document.getElementById('toggleButtonMotor1');
+            const toggleButtonMotor2 = document.getElementById('toggleButtonMotor2');
+            const toggleButtonMotor3 = document.getElementById('toggleButtonMotor3');
+            const messageBox = document.getElementById('messageBox');
+            const nightModeButton = document.getElementById('nightModeButton');
+
+            function updateButtonState() {
+                fetch('/motor-state')
+                    .then(response => response.json())
+                    .then(data => {
+                        let mensagem = '';
+                        let mensagemTipo = '';
+
+                        for (let i = 1; i <= 3; i++) {
+                            const compressorLigado = data['compressorLigadoMotor' + i];
+                            const sistemaEmManutencao = data.sistemaEmManutencao;
+                            const sobrecarga = data['sobrecargaMotor' + i];
+                            const now = new Date();
+                            const horaAtual = now.getHours() + (now.getMinutes() / 60);
+
+                            let estadoMotor = '';
+                            let button = document.getElementById(`toggleButtonMotor${i}`);
+                            let buttonClass = `btn-motor${i}`;
+
+                            if (sobrecarga) {
+                                button.innerHTML = 'Sobrecarga';
+                                button.classList.add('btn-overload', 'btn-disabled');
+                                button.classList.remove(buttonClass, 'btn-desligar');
+                                estadoMotor = `Motor ${i} está com sobrecarga. Desativado.`;
+                                mensagemTipo = 'error';
+                            } else if (sistemaEmManutencao) {
+                                button.innerHTML = 'Manutenção';
+                                button.classList.add('btn-maintenance', 'btn-disabled');
+                                button.classList.remove(buttonClass, 'btn-desligar');
+                                estadoMotor = `Motor ${i} está em manutenção. Desativado.`;
+                                mensagemTipo = 'warning';
+                            } else if (horaAtual < 8 || horaAtual >= 22) {
+                                button.innerHTML = 'Fora do Horário';
+                                button.classList.add('btn-out-of-hours', 'btn-disabled');
+                                button.classList.remove(buttonClass, 'btn-desligar');
+                                estadoMotor = `Motor ${i} está fora do horário de funcionamento. Desativado.`;
+                                mensagemTipo = 'alert';
+                            } else {
+                                if (compressorLigado) {
+                                    button.innerHTML = 'Desligar';
+                                    button.classList.add('btn-desligar');
+                                    button.classList.remove(buttonClass);
+                                    estadoMotor = `Motor ${i} está ligado.`;
+                                    mensagemTipo = 'success';
                                 } else {
-                                    if (compressorLigado) {
-                                        button.innerHTML = 'Desligar';
-                                        button.classList.add('btn-desligar');
-                                        button.classList.remove(buttonClass);
-                                        estadoMotor = `Motor ${i} está ligado.`;
-                                        mensagemTipo = 'success';
-                                    } else {
-                                        button.innerHTML = 'Ligar';
-                                        button.classList.remove('btn-desligar', 'btn-disabled');
-                                        button.classList.add(buttonClass);
-                                        estadoMotor = `Motor ${i} está desligado.`;
-                                        mensagemTipo = 'info';
-                                    }
-                                }
-            
-                                // Adiciona o estado do motor à mensagem
-                                mensagem += `${estadoMotor}<br>`;
-                            }
-            
-                            // Atualiza a caixa de mensagens
-                            if (mensagem) {
-                                messageBox.innerHTML = mensagem;
-                                messageBox.className = '';
-                                if (mensagemTipo) {
-                                    messageBox.classList.add(mensagemTipo);
+                                    button.innerHTML = 'Ligar';
+                                    button.classList.remove('btn-desligar', 'btn-disabled');
+                                    button.classList.add(buttonClass);
+                                    estadoMotor = `Motor ${i} está desligado.`;
+                                    mensagemTipo = 'info';
                                 }
                             }
+
+                            mensagem += `${estadoMotor}<br>`;
+                        }
+
+                        if (mensagem) {
+                            messageBox.innerHTML = mensagem;
+                            messageBox.className = '';
+                            if (mensagemTipo) {
+                                messageBox.classList.add(mensagemTipo);
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erro ao obter estado do motor:', error);
+                        messageBox.innerHTML = 'Erro ao carregar o estado do motor.';
+                        messageBox.className = 'error';
+                    });
+            }
+
+            function setupButtonClick(button, motor, buttonClass) {
+                button.addEventListener('click', function (event) {
+                    event.preventDefault();
+
+                    if (button.classList.contains('btn-disabled')) {
+                        return;
+                    }
+
+                    button.disabled = true;
+
+                    const action = button.innerHTML.includes('Desligar') ? 'desligar' : 'ligar';
+
+                    fetch(`/toggle?action=${action}&motor=${motor}`)
+                        .then(response => response.text())
+                        .then(() => {
+                            updateButtonState();
+                            setTimeout(() => {
+                                button.disabled = false;
+                            }, 1000);
                         })
                         .catch(error => {
-                            console.error('Erro ao obter estado do motor:', error);
-                            messageBox.innerHTML = 'Erro ao carregar o estado do motor.';
+                            console.error('Erro ao enviar comando para o motor:', error);
+                            messageBox.innerHTML = 'Erro ao enviar comando para o motor.';
                             messageBox.className = 'error';
+                            button.disabled = false;
                         });
-                }
-            
-                function setupButtonClick(button, motor, buttonClass) {
-                    button.addEventListener('click', function (event) {
-                        event.preventDefault();
-            
-                        if (button.classList.contains('btn-disabled')) {
-                            return;
-                        }
-            
-                        // Desabilita o botão temporariamente para evitar múltiplos cliques
-                        button.disabled = true;
-            
-                        const action = button.innerHTML.includes('Desligar') ? 'desligar' : 'ligar';
-            
-                        fetch(`/toggle?action=${action}&motor=${motor}`)
-                            .then(response => response.text())
-                            .then(() => {
-                                updateButtonState();
-                                // Reabilita o botão após 1 segundo
-                                setTimeout(() => {
-                                    button.disabled = false;
-                                }, 1000);
-                            })
-                            .catch(error => {
-                                console.error('Erro ao enviar comando para o motor:', error);
-                                messageBox.innerHTML = 'Erro ao enviar comando para o motor.';
-                                messageBox.className = 'error';
-                                // Reabilita o botão em caso de erro
-                                button.disabled = false;
-                            });
-                    });
-                }
-            
-                setupButtonClick(toggleButtonMotor1, '1', 'btn-motor1');
-                setupButtonClick(toggleButtonMotor2, '2', 'btn-motor2');
-                setupButtonClick(toggleButtonMotor3, '3', 'btn-motor3');
-            
-                setInterval(() => {
-                    updateButtonState();
-                }, 1000); // Atualiza a cada 1 segundo
-            
+                });
+            }
+
+            setupButtonClick(toggleButtonMotor1, '1', 'btn-motor1');
+            setupButtonClick(toggleButtonMotor2, '2', 'btn-motor2');
+            setupButtonClick(toggleButtonMotor3, '3', 'btn-motor3');
+
+            setInterval(() => {
                 updateButtonState();
-            
-                if (nightModeButton) {
-                    nightModeButton.addEventListener('click', () => {
-                        document.body.classList.toggle('night-mode');
-                        localStorage.setItem('theme', document.body.classList.contains('night-mode') ? 'night-mode' : '');
-                    });
-                }
-            
-                const savedTheme = localStorage.getItem('theme');
-                if (savedTheme) {
-                    document.body.classList.add(savedTheme);
-                }
-            });
+            }, 1000);
+
+            updateButtonState();
+
+            if (nightModeButton) {
+                nightModeButton.addEventListener('click', () => {
+                    document.body.classList.toggle('night-mode');
+                    localStorage.setItem('theme', document.body.classList.contains('night-mode') ? 'night-mode' : '');
+                });
+            }
+
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                document.body.classList.add(savedTheme);
+            }
+        });
     </script>
-    </body>
+</body>
 </html>
         )rawliteral";
 
