@@ -1,31 +1,16 @@
-#include <Arduino.h>           // Inclui a biblioteca principal do Arduino
-#include <ESPAsyncWebServer.h> // Inclui a biblioteca para criar um servidor web assíncrono no ESP32
-#include "manutencao.h"        // Inclui o cabeçalho que define funções e variáveis relacionadas à manutenção
-#include "ligadesliga.h"       // Inclui o cabeçalho atualizado que define funções para ligar e desligar componentes
-#include "dashboard.h"         // Inclui o cabeçalho para funções relacionadas ao painel de controle
+#include <Arduino.h>
+#include <ESPAsyncWebServer.h>
+#include "manutencao.h"
+#include "ligadesliga.h"
 
-// -------------------------------------------------------------------------
-// Configuração do pino para o botão de manutenção
-// -------------------------------------------------------------------------
-const int pinoManutencao = 25; // Define o pino 25 como o pino para o botão de manutenção
+const int pinoManutencao = 25; // Pino do botão de manutenção
+bool sistemaEmManutencao = false;
 
-// -------------------------------------------------------------------------
-// Variável para verificar se o sistema está em manutenção
-// -------------------------------------------------------------------------
-bool sistemaEmManutencao = false; // Inicializa a variável que indica se o sistema está em manutenção como falso
-
-// -------------------------------------------------------------------------
-// Função para configurar o botão de manutenção
-// -------------------------------------------------------------------------
 void setupManutencao()
 {
-    // Configura o pino do botão de manutenção como entrada com resistência pull-up interna
-    pinMode(pinoManutencao, INPUT_PULLUP); // INPUT_PULLUP ativa a resistência pull-up interna
+    pinMode(pinoManutencao, INPUT_PULLUP); // Configura o pino do botão de manutenção
 }
 
-// -------------------------------------------------------------------------
-// Função para atualizar o estado do sistema de manutenção
-// -------------------------------------------------------------------------
 void atualizarEstadoManutencao()
 {
     static unsigned long lastMaintenanceCheck = 0;
@@ -42,6 +27,13 @@ void atualizarEstadoManutencao()
             if (!sistemaEmManutencao)
             {
                 sistemaEmManutencao = true;
+
+                // Salva o estado atual dos motores antes de desativá-los
+                for (int i = 0; i < 3; i++)
+                {
+                    motoresEstadoAnterior[i] = motoresLigados[i];
+                }
+
                 desligarTodosMotores(); // Desliga todos os motores
                 Serial.println("Sistema em manutenção. Motores desativados.");
             }
@@ -51,7 +43,21 @@ void atualizarEstadoManutencao()
             if (sistemaEmManutencao)
             {
                 sistemaEmManutencao = false;
-                Serial.println("Estado de manutenção: Inativo");
+
+                // Restaura o estado dos motores ao estado anterior
+                for (int i = 0; i < 3; i++)
+                {
+                    if (motoresEstadoAnterior[i])
+                    {
+                        digitalWrite(pinosMotores[i], HIGH);
+                        delay(500); // Mantém o pulso por 500ms
+                        digitalWrite(pinosMotores[i], LOW);
+                        motoresLigados[i] = true;
+                        saveMotorState(arquivosMotores[i], true);
+                    }
+                }
+
+                Serial.println("Estado de manutenção: Inativo. Motores restaurados.");
             }
         }
     }

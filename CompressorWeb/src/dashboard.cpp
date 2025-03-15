@@ -37,141 +37,137 @@ void setupDashboardPage(AsyncWebServer &server)
             rel="stylesheet">
         <title>Dashboard</title>
         <style>
-            /* Estilos gerais para o corpo da página */
-            body {
-                font-family: Arial, sans-serif;
-                background-color: #f0f2f5;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                min-height: 100vh;
-                margin: 0;
-                padding: 0;
-                transition: background-color 0.3s, color 0.3s;
-            }
-        
-            /* Estilos para o container do dashboard */
-            .dashboard-container {
-                background-color: #ffffff;
-                padding: 20px;
-                border-radius: 8px;
-                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-                text-align: center;
-                width: 100%;
-                max-width: 400px;
-                margin: auto;
-                transition: background-color 0.3s, color 0.3s;
-            }
-        
-            /* Estilos para o título do dashboard */
-            .dashboard-title {
-                font-size: 24px;
-                font-family: "Playfair Display", serif;
-                margin-bottom: 20px;
-                background-image: linear-gradient(to bottom, rgb(255, 221, 0), rgba(246, 15, 15, 0.975), rgb(249, 216, 28));
-                background-clip: text;
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-                color: rgb(242, 95, 22);
-                font-weight: bold;
-            }
-        
-            /* Estilos para o grupo de botão e etiqueta */
-            .button-group {
-                margin-bottom: 20px; /* Espaçamento entre os grupos */
-            }
-        
-            .button-group p {
-                margin: 5px 0; /* Espaçamento entre o botão e a etiqueta */
-                font-size: 16px;
-                font-weight: bold;
-                color: #333;
-            }
-        
-            /* Estilos para botões redondos */
-            .round-button {
-                width: 100px;
-                height: 100px;
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                text-align: center;
-                font-size: 14px;
-                font-weight: bold;
-                margin: 0 auto;
-                cursor: pointer;
-                transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s;
-                color: white;
-                border: 2px solid rgba(0, 0, 0, 0.2); /* Borda adicionada */
-                outline: none;
-                position: relative;
-                overflow: hidden;
-                white-space: nowrap;
-                padding: 10px;
-            }
-        
-            /* Efeito de pressionar ao clicar */
-            .round-button:active {
-                transform: scale(0.95);
-                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2) inset;
-            }
-        
-            /* Ajuste de fonte para textos longos */
-            .round-button.long-text {
-                font-size: 12px;
-                padding: 8px;
-            }
-        
-            /* Estilos para botões de motores específicos */
-            .btn-motor1 { background-color: #32cd32; }
-            .btn-motor2 { background-color: #32cd32; }
-            .btn-motor3 { background-color: #32cd32; }
-        
-            /* Estilos para botões desativados */
-            .btn-disabled {
-                background-color: #6c757d;
-                cursor: not-allowed;
-            }
-        
-            /* Estilos para botões em manutenção */
-            .btn-maintenance { background-color: #ff8c00; }
-        
-            /* Estilos para botões com sobrecarga */
-            .btn-overload { background-color: #ff4500; }
-        
-            /* Estilos para botões fora do horário */
-            .btn-out-of-hours { background-color: #808080; }
-        
-            /* Estilos para a caixa de mensagem */
-            #messageBox {
-                margin-top: 20px;
-                padding: 10px;
-                border-radius: 5px;
-                background-color: #f8f9fa;
-                color: #333;
-                font-size: 16px; /* Tamanho maior para mensagens */
-                text-align: center;
-                transition: background-color 0.3s, color 0.3s;
-            }
-        
-            /* Mensagens de erro (vermelho) */
-            #messageBox.error {
-                background-color: #ffebee; /* Fundo claro para erro */
-                color: #c62828; /* Texto vermelho escuro */
-                border: 2px solid #c62828; /* Borda vermelha */
-            }
-        
-            /* Mensagens de alerta (laranja) */
-            #messageBox.alert {
-                background-color: #fff3e0; /* Fundo claro para alerta */
-                color: #ef6c00; /* Texto laranja escuro */
-                border: 2px solid #ef6c00; /* Borda laranja */
-            }
-        
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .dashboard-container {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 100%;
+            max-width: 400px;
+            margin: auto;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .dashboard-title {
+            font-size: 24px;
+            font-family: "Playfair Display", serif;
+            margin-bottom: 20px;
+            background-image: linear-gradient(to bottom, rgb(255, 221, 0), rgba(246, 15, 15, 0.975), rgb(249, 216, 28));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: rgb(242, 95, 22);
+            font-weight: bold;
+        }
+
+        .button-group {
+            margin-bottom: 20px;
+        }
+
+        .button-group p {
+            margin: 5px 0;
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .round-button {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+            margin: 0 auto;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s;
+            color: white;
+            border: 2px solid rgba(0, 0, 0, 0.2);
+            outline: none;
+            position: relative;
+            overflow: hidden;
+            white-space: nowrap;
+            padding: 10px;
+        }
+
+        .round-button:active {
+            transform: scale(0.95);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2) inset;
+        }
+
+        .btn-motor1 { background-color: #32cd32; } /* Verde */
+        .btn-motor2 { background-color: #32cd32; } /* Verde */
+        .btn-motor3 { background-color: #32cd32; } /* Verde */
+
+        .btn-disabled { background-color: #6c757d; cursor: not-allowed; }
+        .btn-maintenance { background-color: #ff8c00; } /* Amarelo Escuro */
+        .btn-overload { background-color: #ff4500; } /* Vermelho */
+        .btn-out-of-hours { background-color: #808080; } /* Cinza */
+
+        #messageBox {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+            color: #333;
+            font-size: 16px;
+            text-align: left; /* Alinhamento à esquerda */
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        #messageBox.alert { background-color: #fff3e0; color: #ef6c00; border: 2px solid #ef6c00; } /* Laranja */
+        #messageBox.error { background-color: #ffebee; color: #c62828; border: 2px solid #c62828; } /* Vermelho */
+        #messageBox.success { background-color: #e8f5e9; color: #2e7d32; border: 2px solid #2e7d32; } /* Verde */
+        #messageBox.info { background-color: #e3f2fd; color: #1565c0; border: 2px solid #1565c0; } /* Azul */
+        #messageBox.warning { background-color: #fff8e1; color: #ff8f00; border: 2px solid #ff8f00; } /* Amarelo */
+
+        .btn-link {
+            display: block;
+            padding: 12px;
+            font-size: 16px;
+            margin: 10px auto;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            color: white;
+            text-decoration: none;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        .btn-link-umidade { background-color: #004085; }
+        .btn-link-pressao { background-color: #344037; }
+        .btn-link-logout { background-color: #c82333; }
+
+        .btn-link:hover { opacity: 0.8; transform: scale(1.02); }
+
+        .footer {
+            width: 100%;
+            background-color: #ee641a;
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+            font-size: 14px;
+            margin-top: auto;
+        }
             /* Estilos para os botões de alternância de temas */
-            #nightModeButton, #highContrastButton {
+            #nightModeButton {
                 width: 100%;
                 padding: 12px;
                 font-size: 16px;
@@ -184,95 +180,34 @@ void setupDashboardPage(AsyncWebServer &server)
             }
         
             #nightModeButton { background-color: rgb(234, 161, 15); }
-            #highContrastButton { background-color: rgb(247, 214, 49); }
         
             #nightModeButton:hover { background-color: #8e5204; transform: scale(1.05); }
-            #highContrastButton:hover { background-color: #8c7807; transform: scale(1.05); }
-        
-            /* Estilos para os botões de navegação */
-            .btn-link {
-                display: block;
-                padding: 12px;
-                font-size: 16px;
-                margin: 10px auto;
-                border: none;
-                border-radius: 8px;
-                cursor: pointer;
-                color: white;
-                text-decoration: none;
-                transition: background-color 0.3s, transform 0.3s;
-            }
-        
-            .btn-link-umidade { background-color: #004085; }
-            .btn-link-pressao { background-color: #344037; }
-            .btn-link-logout { background-color: #c82333; }
-        
-            .btn-link:hover {
-                opacity: 0.8;
-                transform: scale(1.02);
-            }
-        
-            /* Modo noturno */
-            .night-mode {
-                background-color: #121212;
-                color: #e0e0e0;
-            }
-            .night-mode .dashboard-container {
-                background-color: #1e1e1e;
-                color: #e0e0e0;
-            }
-            .night-mode #messageBox {
-                background-color: #2c2c2c;
-                color: #e0e0e0;
-            }
-            .night-mode .btn-link {
-                background-color: #333333;
-                color: #e0e0e0;
-            }
-            .night-mode .round-button {
-                border-color: rgba(255, 255, 255, 0.2); /* Borda branca no modo noturno */
-                color: white; /* Texto branco no modo noturno */
-            }
-            .night-mode .button-group p {
-                color: white; /* Texto branco para etiquetas dos motores */
-            }
-        
-            /* Modo alto contraste */
-            .high-contrast {
-                background-color: #000000;
-                color: #ffffff;
-            }
-            .high-contrast .dashboard-container {
-                background-color: #000000;
-                color: #ffffff;
-            }
-            .high-contrast #messageBox {
-                background-color: #333333;
-                color: #ffffff;
-            }
-            .high-contrast .btn-link {
-                background-color: #555555;
-                color: #ffffff;
-            }
-            .high-contrast .round-button {
-                border-color: rgba(255, 255, 255, 0.5); /* Borda branca no modo alto contraste */
-                color: white; /* Texto branco no modo alto contraste */
-            }
-            .high-contrast .button-group p {
-                color: white; /* Texto branco para etiquetas dos motores */
-            }
-        
-            /* Estilos para o rodapé */
-            .footer {
-                width: 100%;
-                background-color: #ee641a;
-                color: white;
-                text-align: center;
-                padding: 10px 0;
-                font-size: 14px;
-                margin-top: auto;
-            }
-        </style>
+
+        /* Modo noturno */
+        .night-mode {
+            background-color: #121212;
+            color: #e0e0e0;
+        }
+        .night-mode .dashboard-container {
+            background-color: #1e1e1e;
+            color: #e0e0e0;
+        }
+        .night-mode #messageBox {
+            background-color: #2c2c2c;
+            color: #e0e0e0;
+        }
+        .night-mode .btn-link {
+            background-color: #333333;
+            color: #e0e0e0;
+        }
+        .night-mode .round-button {
+            border-color: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+        .night-mode .button-group p {
+            color: white;
+        }
+    </style>
     </head>
     <body>
         <div class="dashboard-container">
@@ -319,8 +254,6 @@ void setupDashboardPage(AsyncWebServer &server)
 
             <button id="nightModeButton" aria-label="Modo Noturno">Modo
                 Noturno</button>
-            <button id="highContrastButton" aria-label="Alto Contraste">Alto
-                Contraste</button>
         </div>
 
         <div class="footer">
@@ -331,148 +264,140 @@ void setupDashboardPage(AsyncWebServer &server)
 
         <script>
             document.addEventListener('DOMContentLoaded', function () {
-                // Referências aos elementos
                 const toggleButtonMotor1 = document.getElementById('toggleButtonMotor1');
                 const toggleButtonMotor2 = document.getElementById('toggleButtonMotor2');
                 const toggleButtonMotor3 = document.getElementById('toggleButtonMotor3');
                 const messageBox = document.getElementById('messageBox');
                 const nightModeButton = document.getElementById('nightModeButton');
-                const highContrastButton = document.getElementById('highContrastButton');
             
-                // Função para atualizar o estado dos botões e exibir mensagens
-                function updateButtonState(button, motor, buttonClass) {
+                function updateButtonState() {
                     fetch('/motor-state')
                         .then(response => response.json())
                         .then(data => {
-                            const compressorLigado = data['compressorLigadoMotor' + motor];
-                            const sistemaEmManutencao = data.sistemaEmManutencao;
-                            const sobrecarga = data['sobrecargaMotor' + motor];
-                            const now = new Date();
-                            const horaAtual = now.getHours() + (now.getMinutes() / 60);
-                
                             let mensagem = '';
-                            let mensagemTipo = ''; // Tipo de mensagem: 'alert' ou 'error'
-                
-                            // Verifica o estado do motor e atualiza o botão
-                            if (sobrecarga) {
-                                button.innerHTML = 'Sobrecarga';
-                                button.classList.add('btn-overload', 'btn-disabled');
-                                button.classList.remove(buttonClass, 'btn-desligar');
-                                mensagem = `Motor ${motor} está com sobrecarga. Desativado.`;
-                                mensagemTipo = 'alert'; // Alerta em laranja
-                            } else if (sistemaEmManutencao) {
-                                button.innerHTML = 'Manutenção';
-                                button.classList.add('btn-maintenance', 'btn-disabled');
-                                button.classList.remove(buttonClass, 'btn-desligar');
-                                mensagem = `Motor ${motor} está em manutenção. Desativado.`;
-                                mensagemTipo = 'alert'; // Alerta em laranja
-                            } else if (horaAtual < 8 || horaAtual >= 22) {
-                                button.innerHTML = 'Fora do Horário';
-                                button.classList.add('btn-out-of-hours', 'btn-disabled');
-                                button.classList.remove(buttonClass, 'btn-desligar');
-                                mensagem = `Motor ${motor} está fora do horário de funcionamento. Desativado.`;
-                                mensagemTipo = ''; // Mensagem padrão
-                            } else {
-                                if (compressorLigado) {
-                                    button.innerHTML = 'Desligar';
-                                    button.classList.add('btn-desligar');
-                                    button.classList.remove(buttonClass);
-                                    mensagem = `Motor ${motor} está ligado.`;
-                                    mensagemTipo = ''; // Mensagem padrão
+                            let mensagemTipo = '';
+            
+                            // Verifica o estado de cada motor e constrói a mensagem
+                            for (let i = 1; i <= 3; i++) {
+                                const compressorLigado = data['compressorLigadoMotor' + i];
+                                const sistemaEmManutencao = data.sistemaEmManutencao;
+                                const sobrecarga = data['sobrecargaMotor' + i];
+                                const now = new Date();
+                                const horaAtual = now.getHours() + (now.getMinutes() / 60);
+            
+                                let estadoMotor = '';
+                                let button = document.getElementById(`toggleButtonMotor${i}`);
+                                let buttonClass = `btn-motor${i}`;
+            
+                                if (sobrecarga) {
+                                    button.innerHTML = 'Sobrecarga';
+                                    button.classList.add('btn-overload', 'btn-disabled');
+                                    button.classList.remove(buttonClass, 'btn-desligar');
+                                    estadoMotor = `Motor ${i} está com sobrecarga. Desativado.`;
+                                    mensagemTipo = 'error';
+                                } else if (sistemaEmManutencao) {
+                                    button.innerHTML = 'Manutenção';
+                                    button.classList.add('btn-maintenance', 'btn-disabled');
+                                    button.classList.remove(buttonClass, 'btn-desligar');
+                                    estadoMotor = `Motor ${i} está em manutenção. Desativado.`;
+                                    mensagemTipo = 'warning';
+                                } else if (horaAtual < 8 || horaAtual >= 22) {
+                                    button.innerHTML = 'Fora do Horário';
+                                    button.classList.add('btn-out-of-hours', 'btn-disabled');
+                                    button.classList.remove(buttonClass, 'btn-desligar');
+                                    estadoMotor = `Motor ${i} está fora do horário de funcionamento. Desativado.`;
+                                    mensagemTipo = 'alert';
                                 } else {
-                                    button.innerHTML = 'Ligar';
-                                    button.classList.remove('btn-desligar', 'btn-disabled');
-                                    button.classList.add(buttonClass);
-                                    mensagem = `Motor ${motor} está desligado.`;
-                                    mensagemTipo = ''; // Mensagem padrão
+                                    if (compressorLigado) {
+                                        button.innerHTML = 'Desligar';
+                                        button.classList.add('btn-desligar');
+                                        button.classList.remove(buttonClass);
+                                        estadoMotor = `Motor ${i} está ligado.`;
+                                        mensagemTipo = 'success';
+                                    } else {
+                                        button.innerHTML = 'Ligar';
+                                        button.classList.remove('btn-desligar', 'btn-disabled');
+                                        button.classList.add(buttonClass);
+                                        estadoMotor = `Motor ${i} está desligado.`;
+                                        mensagemTipo = 'info';
+                                    }
                                 }
+            
+                                // Adiciona o estado do motor à mensagem
+                                mensagem += `${estadoMotor}<br>`;
                             }
-                
-                            // Atualiza a mensagem no messageBox
+            
+                            // Atualiza a caixa de mensagens
                             if (mensagem) {
-                                messageBox.innerHTML = mensagem; // Substitui o conteúdo existente
-                                messageBox.className = ''; // Limpa classes anteriores
+                                messageBox.innerHTML = mensagem;
+                                messageBox.className = '';
                                 if (mensagemTipo) {
-                                    messageBox.classList.add(mensagemTipo); // Adiciona a classe de tipo (alert ou error)
+                                    messageBox.classList.add(mensagemTipo);
                                 }
                             }
                         })
                         .catch(error => {
                             console.error('Erro ao obter estado do motor:', error);
                             messageBox.innerHTML = 'Erro ao carregar o estado do motor.';
-                            messageBox.className = 'error'; // Erro em vermelho
+                            messageBox.className = 'error';
                         });
                 }
             
-                // Função para configurar o clique nos botões
                 function setupButtonClick(button, motor, buttonClass) {
                     button.addEventListener('click', function (event) {
                         event.preventDefault();
             
                         if (button.classList.contains('btn-disabled')) {
-                            return; // Impede ação se o botão estiver desabilitado
+                            return;
                         }
+            
+                        // Desabilita o botão temporariamente para evitar múltiplos cliques
+                        button.disabled = true;
             
                         const action = button.innerHTML.includes('Desligar') ? 'desligar' : 'ligar';
             
                         fetch(`/toggle?action=${action}&motor=${motor}`)
                             .then(response => response.text())
-                            .then(() => updateButtonState(button, motor, buttonClass))
+                            .then(() => {
+                                updateButtonState();
+                                // Reabilita o botão após 1 segundo
+                                setTimeout(() => {
+                                    button.disabled = false;
+                                }, 1000);
+                            })
                             .catch(error => {
                                 console.error('Erro ao enviar comando para o motor:', error);
                                 messageBox.innerHTML = 'Erro ao enviar comando para o motor.';
-                                messageBox.className = 'error'; // Erro em vermelho
+                                messageBox.className = 'error';
+                                // Reabilita o botão em caso de erro
+                                button.disabled = false;
                             });
                     });
                 }
             
-                // Configura os botões de controle dos motores
                 setupButtonClick(toggleButtonMotor1, '1', 'btn-motor1');
                 setupButtonClick(toggleButtonMotor2, '2', 'btn-motor2');
                 setupButtonClick(toggleButtonMotor3, '3', 'btn-motor3');
             
-                // Atualiza o estado dos botões a cada 5 segundos
                 setInterval(() => {
-                    updateButtonState(toggleButtonMotor1, '1', 'btn-motor1');
-                    updateButtonState(toggleButtonMotor2, '2', 'btn-motor2');
-                    updateButtonState(toggleButtonMotor3, '3', 'btn-motor3');
-                }, 5000);
+                    updateButtonState();
+                }, 1000); // Atualiza a cada 1 segundo
             
-                // Atualiza o estado dos botões ao carregar a página
-                updateButtonState(toggleButtonMotor1, '1', 'btn-motor1');
-                updateButtonState(toggleButtonMotor2, '2', 'btn-motor2');
-                updateButtonState(toggleButtonMotor3, '3', 'btn-motor3');
+                updateButtonState();
             
-                // Função para alternar entre os temas
-                function toggleTheme(theme) {
-                    const isThemeActive = document.body.classList.contains(theme);
-                    document.body.classList.remove('night-mode', 'high-contrast');
-            
-                    if (!isThemeActive) {
-                        document.body.classList.add(theme);
-                        localStorage.setItem('theme', theme);
-                    } else {
-                        localStorage.removeItem('theme');
-                    }
+                if (nightModeButton) {
+                    nightModeButton.addEventListener('click', () => {
+                        document.body.classList.toggle('night-mode');
+                        localStorage.setItem('theme', document.body.classList.contains('night-mode') ? 'night-mode' : '');
+                    });
                 }
             
-                // Aplica o tema salvo no localStorage ao carregar a página
                 const savedTheme = localStorage.getItem('theme');
                 if (savedTheme) {
                     document.body.classList.add(savedTheme);
                 }
-            
-                // Configura os eventos de clique para os botões de tema
-                if (nightModeButton) {
-                    nightModeButton.addEventListener('click', () => toggleTheme('night-mode'));
-                }
-            
-                if (highContrastButton) {
-                    highContrastButton.addEventListener('click', () => toggleTheme('high-contrast'));
-                }
             });
-        </script>
-
+    </script>
     </body>
 </html>
         )rawliteral";

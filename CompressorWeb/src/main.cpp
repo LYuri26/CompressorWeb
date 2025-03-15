@@ -89,14 +89,6 @@ void loop()
         lastCompressorUpdate = currentMillis;
     }
 
-    // Verifica se houve mudança no estado de manutenção
-    static bool ultimoEstadoManutencao = sistemaEmManutencao;
-    if (sistemaEmManutencao != ultimoEstadoManutencao)
-    {
-        Serial.println("Estado de manutenção alterado: " + String(sistemaEmManutencao ? "Ativado" : "Desativado"));
-        ultimoEstadoManutencao = sistemaEmManutencao;
-    }
-
     // Verifica o status dos compressores e atualiza automaticamente os arquivos
     monitorarStatusCompressores();
 
