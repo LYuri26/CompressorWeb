@@ -7,8 +7,8 @@
 #include "manutencao.h"
 
 // Pinos de controle de motores e pinos adicionais para status
-int pinosMotores[] = {26, 27, 14}; // Para gerar pulsos rápidos
-int pinosStatus[] = {32, 33, 35};  // Para indicar estado do compressor
+int pinosMotores[] = {13, 27, 33}; // Para gerar pulsos rápidos
+int pinosStatus[] = {14, 26, 32};  // Para indicar estado do compressor
 
 const long intervalo = 1000; // Intervalo para gravação de estado
 const String arquivosMotores[] = {"/motor1.txt", "/motor2.txt", "/motor3.txt"};

@@ -2,7 +2,7 @@
 #include "manutencao.h"
 #include "ligadesliga.h"
 
-const int pinoManutencao = 25;    // Definição da variável global
+const int pinoManutencao = 4;     // Definição da variável global
 bool sistemaEmManutencao = false; // Definição da variável global
 
 void setupManutencao()
