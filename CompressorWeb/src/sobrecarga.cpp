@@ -2,7 +2,7 @@
 #include "ligadesliga.h"
 
 // Pinos de entrada para monitorar a sobrecarga
-const int pinosSobrecarga[] = {15, 25, 35};
+const int pinosSobrecarga[] = {15, 25, 18};
 bool sobrecargaDetectada[] = {false, false, false}; // Estado de sobrecarga para cada motor
 bool ultimoEstadoSobrecarga[] = {false, false, false};
 unsigned long ultimoTempoSobrecarga[3] = {0, 0, 0};

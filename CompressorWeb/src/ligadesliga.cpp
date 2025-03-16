@@ -5,6 +5,7 @@
 #include "ligadesliga.h"
 #include "tempo.h"
 #include "manutencao.h"
+#include "pressostato.h"
 
 // Pinos de controle de motores e pinos adicionais para status
 int pinosMotores[] = {13, 27, 33}; // Para gerar pulsos rápidos
@@ -325,11 +326,11 @@ void saveMotorState(const String &arquivoEstado, bool state)
 void saveStatusState(int pin, bool state)
 {
     String arquivoEstado;
-    if (pin == 32)
+    if (pin == 14)
         arquivoEstado = arquivosStatus[0];
-    else if (pin == 33)
+    else if (pin == 26)
         arquivoEstado = arquivosStatus[1];
-    else if (pin == 35)
+    else if (pin == 32)
         arquivoEstado = arquivosStatus[2];
 
     saveMotorState(arquivoEstado, state);

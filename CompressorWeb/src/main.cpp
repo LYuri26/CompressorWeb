@@ -14,6 +14,7 @@
 #include "wifigerenciador.h"
 #include "manutencao.h"
 #include "sobrecarga.h"
+#include "pressostato.h"
 
 AsyncWebServer server(80);
 
@@ -30,6 +31,7 @@ const unsigned long RECONNECT_INTERVAL = 5000;
 const unsigned long UPDATE_INTERVAL = 300000; // Intervalo de atualização do tempo e status dos motores
 const unsigned long RESTART_TIME = 60000;     // Tempo para reinicialização em caso de falha
 
+static unsigned long lastPressostatoCheck = 0;
 unsigned long lastUpdate = 0;           // Última vez que o tempo foi atualizado
 unsigned long lastCompressorUpdate = 0; // Última vez que o status dos compressores foi atualizado
 
@@ -64,6 +66,8 @@ void setup()
     // Configura a página do dashboard
     setupDashboardPage(server);
 
+    verificarPressostato();
+
     // Configura o sistema de sobrecarga
     setupSobrecarga();
 
@@ -84,11 +88,14 @@ void loop()
     // 2. Atualiza o status dos motores a cada intervalo definido
     if (currentMillis - lastCompressorUpdate >= UPDATE_INTERVAL)
     {
-        updateMotorStatus();      // Atualiza o status dos motores
-        atualizarEstadoMotores(); // Verifica se os motores devem ser desligados (manutenção ou horário)
+        updateMotorStatus(); // Atualiza o status dos motores
         lastCompressorUpdate = currentMillis;
     }
-
+    if (millis() - lastPressostatoCheck >= 5000)
+    { // Verifica a cada 5 segundos
+        verificarPressostato();
+        lastPressostatoCheck = millis();
+    }
     // 3. Verifica o status dos compressores e atualiza automaticamente os arquivos (a cada 5 segundos)
     static unsigned long lastCompressorCheck = 0;
     if (currentMillis - lastCompressorCheck >= 5000) // 5 segundos
