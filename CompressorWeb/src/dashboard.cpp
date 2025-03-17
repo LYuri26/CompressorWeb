@@ -544,7 +544,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Função para atualizar o estado dos botões e mensagens
-// Função para atualizar o estado dos botões e mensagens
 function updateButtonState() {
     fetch('/motor-state')
         .then(response => {
@@ -552,6 +551,8 @@ function updateButtonState() {
             return response.json();
         })
         .then(data => {
+            const nomesMotores = ["COMPRESSOR", "VENTILADOR", "SECADOR"]; // Nomes dos motores
+
             for (let i = 0; i < 3; i++) {
                 const compressorLigado = data[`compressorLigadoMotor${i + 1}`];
                 const sistemaEmManutencao = data.sistemaEmManutencao;
@@ -566,38 +567,38 @@ function updateButtonState() {
                     toggleButtons[i].classList.add('btn-overload', 'btn-disabled');
                     toggleButtons[i].classList.remove('btn-desligar', 'btn-ligar');
                     messageBoxes[i].className = 'error';
-                    messageBoxes[i].textContent = `Motor ${i + 1} está com sobrecarga. Desativado.`;
+                    messageBoxes[i].textContent = `${nomesMotores[i]} está com sobrecarga. Desativado.`;
                 } else if (sistemaEmManutencao) {
                     toggleButtons[i].innerHTML = '<span>Manutenção</span>';
                     toggleButtons[i].classList.add('btn-maintenance', 'btn-disabled');
                     toggleButtons[i].classList.remove('btn-desligar', 'btn-ligar');
                     messageBoxes[i].className = 'warning';
-                    messageBoxes[i].textContent = `Motor ${i + 1} está em manutenção. Desativado.`;
+                    messageBoxes[i].textContent = `${nomesMotores[i]} está em manutenção. Desativado.`;
                 } else if (horaAtual < 8 || horaAtual >= 22) {
                     toggleButtons[i].innerHTML = '<span>Fora do Horário</span>';
                     toggleButtons[i].classList.add('btn-out-of-hours', 'btn-disabled');
                     toggleButtons[i].classList.remove('btn-desligar', 'btn-ligar');
                     messageBoxes[i].className = 'alert';
-                    messageBoxes[i].textContent = `Motor ${i + 1} está fora do horário de funcionamento. Desativado.`;
+                    messageBoxes[i].textContent = `${nomesMotores[i]} está fora do horário de funcionamento. Desativado.`;
                 } else if (pressostatoAtivo && i === 0) { // Apenas para o motor compressor (i === 0)
                     toggleButtons[i].innerHTML = '<span>Pressostato Ativo</span>';
                     toggleButtons[i].classList.add('btn-disabled');
                     toggleButtons[i].classList.remove('btn-desligar', 'btn-ligar');
                     messageBoxes[i].className = 'info';
-                    messageBoxes[i].textContent = `Pressostato ativo. Motor ${i + 1} bloqueado.`;
+                    messageBoxes[i].textContent = `Pressostato ativo. ${nomesMotores[i]} bloqueado.`;
                 } else {
                     if (compressorLigado) {
                         toggleButtons[i].innerHTML = '<span>Desligar</span>';
                         toggleButtons[i].classList.add('btn-desligar');
                         toggleButtons[i].classList.remove('btn-ligar');
                         messageBoxes[i].className = 'success';
-                        messageBoxes[i].textContent = `Motor ${i + 1} está ligado.`;
+                        messageBoxes[i].textContent = `${nomesMotores[i]} está ligado.`;
                     } else {
                         toggleButtons[i].innerHTML = '<span>Ligar</span>';
                         toggleButtons[i].classList.add('btn-ligar');
                         toggleButtons[i].classList.remove('btn-desligar', 'btn-disabled');
                         messageBoxes[i].className = 'info';
-                        messageBoxes[i].textContent = `Motor ${i + 1} está desligado.`;
+                        messageBoxes[i].textContent = `${nomesMotores[i]} está desligado.`;
                     }
                 }
 
