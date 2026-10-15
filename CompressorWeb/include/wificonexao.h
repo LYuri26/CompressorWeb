@@ -1,77 +1,102 @@
-#ifndef WIFICONEXAO_H // Verifica se o símbolo WIFICONEXAO_H não foi definido
-#define WIFICONEXAO_H // Define o símbolo WIFICONEXAO_H para evitar inclusão múltipla do arquivo
+#ifndef WIFICONEXAO_H
+#define WIFICONEXAO_H
 
-#include <WiFi.h>              // Inclui a biblioteca WiFi.h para gerenciamento de conexões WiFi
-#include <ESPAsyncWebServer.h> // Inclui a biblioteca ESPAsyncWebServer para criar um servidor web assíncrono
+#include <Arduino.h>
+#include <WiFi.h>
+#include <ESPAsyncWebServer.h>
 
 // -------------------------------------------------------------------------
-// Declaração de Variáveis de Configuração WiFi
+// 1. Definições e Constantes de Rede
+// -------------------------------------------------------------------------
+#define MAX_SSID_LEN 32
+#define MAX_PASS_LEN 64
+#define WIFI_RECONNECT_TIMEOUT_MS 15000
+#define WIFI_SCAN_INTERVAL_MS 5000
+
+// -------------------------------------------------------------------------
+// 2. Enumeração da Máquina de Estados de Conectividade
+// -------------------------------------------------------------------------
+typedef enum
+{
+    WIFI_STATE_IDLE,
+    WIFI_STATE_CONNECTING,
+    WIFI_STATE_CONNECTED,
+    WIFI_STATE_DISCONNECTED,
+    WIFI_STATE_FAILED,
+    WIFI_STATE_AP_MODE
+} wifi_system_state_t;
+
+// -------------------------------------------------------------------------
+// 3. Declaração de Variáveis Globais de Configuração e Estado
 // -------------------------------------------------------------------------
 
 /**
- * Nome da rede WiFi.
- *
- * @note Esta variável armazena o SSID (nome da rede WiFi) ao qual o dispositivo deve se conectar.
- *
- * A variável `ssid` é uma constante que representa o nome da rede WiFi. O tipo `const char*` é usado para strings em C/C++, onde `const` indica que o conteúdo não pode ser alterado.
+ * Ponteiro constante para o SSID atualmente selecionado para conexão.
  */
 extern const char *ssid;
 
 /**
- * Senha da rede WiFi.
- *
- * @note Esta variável armazena a senha necessária para conectar-se à rede WiFi especificada pelo SSID.
- *
- * A variável `password` é uma constante que representa a senha da rede WiFi. Assim como `ssid`, o tipo `const char*` é utilizado para garantir que a senha não seja alterada acidentalmente.
+ * Ponteiro constante para a senha da rede sem fio selecionada.
  */
 extern const char *password;
 
-// -------------------------------------------------------------------------
-// Declaração da Variável de Estado
-// -------------------------------------------------------------------------
-
 /**
- * Indica se o dispositivo está no modo Access Point (AP).
- *
- * @note Esta variável é usada para verificar o estado atual do dispositivo, se está no modo AP (ponto de acesso) ou como cliente WiFi.
- *
- * A variável `isAPMode` é um booleano (`bool`) que armazena o estado do dispositivo. Se `true`, o dispositivo está no modo AP; se `false`, está conectado a uma rede WiFi como cliente.
+ * Flag booleana que indica se o ESP32 está operando em Modo Ponto de Acesso (AP).
  */
 extern bool isAPMode;
 
-// -------------------------------------------------------------------------
-// Declaração de Funções para Conectar ao WiFi e Modo Access Point
-// -------------------------------------------------------------------------
+/**
+ * Flag booleana indicando se há uma transição de conexão em andamento.
+ */
+extern bool wifiConectando;
 
 /**
- * Conecta ao WiFi usando o SSID e a senha fornecidos.
- *
- * @param ssid Nome da rede WiFi.
- * @param password Senha da rede WiFi.
- *
- * @note Esta função tenta estabelecer uma conexão com a rede WiFi especificada. O tipo `const char*` é utilizado para passar strings (SSID e senha) como argumentos.
+ * Flag que sinaliza se uma varredura de redes sem fio está em execução.
  */
-void connectToWiFi(const char *ssid, const char *password);
+extern bool scanning;
 
 /**
- * Entra no modo Access Point (AP).
- *
- * @note Esta função configura o dispositivo para criar uma rede WiFi própria, permitindo que outros dispositivos se conectem a ele. Isso é útil para configuração inicial ou para situações em que o dispositivo precisa criar uma rede própria para interação com outros dispositivos.
+ * Timestamp do último escaneamento de redes sem fio executado.
  */
+extern unsigned long lastScan;
+
+/**
+ * Intervalo configurado entre escaneamentos de redes Wi-Fi (ms).
+ */
+extern const unsigned long scanInterval;
+
+/**
+ * Quantidade de redes sem fio encontradas no último escaneamento.
+ */
+extern int scanResults;
+
+/**
+ * Configurações de endereçamento estático para o modo Access Point.
+ */
+extern IPAddress local_ip;
+extern IPAddress gateway;
+extern IPAddress subnet;
+
+// -------------------------------------------------------------------------
+// 4. Declaração de Funções de Conectividade e Operação Não-Bloqueante
+// -------------------------------------------------------------------------
+
 void setupAP();
-
-/**
- * Carrega redes WiFi salvas na memória.
- *
- * @note Esta função lê as redes WiFi que foram salvas anteriormente e as armazena para uso futuro. A função é útil para reestabelecer conexões automáticas a redes conhecidas após reinicializações ou desconexões.
- */
+void enterAPMode();
+void connectToWiFi(const char *ssid, const char *password);
+void processarConexaoWiFi();
+void desconectarWiFi();
 void loadSavedWiFiNetworks();
-
-/**
- * Verifica os resultados do escaneamento de redes WiFi.
- *
- * @note Esta função analisa os resultados obtidos após o escaneamento de redes WiFi para fornecer informações sobre as redes disponíveis. Pode ser utilizada para mostrar uma lista de redes WiFi disponíveis para o usuário selecionar.
- */
+void startScanWiFiNetworks();
 void checkScanResults();
+String getScanResults();
 
-#endif // WIFICONEXAO_H  // Fim da diretiva de inclusão condicional para o símbolo WIFICONEXAO_H
+// -------------------------------------------------------------------------
+// 5. Funções de Diagnóstico e Métricas de Rede
+// -------------------------------------------------------------------------
+bool isWiFiConnected();
+int getWiFiSignalQuality();
+String getWiFiStatusJSON();
+const char *getWiFiStateString();
+
+#endif // WIFICONEXAO_H

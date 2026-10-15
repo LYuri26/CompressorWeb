@@ -4,33 +4,62 @@
 #include <Arduino.h>
 #include <ESPAsyncWebServer.h>
 
-// Declaração de Variáveis Globais
-extern int pinosMotores[];           // Pinos de controle dos motores
-extern int pinosStatus[];            // Pinos de status dos compressores
-extern bool motoresLigados[];        // Estado dos motores
-extern bool sistemaEmManutencao;     // Estado de manutenção
-extern bool timersAtivos[];          // Timers dos motores
-extern bool motoresEstadoAnterior[]; // Estado dos motores antes da manutenção ou sobrecarga
-extern bool isAfterClosingTime();
-extern bool isBeforeOpeningTime();
-extern const String arquivosTimers[];
+#define NUM_MOTORES 3
 
-// Arquivos para salvar o estado dos motores
-extern const String arquivosMotores[];
-extern const String arquivosStatus[];
+// -------------------------------------------------------------------------
+// Declaração de Variáveis e Pinos Globais (Memória RAM)
+// -------------------------------------------------------------------------
+extern int pinosMotores[NUM_MOTORES];           // Pinos de controle (pulsos)
+extern int pinosStatus[NUM_MOTORES];            // Pinos de feedback dos compressores
+extern bool motoresLigados[NUM_MOTORES];        // Estado operacional em RAM
+extern bool timersAtivos[NUM_MOTORES];          // Indicador de timer de segurança ativo
+extern bool motoresEstadoAnterior[NUM_MOTORES]; // Estado antes de manutenção/falhas
+extern unsigned long motorTimers[NUM_MOTORES];  // Timestamp de liberação
 
-// Funções
+// Arquivos de persistência no SPIFFS
+extern const String arquivosMotores[NUM_MOTORES];
+extern const String arquivosStatus[NUM_MOTORES];
+extern const String arquivosTimers[NUM_MOTORES];
+
+// -------------------------------------------------------------------------
+// Funções de Inicialização e Hardware Não-Bloqueante
+// -------------------------------------------------------------------------
 void setupLigaDesliga(AsyncWebServer &server);
-void saveMotorState(const String &arquivoEstado, bool state);
-void updateMotorStatus();
-void monitorarStatusCompressores();
-void saveStatusState(int pin, bool state);
+void processarPulsosMotores();         // Desliga o pulso de 500ms sem delay()
+void dispararPulsoMotor(int motorIdx); // Inicia o pulso assíncrono no pino
+void monitorarStatusCompressores();    // Faz a leitura física dos compressores
+void updateMotorStatus();              // Sincroniza hardware com arquivos
+
+// -------------------------------------------------------------------------
+// Funções de Controle e Temporização
+// -------------------------------------------------------------------------
+void updateTimers();                   // Atualiza cronômetros no disco/RAM
+bool isMotorTimerActive(int motorIdx); // Verifica se motor está em descanso
+unsigned long getMotorRemainingTime(int motorIdx);
+void handleToggleAction(AsyncWebServer &server);
+
+// -------------------------------------------------------------------------
+// Funções de Travas e Regras de Segurança
+// -------------------------------------------------------------------------
 void desligarTodosMotores();
-bool sistemaDeveEstarBloqueado();
 void atualizarEstadoMotores();
 void desativarSistemaForaDoHorario();
-bool checkMotorStatusChange(); // Declaração da função
-bool isMotorTimerActive(int motorIdx);
-void updateTimers();
+bool sistemaDeveEstarBloqueado();
+bool checkMotorStatusChange();
+
+// -------------------------------------------------------------------------
+// Verificação de Horário Operacional
+// -------------------------------------------------------------------------
+bool isAfterClosingTime();
+bool isBeforeOpeningTime();
+
+// -------------------------------------------------------------------------
+// Persistência com Cache Seguro (Sem desgaste da Flash)
+// -------------------------------------------------------------------------
+void saveMotorState(const String &arquivoEstado, bool state);
+bool readMotorState(const String &arquivoEstado);
+void saveStatusState(int pin, bool state);
+unsigned long readTimerState(const String &arquivoTimer);
+void saveTimerState(const String &arquivoTimer, unsigned long remainingTime);
 
 #endif // LIGADESLIGA_H

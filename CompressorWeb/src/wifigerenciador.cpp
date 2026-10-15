@@ -1,181 +1,242 @@
-#include <WiFi.h>              // Inclui a biblioteca WiFi, essencial para conectar-se e gerenciar conexões Wi-Fi no ESP32.
-#include <ESPAsyncWebServer.h> // Inclui a biblioteca para configurar um servidor web assíncrono no ESP32, permitindo servir páginas web e lidar com requisições HTTP.
-#include <SPIFFS.h>            // Inclui a biblioteca para acessar o sistema de arquivos SPIFFS, útil para armazenar e ler arquivos no ESP32.
-#include "wificonexao.h"       // Inclui um arquivo de cabeçalho personalizado com funções para conectar-se a redes Wi-Fi.
-#include "wifiinterface.h"     // Inclui um arquivo de cabeçalho personalizado com funções adicionais de gerenciamento de Wi-Fi e interface.
+/**
+ * ============================================================================
+ * PROJETO: EnergizAR - Sistema de Automação e Monitoramento ESP32
+ * ARQUIVO: src/wifigerenciador.cpp
+ * DESCRIÇÃO: Controlador de endpoints REST para gerenciamento de Wi-Fi.
+ * ============================================================================
+ */
+
+#include "wifigerenciador.h"
+#include "wificonexao.h"
+#include "wifiinterface.h"
+#include <Arduino.h>
+#include <WiFi.h>
+#include <ESPAsyncWebServer.h>
+#include <SPIFFS.h>
+#include <vector>
+
+static const char *ARQUIVO_WIFI_PATH = "/wifiredes.txt";
+
+// Estrutura interna para contingência em memória RAM (caso o SPIFFS falhe na Flash)
+struct RedeCredencialMemoria
+{
+    String ssid;
+    String pass;
+};
+static std::vector<RedeCredencialMemoria> redesEmRAM;
 
 // -------------------------------------------------------------------------
-// Função: setupWiFiGerenciadorPage
-// Descrição: Configura as rotas e o comportamento da página de gerenciamento de Wi-Fi.
-// Parâmetros:
-//  - AsyncWebServer &server: Referência para o servidor web assíncrono que servirá as páginas e rotas definidas.
+// Verificação segura do SPIFFS local (Anti-Crash / Sem erros de escopo)
+// -------------------------------------------------------------------------
+static bool isSPIFFSDisponivel()
+{
+    static bool montado = false;
+    static bool tentouMontar = false;
+
+    if (montado)
+        return true;
+    if (tentouMontar)
+        return false;
+
+    tentouMontar = true;
+    if (SPIFFS.begin(false) || SPIFFS.begin(true))
+    {
+        montado = true;
+        return true;
+    }
+
+    Serial.println("[SPIFFS] Aviso: Sistema de arquivos indisponível. Operando em memória RAM temporária.");
+    return false;
+}
+
+// Utilitário para limpar quebras de linha e espaços
+static void sanitizarString(String &str)
+{
+    str.trim();
+    str.replace("\r", "");
+    str.replace("\n", "");
+}
+
+// -------------------------------------------------------------------------
+// Configuração das Rotas Web do Gerenciador de Wi-Fi
 // -------------------------------------------------------------------------
 void setupWiFiGerenciadorPage(AsyncWebServer &server)
 {
-    // -------------------------------------------------------------------------
-    // Inicializa o sistema de arquivos SPIFFS.
-    // -------------------------------------------------------------------------
-    if (!SPIFFS.begin(true))
-    {                                                                    // Tenta iniciar o sistema de arquivos SPIFFS com formatação automática caso necessário.
-        Serial.println("Falha ao iniciar o sistema de arquivos SPIFFS"); // Mensagem de erro se SPIFFS não conseguir iniciar, exibida no monitor serial.
-        return;                                                          // Interrompe a execução da função se SPIFFS não iniciar corretamente.
-    }
+    // Inicializa a checagem do SPIFFS sem abortar as rotas caso falhe
+    isSPIFFSDisponivel();
 
-    // -------------------------------------------------------------------------
-    // Rota para a página de gerenciamento de Wi-Fi.
-    // -------------------------------------------------------------------------
+    // 1. Rota da Página HTML Principal de Configuração Wi-Fi
     server.on("/wifigerenciamento", HTTP_GET, [](AsyncWebServerRequest *request)
-              {
-                  request->send(200, "text/html", getWiFiManagementPage()); // Envia ao cliente a página HTML de gerenciamento de Wi-Fi com status 200 (OK).
-              });
+              { request->send(200, "text/html", getWiFiManagementPage()); });
 
-    // -------------------------------------------------------------------------
-    // Rota para listar redes Wi-Fi salvas.
-    // -------------------------------------------------------------------------
+    // 2. Rota que lista redes salvas em texto simples (SSID,Senha)
     server.on("/listadewifi", HTTP_GET, [](AsyncWebServerRequest *request)
               {
-                  File file = SPIFFS.open("/wifiredes.txt", FILE_READ);
-                  if (!file)
-                  {                                                                               // Verifica se o arquivo foi aberto com sucesso.
-                      request->send(500, "text/plain", "Erro ao abrir o arquivo de redes Wi-Fi"); // Responde com erro (500) se não conseguir abrir o arquivo.
-                      return;                                                                     // Interrompe a execução da função em caso de erro.
-                  }
+        String networks = "";
 
-                  String networks = file.readString(); // Lê todo o conteúdo do arquivo como uma String.
-                  file.close();                        // Fecha o arquivo após a leitura para liberar recursos.
+        if (isSPIFFSDisponivel() && SPIFFS.exists(ARQUIVO_WIFI_PATH)) {
+            File file = SPIFFS.open(ARQUIVO_WIFI_PATH, "r");
+            if (file) {
+                networks = file.readString();
+                file.close();
+            }
+        } else {
+            // Contingência: lê da RAM temporária
+            for (size_t i = 0; i < redesEmRAM.size(); i++) {
+                networks += redesEmRAM[i].ssid + "," + redesEmRAM[i].pass + "\n";
+            }
+        }
 
-                  request->send(200, "text/plain", networks); // Envia o conteúdo lido como resposta ao cliente com status 200 (OK).
-              });
+        request->send(200, "text/plain", networks); });
 
-    // -------------------------------------------------------------------------
-    // Rota para salvar uma nova rede Wi-Fi.
-    // -------------------------------------------------------------------------
+    // 3. Rota de Varredura de Redes Wi-Fi Disponíveis no Ar (JSON)
+    server.on("/scanwifi", HTTP_GET, [](AsyncWebServerRequest *request)
+              {
+        int n = WiFi.scanComplete();
+        if (n == -2) {
+            WiFi.scanNetworks(true, true);
+            request->send(200, "application/json", "{\"status\":\"scanning\"}");
+        } else if (n == -1) {
+            request->send(200, "application/json", "{\"status\":\"scanning\"}");
+        } else {
+            String json = "[";
+            for (int i = 0; i < n; i++) {
+                json += "{\"ssid\":\"" + WiFi.SSID(i) + "\",\"rssi\":" + String(WiFi.RSSI(i)) + "}";
+                if (i < n - 1) json += ",";
+            }
+            json += "]";
+            WiFi.scanDelete();
+            request->send(200, "application/json", json);
+        } });
+
+    // 4. Rota para Salvar e Conectar a uma Nova Rede (POST)
     server.on("/salvarwifi", HTTP_POST, [](AsyncWebServerRequest *request)
               {
-        if (request->hasParam("ssid", true) && request->hasParam("password", true)) 
-        {   // Verifica se os parâmetros "ssid" e "password" estão presentes e são enviados via POST.
-            String ssid = request->getParam("ssid", true)->value();       // Obtém o SSID enviado pelo formulário.
-            String password = request->getParam("password", true)->value(); // Obtém a senha enviada pelo formulário.
+        if (!request->hasParam("ssid", true) || !request->hasParam("password", true)) {
+            request->send(400, "text/plain", "Dados ausentes.");
+            return;
+        }
 
-            File file = SPIFFS.open("/wifiredes.txt", FILE_READ);
-            if (!file) 
-            {   // Verifica se o arquivo foi aberto com sucesso para leitura.
-                request->send(500, "text/plain", "Erro ao abrir o arquivo de redes Wi-Fi"); // Responde com erro (500) se não conseguir abrir o arquivo.
-                return; // Interrompe a execução da função em caso de erro.
+        String ssidNovo = request->getParam("ssid", true)->value();
+        String passNova = request->getParam("password", true)->value();
+        sanitizarString(ssidNovo);
+        sanitizarString(passNova);
+
+        if (ssidNovo.length() == 0) {
+            request->send(400, "text/plain", "SSID não pode ser vazio.");
+            return;
+        }
+
+        // Atualiza na memória RAM
+        bool jaExisteNaRAM = false;
+        for (size_t i = 0; i < redesEmRAM.size(); i++) {
+            if (redesEmRAM[i].ssid.equalsIgnoreCase(ssidNovo)) {
+                redesEmRAM[i].pass = passNova;
+                jaExisteNaRAM = true;
+                break;
             }
+        }
+        if (!jaExisteNaRAM) {
+            redesEmRAM.push_back({ssidNovo, passNova});
+        }
 
-            String content = file.readString(); // Lê o conteúdo do arquivo como uma String.
-            file.close(); // Fecha o arquivo após leitura.
+        // Salva persistentemente no SPIFFS caso disponível
+        if (isSPIFFSDisponivel()) {
+            String novoConteudo = "";
+            bool jaExiste = false;
 
-            String newContent; // String que armazenará o novo conteúdo atualizado do arquivo.
-            bool ssidExists = false; // Flag para verificar se o SSID já existe no arquivo.
-            int start = 0;
-            while (start < content.length()) 
-            {   // Percorre o conteúdo do arquivo linha por linha.
-                int end = content.indexOf('\n', start);
-                if (end == -1) 
-                {   // Se não houver mais quebras de linha, define o fim da leitura como o final do conteúdo.
-                    end = content.length();
+            if (SPIFFS.exists(ARQUIVO_WIFI_PATH)) {
+                File readFile = SPIFFS.open(ARQUIVO_WIFI_PATH, "r");
+                if (readFile) {
+                    while (readFile.available()) {
+                        String linha = readFile.readStringUntil('\n');
+                        linha.trim();
+                        if (linha.length() == 0) continue;
+
+                        int sep = linha.indexOf(',');
+                        if (sep != -1) {
+                            String s = linha.substring(0, sep);
+                            s.trim();
+                            if (s.equalsIgnoreCase(ssidNovo)) {
+                                novoConteudo += ssidNovo + "," + passNova + "\n";
+                                jaExiste = true;
+                            } else {
+                                novoConteudo += linha + "\n";
+                            }
+                        }
+                    }
+                    readFile.close();
                 }
-                String line = content.substring(start, end); // Extrai a linha atual.
-                int commaIndex = line.indexOf(','); // Localiza a vírgula que separa o SSID da senha.
-                String savedSSID = line.substring(0, commaIndex); // Obtém o SSID salvo.
-                if (savedSSID == ssid) 
-                {   // Se o SSID já existe, atualiza a senha correspondente.
-                    newContent += ssid + "," + password + "\n";
-                    ssidExists = true; // Marca que o SSID foi encontrado.
-                } 
-                else 
-                {   // Se o SSID não corresponde, mantém a linha original.
-                    newContent += line + "\n";
-                }
-                start = end + 1; // Move o ponto de início para a próxima linha.
             }
 
-            if (!ssidExists) 
-            {   // Se o SSID não foi encontrado, adiciona uma nova entrada ao conteúdo.
-                newContent += ssid + "," + password + "\n";
+            if (!jaExiste) {
+                novoConteudo += ssidNovo + "," + passNova + "\n";
             }
 
-            file = SPIFFS.open("/wifiredes.txt", FILE_WRITE);
-            if (!file) 
-            {   // Verifica se o arquivo foi aberto com sucesso para escrita.
-                request->send(500, "text/plain", "Erro ao abrir o arquivo para escrita"); // Responde com erro (500) se não conseguir abrir o arquivo para escrita.
-                return; // Interrompe a execução da função em caso de erro.
+            File writeFile = SPIFFS.open(ARQUIVO_WIFI_PATH, "w");
+            if (writeFile) {
+                writeFile.print(novoConteudo);
+                writeFile.close();
             }
-            file.print(newContent); // Escreve o conteúdo atualizado no arquivo.
-            file.close(); // Fecha o arquivo após a escrita.
+        }
 
-            connectToWiFi(ssid.c_str(), password.c_str()); // Tenta conectar à nova rede Wi-Fi salva usando o SSID e a senha.
+        // Conecta assincronamente sem travar a CPU nem estourar o Watchdog
+        connectToWiFi(ssidNovo.c_str(), passNova.c_str());
 
-            request->redirect("/wifigerenciamento"); // Redireciona o cliente para a página de gerenciamento de Wi-Fi após salvar.
-        } 
-        else 
-        {   // Se os parâmetros SSID ou senha estiverem ausentes.
-            request->send(400, "text/plain", "Dados ausentes."); // Responde com erro (400) indicando que os dados do formulário estão incompletos.
-        } });
+        request->send(200, "application/json", "{\"status\":\"ok\",\"message\":\"Conectando a rede...\"}"); });
 
-    // -------------------------------------------------------------------------
-    // Rota para deletar uma rede Wi-Fi salva.
-    // -------------------------------------------------------------------------
+    // 5. Rota para Excluir Rede Salva
     server.on("/excluirwifi", HTTP_GET, [](AsyncWebServerRequest *request)
               {
-        if (request->hasParam("ssid")) 
-        {   // Verifica se o parâmetro "ssid" está presente na requisição.
-            String ssidToDelete = request->getParam("ssid")->value(); // Obtém o SSID que deve ser deletado.
+        if (!request->hasParam("ssid")) {
+            request->send(400, "text/plain", "SSID ausente.");
+            return;
+        }
 
-            File file = SPIFFS.open("/wifiredes.txt", FILE_READ);
-            if (!file) 
-            {   // Verifica se o arquivo foi aberto com sucesso para leitura.
-                request->send(500, "text/plain", "Erro ao abrir o arquivo de redes Wi-Fi"); // Responde com erro (500) se não conseguir abrir o arquivo.
-                return; // Interrompe a execução da função em caso de erro.
+        String ssidDel = request->getParam("ssid")->value();
+        sanitizarString(ssidDel);
+
+        // Remove da RAM
+        for (auto it = redesEmRAM.begin(); it != redesEmRAM.end();) {
+            if (it->ssid.equalsIgnoreCase(ssidDel)) {
+                it = redesEmRAM.erase(it);
+            } else {
+                ++it;
             }
+        }
 
-            String content = file.readString(); // Lê o conteúdo do arquivo como uma String.
-            file.close(); // Fecha o arquivo após leitura.
+        // Remove do arquivo no SPIFFS
+        if (isSPIFFSDisponivel() && SPIFFS.exists(ARQUIVO_WIFI_PATH)) {
+            File readFile = SPIFFS.open(ARQUIVO_WIFI_PATH, "r");
+            String novoConteudo = "";
+            if (readFile) {
+                while (readFile.available()) {
+                    String linha = readFile.readStringUntil('\n');
+                    linha.trim();
+                    if (linha.length() == 0) continue;
 
-            String newContent; // String para armazenar o novo conteúdo do arquivo após a remoção da rede.
-            int start = 0;
-            while (start < content.length()) 
-            {   // Percorre o conteúdo do arquivo linha por linha.
-                int end = content.indexOf('\n', start);
-                if (end == -1) 
-                {   // Se não houver mais quebras de linha, define o fim da leitura como o final do conteúdo.
-                    end = content.length();
+                    int sep = linha.indexOf(',');
+                    if (sep != -1) {
+                        String s = linha.substring(0, sep);
+                        s.trim();
+                        if (!s.equalsIgnoreCase(ssidDel)) {
+                            novoConteudo += linha + "\n";
+                        }
+                    }
                 }
-                String line = content.substring(start, end); // Extrai a linha atual.
-                int commaIndex = line.indexOf(','); // Localiza a vírgula que separa o SSID da senha.
-                String savedSSID = line.substring(0, commaIndex); // Obtém o SSID salvo.
-                if (savedSSID != ssidToDelete) 
-                {   // Se o SSID não corresponde ao que deve ser deletado, mantém a linha.
-                    newContent += line + "\n";
-                }
-                start = end + 1; // Move o ponto de início para a próxima linha.
+                readFile.close();
             }
 
-            file = SPIFFS.open("/wifiredes.txt", FILE_WRITE);
-            if (!file) 
-            {   // Verifica se o arquivo foi aberto com sucesso para escrita.
-                request->send(500, "text/plain", "Erro ao abrir o arquivo para escrita"); // Responde com erro (500) se não conseguir abrir o arquivo para escrita.
-                return; // Interrompe a execução da função em caso de erro.
+            File writeFile = SPIFFS.open(ARQUIVO_WIFI_PATH, "w");
+            if (writeFile) {
+                writeFile.print(novoConteudo);
+                writeFile.close();
             }
-            file.print(newContent); // Escreve o novo conteúdo (sem o SSID deletado) no arquivo.
-            file.close(); // Fecha o arquivo após a escrita.
+        }
 
-            request->redirect("/wifigerenciamento"); // Redireciona o cliente para a página de gerenciamento de Wi-Fi após deletar a rede.
-        } 
-        else 
-        {   // Se o parâmetro SSID estiver ausente.
-            request->send(400, "text/plain", "SSID ausente."); // Responde com erro (400) indicando que o SSID está ausente na requisição.
-        } });
+        request->redirect("/wifigerenciamento"); });
 
-    // -------------------------------------------------------------------------
-    // Rota para obter o IP da rede conectada.
-    // -------------------------------------------------------------------------
+    // 6. Rota que retorna o Status e IP atual da Rede
     server.on("/ipdarede", HTTP_GET, [](AsyncWebServerRequest *request)
-              {
-                  String ip = WiFi.localIP().toString();                // Obtém o IP local da rede conectada e o converte para uma String.
-                  String jsonResponse = "{\"ip\":\"" + ip + "\"}";      // Formata a resposta como um objeto JSON contendo o IP.
-                  request->send(200, "application/json", jsonResponse); // Envia a resposta JSON com status 200 (OK) e tipo de conteúdo "application/json".
-              });
+              { request->send(200, "application/json", getWiFiStatusJSON()); });
 }

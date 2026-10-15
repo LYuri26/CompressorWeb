@@ -5,10 +5,28 @@
 #include <ESPAsyncWebServer.h>
 #include "ligadesliga.h"
 
-extern const int pinoManutencao; // Declaração da variável global
-extern bool sistemaEmManutencao; // Declaração da variável global
+// -------------------------------------------------------------------------
+// Declaração de Variáveis Globais de Manutenção
+// -------------------------------------------------------------------------
 
-void setupManutencao();           // Declaração da função
-bool atualizarEstadoManutencao(); // Declaração da função
+/**
+ * Pino digital de entrada da chave seletora ou botão tipo cogumelo com trava.
+ * Nível lógico LOW indica sistema em manutenção (chave comutada para GND).
+ */
+extern const int pinoManutencao;
 
-#endif
+/**
+ * Flag indicando se o sistema se encontra atualmente em modo de manutenção.
+ */
+extern bool sistemaEmManutencao;
+
+// -------------------------------------------------------------------------
+// Declaração de Funções de Controle de Manutenção
+// -------------------------------------------------------------------------
+
+void setupManutencao();
+bool atualizarEstadoManutencao();
+bool isSistemaEmManutencao();
+void forcarSaidaManutencao();
+
+#endif // MANUTENCAO_H

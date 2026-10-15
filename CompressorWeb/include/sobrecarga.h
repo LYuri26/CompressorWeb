@@ -6,26 +6,29 @@
 #include <SPIFFS.h>
 #include "ligadesliga.h"
 
-// Pinos de entrada para monitorar a sobrecarga
-extern const int pinosSobrecarga[];
+// -------------------------------------------------------------------------
+// Declaração de Variáveis Globais de Sobrecarga
+// -------------------------------------------------------------------------
 
-// Estado de sobrecarga para cada motor
-extern bool sobrecargaDetectada[];
+// Pinos de entrada digital para monitorar contatores/relés térmicos
+extern const int pinosSobrecarga[NUM_MOTORES];
 
-// Tempo de início da sobrecarga e tempo mínimo para desativar os motores
-extern unsigned long tempoInicioSobrecarga[];
+// Flag de status: true se houver desarme térmico/sobrecarga no motor
+extern bool sobrecargaDetectada[NUM_MOTORES];
+
+// Temporizadores e constantes para validação de sobrecarga
+extern unsigned long tempoInicioSobrecarga[NUM_MOTORES];
 extern const unsigned long tempoMinimoSobrecarga;
 
-// Arquivos para salvar o estado dos motores
-extern const String arquivosMotores[];
+// -------------------------------------------------------------------------
+// Declaração de Funções de Proteção Térmica
+// -------------------------------------------------------------------------
 
-// Funções
 void setupSobrecarga();
-void desativarMotor(int motorIndex);
 void monitorarSobrecarga();
+void desativarMotor(int motorIndex);
 void desativarMotores();
+void desativarMotoresSobrecarga();
 void restaurarEstadoMotores();
-bool readMotorState(const String &arquivoEstado);
-void saveMotorState(const String &arquivoEstado, bool state);
 
 #endif // SOBRECARGA_H
